@@ -1,6 +1,47 @@
 {
-  "generated_at": "2026-03-06T19:11:18.471356+00:00",
-  "updated_date": "20260306",
+  "generated_at": "2026-03-17T13:47:56.464251+00:00",
+  "updated_date": "20260308-20260317",
   "carryover_days": 9,
-  "items": []
+  "items": [
+    {
+      "id": "2603.14956v1",
+      "title": "SFedHIFI: Fire Rate-Based Heterogeneous Information Fusion for Spiking Federated Learning",
+      "abstract": "Spiking Federated Learning (SFL) has been widely studied with the energy efficiency of Spiking Neural Networks (SNNs). However, existing SFL methods require model homogeneity and assume all clients have sufficient computational resources, resulting in the exclusion of some resource-constrained clients. To address the prevalent system heterogeneity in real-world scenarios, enabling heterogeneous SFL systems that allow clients to adaptively deploy models of different scales based on their local resources is crucial. To this end, we introduce SFedHIFI, a novel Spiking Federated Learning framework with Fire Rate-Based Heterogeneous Information Fusion. Specifically, SFedHIFI employs channel-wise matrix decomposition to deploy SNN models of adaptive complexity on clients with heterogeneous resources. Building on this, the proposed heterogeneous information fusion module enables cross-scale aggregation among models of different widths, thereby enhancing the utilization of diverse local knowledge. Extensive experiments on three public benchmarks demonstrate that SFedHIFI can effectively enable heterogeneous SFL, consistently outperforming all three baseline methods. Compared with ANN-based FL, it achieves significant energy savings with only a marginal trade-off in accuracy.",
+      "authors": [
+        "Ran Tao",
+        "Qiugang Zhan",
+        "Shantian Yang",
+        "Xiurui Xie",
+        "Qi Tian",
+        "Guisong Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-16T08:13:03+00:00",
+      "link": "https://arxiv.org/pdf/2603.14956v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adaptive model deployment based on local resources in heterogeneous SFL",
+      "llm_evidence_cn": "异构SFL中基于本地资源的自适应模型部署",
+      "llm_evidence": "异构SFL中基于本地资源的自适应模型部署",
+      "canonical_evidence": "异构SFL中基于本地资源的自适应模型部署",
+      "llm_tldr_en": "SFedHIFI enables heterogeneous spiking federated learning by adaptively deploying models based on client resources.",
+      "llm_tldr_cn": "SFedHIFI通过根据客户端资源自适应部署模型，实现了异构脉冲联邦学习。",
+      "llm_tldr": "SFedHIFI通过根据客户端资源自适应部署模型，实现了异构脉冲联邦学习。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "semi asynchronous federated learning protocols for heterogeneous devices",
+      "matched_requirement_id": "req-8",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.14956v1",
+      "carry_days": 1
+    }
+  ]
 }

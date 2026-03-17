@@ -1,0 +1,672 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-17T13:47:56.463095+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 13,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 13,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2603.08595v1",
+      "title": "Pinching Antennas-Assisted Low-Latency Federated Learning Over Multi-User Wireless Networks",
+      "abstract": "Federated learning (FL) over wireless networks is fundamentally constrained by unreliable communication links, particularly when uplink channels suffer from blockage, fading, or weak line-of-sight (LoS) conditions. Pinching-antenna systems (PASSs) offer a new physical-layer capability to dynamically reposition radiating points along a dielectric waveguide, enabling controllable LoS connectivity and significantly improved channel quality. This paper develops FedPASS, a novel framework for low-latency wireless FL assisted by PASS. We formulate a multi-objective optimization problem that jointly minimizes the end-to-end round latency and an upper bound on the FL optimality gap. The resulting formulation is a mixed-integer nonlinear program subject to practical constraints on scheduling, transmit power, local CPU frequency, and PA placement. To address the resulting computational challenges, we develop a two-tier iterative algorithm: an outer loop that updates scheduling, communication time allocation, and power control via block coordinate descent, and an inner loop that optimizes PA locations using a Gauss-Seidel-based coordinate update with grid search under spacing constraints. Numerical results on MNIST and CIFAR-10 demonstrate that FedPASS achieves accuracy comparable to idealized FL baselines while drastically reducing the total training latency compared to conventional wireless FL.",
+      "authors": [
+        "Saba Asaad",
+        "Hina Tabassum",
+        "Ping Wang"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT"
+      ],
+      "published": "2026-03-09T16:45:14+00:00",
+      "link": "https://arxiv.org/pdf/2603.08595v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "jointly minimizes end-to-end round latency and optimality gap in wireless FL",
+      "llm_evidence_cn": "联合最小化无线联邦学习中的端到端轮次延迟和最优性间隙",
+      "llm_evidence": "联合最小化无线联邦学习中的端到端轮次延迟和最优性间隙",
+      "canonical_evidence": "联合最小化无线联邦学习中的端到端轮次延迟和最优性间隙",
+      "llm_tldr_en": "FedPASS optimizes communication and computation jointly to achieve low-latency federated learning.",
+      "llm_tldr_cn": "FedPASS 通过联合优化通信和计算来实现低延迟联邦学习。",
+      "llm_tldr": "FedPASS 通过联合优化通信和计算来实现低延迟联邦学习。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09141v1",
+      "title": "Agentic AI as a Network Control-Plane Intelligence Layer for Federated Learning over 6G",
+      "abstract": "The shift toward user-customized on-device learning places new demands on wireless systems: models must be trained on diverse, distributed data while meeting strict latency, bandwidth, and reliability constraints. To address this, we propose an Agentic AI as the control layer for managing federated learning (FL) over 6G networks, which translates high-level task goals into actions that are aware of network conditions. Rather than simply viewing FL as a learning challenge, our system sees it as a combined task of learning and network management. A set of specialized agents focused on retrieval, planning, coding, and evaluation utilizes monitoring tools and optimization methods to handle client selection, incentive structuring, scheduling, resource allocation, adaptive local training, and code generation. The use of closed-loop evaluation and memory allows the system to consistently refine its decisions, taking into account varying signal-to-noise ratios, bandwidth conditions, and device capabilities. Finally, our case study has demonstrated the effectiveness of the Agentic AI system's use of tools for achieving high performance.",
+      "authors": [
+        "Loc X. Nguyen",
+        "Ji Su Yoon",
+        "Huy Q. Le",
+        "Yu Qiao",
+        "Avi Deb Raha",
+        "Eui-Nam Huh",
+        "Nguyen H. Tran",
+        "Choong Seon Hong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-10T03:27:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.09141v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Agentic AI for client selection and network management in 6G FL",
+      "llm_evidence_cn": "用于6G联邦学习中客户端选择和网络管理的智能体AI",
+      "llm_evidence": "用于6G联邦学习中客户端选择和网络管理的智能体AI",
+      "canonical_evidence": "用于6G联邦学习中客户端选择和网络管理的智能体AI",
+      "llm_tldr_en": "Proposes Agentic AI to manage FL over 6G, optimizing client selection and network resources.",
+      "llm_tldr_cn": "提出智能体AI作为6G联邦学习控制层，优化客户端选择与网络资源管理。",
+      "llm_tldr": "提出智能体AI作为6G联邦学习控制层，优化客户端选择与网络资源管理。",
+      "llm_tags": [
+        "query:fl-ra:composite"
+      ],
+      "matched_query_tag": "query:fl-ra:composite",
+      "matched_query_text": "Papers central to 联邦学习中半异步和资源分配相关的论文, especially work that connects or combines: semi-asynchronous communication protocols in federated learning; resource allocation strategies for federated learning systems; joint optimization of communication and computation in FL; handling stragglers in semi-asynchronous federated learning; dynamic bandwidth allocation for federated learning clients; client selection mechanisms for semi-asynchronous FL; resource allocation optimization for semi asynchronous federated learning; semi asynchronous federated learning protocols for heterogeneous devices.",
+      "matched_requirement_id": "req-composite-fl-ra",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09141v2",
+      "title": "Agentic AI as a Network Control-Plane Intelligence Layer for Federated Learning over 6G",
+      "abstract": "The shift toward user-customized on-device learning places new demands on wireless systems: models must be trained on diverse, distributed data while meeting strict latency, bandwidth, and reliability constraints. To address this, we propose an Agentic AI as the control layer for managing federated learning (FL) over 6G networks, which translates high-level task goals into actions that are aware of network conditions. Rather than simply viewing FL as a learning challenge, our system sees it as a combined task of learning and network management. A set of specialized agents focused on retrieval, planning, coding, and evaluation utilizes monitoring tools and optimization methods to handle client selection, incentive structuring, scheduling, resource allocation, adaptive local training, and code generation. The use of closed-loop evaluation and memory allows the system to consistently refine its decisions, taking into account varying signal-to-noise ratios, bandwidth conditions, and device capabilities. Finally, our case study has demonstrated the effectiveness of the Agentic AI system's use of tools for achieving high performance.",
+      "authors": [
+        "Loc X. Nguyen",
+        "Ji Su Yoon",
+        "Huy Q. Le",
+        "Yu Qiao",
+        "Avi Deb Raha",
+        "Eui-Nam Huh",
+        "Nguyen H. Tran",
+        "Zhu Han",
+        "Choong Seon Hong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-10T03:27:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.09141v2",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Agentic AI for client selection and network management in 6G FL",
+      "llm_evidence_cn": "用于6G联邦学习中客户端选择和网络管理的智能体AI",
+      "llm_evidence": "用于6G联邦学习中客户端选择和网络管理的智能体AI",
+      "canonical_evidence": "用于6G联邦学习中客户端选择和网络管理的智能体AI",
+      "llm_tldr_en": "Proposes Agentic AI to manage FL over 6G, optimizing client selection and network resources.",
+      "llm_tldr_cn": "提出智能体AI作为6G联邦学习控制层，优化客户端选择与网络资源管理。",
+      "llm_tldr": "提出智能体AI作为6G联邦学习控制层，优化客户端选择与网络资源管理。",
+      "llm_tags": [
+        "query:fl-ra:composite"
+      ],
+      "matched_query_tag": "query:fl-ra:composite",
+      "matched_query_text": "Papers central to 联邦学习中半异步和资源分配相关的论文, especially work that connects or combines: semi-asynchronous communication protocols in federated learning; resource allocation strategies for federated learning systems; joint optimization of communication and computation in FL; handling stragglers in semi-asynchronous federated learning; dynamic bandwidth allocation for federated learning clients; client selection mechanisms for semi-asynchronous FL; resource allocation optimization for semi asynchronous federated learning; semi asynchronous federated learning protocols for heterogeneous devices.",
+      "matched_requirement_id": "req-composite-fl-ra",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.10763v1",
+      "title": "Prioritizing Gradient Sign Over Modulus: An Importance-Aware Framework for Wireless Federated Learning",
+      "abstract": "Wireless federated learning (FL) facilitates collaborative training of artificial intelligence (AI) models to support ubiquitous intelligent applications at the wireless edge. However, the inherent constraints of limited wireless resources inevitably lead to unreliable communication, which poses a significant challenge to wireless FL. To overcome this challenge, we propose Sign-Prioritized FL (SP-FL), a novel framework that improves wireless FL by prioritizing the transmission of important gradient information through uneven resource allocation. Specifically, recognizing the importance of descent direction in model updating, we transmit gradient signs in individual packets and allow their reuse for gradient descent if the remaining gradient modulus cannot be correctly recovered. To further improve the reliability of transmission of important information, we formulate a hierarchical resource allocation problem based on the importance disparity at both the packet and device levels, optimizing bandwidth allocation across multiple devices and power allocation between sign and modulus packets. To make the problem tractable, the one-step convergence behavior of SP-FL, which characterizes data importance at both levels in an explicit form, is analyzed. We then propose an alternating optimization algorithm to solve this problem using the Newton-Raphson method and successive convex approximation (SCA). Simulation results confirm the superiority of SP-FL, especially in resource-constrained scenarios, demonstrating up to 9.96\\% higher testing accuracy on the CIFAR-10 dataset compared to existing methods.",
+      "authors": [
+        "Yiyang Yue",
+        "Jiacheng Yao",
+        "Wei Xu",
+        "Zhaohui Yang",
+        "George K. Karagiannidis",
+        "Dusit Niyato"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.IT",
+        "eess.SP"
+      ],
+      "published": "2026-03-11T13:41:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.10763v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uneven resource allocation for prioritizing important gradient information in wireless FL",
+      "llm_evidence_cn": "无线联邦学习中优先传输重要梯度信息的非均匀资源分配",
+      "llm_evidence": "无线联邦学习中优先传输重要梯度信息的非均匀资源分配",
+      "canonical_evidence": "无线联邦学习中优先传输重要梯度信息的非均匀资源分配",
+      "llm_tldr_en": "SP-FL prioritizes gradient sign transmission through uneven resource allocation to improve wireless FL efficiency.",
+      "llm_tldr_cn": "SP-FL通过非均匀资源分配优先传输梯度符号，提高了无线联邦学习的效率。",
+      "llm_tldr": "SP-FL通过非均匀资源分配优先传输梯度符号，提高了无线联邦学习的效率。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation strategies for federated learning systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.15188v1",
+      "title": "Joint Routing and Model Pruning for Decentralized Federated Learning in Bandwidth-Constrained Multi-Hop Wireless Networks",
+      "abstract": "Decentralized federated learning (D-FL) enables privacy-preserving training without a central server, but multi-hop model exchanges and aggregation are often bottlenecked by communication resource constraints. To address this issue, we propose a joint routing-and-pruning framework that optimizes routing paths and pruning rates to maintain communication latency within prescribed limits. We analyze how the sum of model biases across all clients affects the convergence bound of D-FL and formulate an optimization problem that maximizes the model retention rate to minimize these biases under communication constraints. Further analysis reveals that each client's model retention rate is path-dependent, which reduces the original problem to a routing optimization. Leveraging this insight, we develop a routing algorithm that selects latency-efficient transmission paths, allowing more parameters to be delivered within the time budget and thereby improving D-FL convergence. Simulations demonstrate that, compared with unpruned systems, the proposed framework reduces average transmission latency by 27.8% and improves testing accuracy by approximately 12%. Furthermore, relative to standard benchmark routing algorithms, the proposed routing method improves accuracy by roughly 8%.",
+      "authors": [
+        "Xiaoyu He",
+        "Weicai Li",
+        "Tiejun Lv",
+        "Xi Yu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.NI"
+      ],
+      "published": "2026-03-16T12:25:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.15188v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "joint routing and model pruning for decentralized FL in bandwidth-constrained networks",
+      "llm_evidence_cn": "带宽受限网络中去中心化联邦学习的联合路由和模型剪枝",
+      "llm_evidence": "带宽受限网络中去中心化联邦学习的联合路由和模型剪枝",
+      "canonical_evidence": "带宽受限网络中去中心化联邦学习的联合路由和模型剪枝",
+      "llm_tldr_en": "Optimizes routing and pruning to maintain latency limits in bandwidth-constrained decentralized FL.",
+      "llm_tldr_cn": "在带宽受限的去中心化联邦学习中优化路由和剪枝，以维持延迟限制。",
+      "llm_tldr": "在带宽受限的去中心化联邦学习中优化路由和剪枝，以维持延迟限制。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.08211v1",
+      "title": "Revisiting Gradient Staleness: Evaluating Distance Metrics for Asynchronous Federated Learning Aggregation",
+      "abstract": "In asynchronous federated learning (FL), client devices send updates to a central server at varying times based on their computational speed, often using stale versions of the global model. This staleness can degrade the convergence and accuracy of the global model. Previous work, such as AsyncFedED, proposed an adaptive aggregation method using Euclidean distance to measure staleness. In this paper, we extend this approach by exploring alternative distance metrics to more accurately capture the effect of gradient staleness. We integrate these metrics into the aggregation process and evaluate their impact on convergence speed, model performance, and training stability under heterogeneous clients and non-IID data settings. Our results demonstrate that certain metrics lead to more robust and efficient asynchronous FL training, offering a stronger foundation for practical deployment.",
+      "authors": [
+        "Patrick Wilhelm",
+        "Odej Kao"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-09T10:40:25+00:00",
+      "link": "https://arxiv.org/pdf/2603.08211v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "asynchronous FL aggregation and gradient staleness",
+      "llm_evidence_cn": "异步联邦学习聚合与梯度过期",
+      "llm_evidence": "异步联邦学习聚合与梯度过期",
+      "canonical_evidence": "异步联邦学习聚合与梯度过期",
+      "llm_tldr_en": "Evaluates distance metrics to mitigate gradient staleness in asynchronous federated learning.",
+      "llm_tldr_cn": "评估不同的距离度量，以减轻异步联邦学习中的梯度过期影响。",
+      "llm_tldr": "评估不同的距离度量，以减轻异步联邦学习中的梯度过期影响。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "handling stragglers in semi-asynchronous federated learning",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.08641v1",
+      "title": "Coherence-Aware Over-the-Air Distributed Learning under Heterogeneous Link Impairments",
+      "abstract": "Distributed machine learning (ML) over wireless networks hinges on accurate channel state information (CSI) and efficient exchange of high-dimensional model updates. These demands are governed by channel coherence time and bandwidth, which vary across devices (links) due to heterogeneous mobility and scattering, causing degraded downlink delivery and distorted uplink over-the-air (OTA) aggregation. We propose a coherence-aware federated learning (FL) framework that jointly addresses impairments on downlink and uplink with communication-efficient strategies. In the downlink, we employ product superposition to multiplex global model symbols for long-coherence (static) devices onto the pilot tones required by short-coherence (dynamic) devices for channel estimation, turning pilot overhead into payload while preserving estimation fidelity. In the proposed scheme, an orthogonal frequency-division multiplexing (OFDM) super-block is partitioned into sub-blocks aligned with the smallest coherence time and bandwidth, enabling consistent channel estimation and stabilizing OTA aggregation across heterogeneous devices. Partial model reception at dynamic devices is mitigated via previous local model filling (PLMF), which reuses prior updates. We establish convergence guarantees under heterogeneous link impairments, imperfect CSI, and aggregation noise. The proposed framework enables efficient scheduling under coherence heterogeneity; analysis and experiments demonstrate notable gains in communication efficiency, latency, and learning accuracy over conventional FL baselines.",
+      "authors": [
+        "Mehdi Karbalayghareh",
+        "David J. Love",
+        "Christopher G. Brinton"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT"
+      ],
+      "published": "2026-03-09T17:19:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.08641v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "jointly addresses impairments on downlink and uplink with communication-efficient strategies",
+      "llm_evidence_cn": "通过通信高效策略共同解决下行和上行链路损伤",
+      "llm_evidence": "通过通信高效策略共同解决下行和上行链路损伤",
+      "canonical_evidence": "通过通信高效策略共同解决下行和上行链路损伤",
+      "llm_tldr_en": "Proposes a coherence-aware FL framework to optimize communication efficiency under heterogeneous link impairments.",
+      "llm_tldr_cn": "提出一种感知相干性的联邦学习框架，以优化异构链路损伤下的通信效率。",
+      "llm_tldr": "提出一种感知相干性的联邦学习框架，以优化异构链路损伤下的通信效率。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.14729v1",
+      "title": "DeFRiS: Silo-Cooperative IoT Applications Scheduling via Decentralized Federated Reinforcement Learning",
+      "abstract": "Next-generation IoT applications increasingly span across autonomous administrative entities, necessitating silo-cooperative scheduling to leverage diverse computational resources while preserving data privacy. However, realizing efficient cooperation faces significant challenges arising from infrastructure heterogeneity, Non-IID workload shifts, and the inherent risks of adversarial environments. Existing approaches, relying predominantly on centralized coordination or independent learning, fail to address the incompatibility of state-action spaces across heterogeneous silos and lack robustness against malicious attacks. This paper proposes DeFRiS, a Decentralized Federated Reinforcement Learning framework for robust and scalable Silo-cooperative IoT application scheduling. DeFRiS integrates three synergistic innovations: (i) an action-space-agnostic policy utilizing candidate resource scoring to enable seamless knowledge transfer across heterogeneous silos; (ii) a silo-optimized local learning mechanism combining Generalized Advantage Estimation (GAE) with clipped policy updates to resolve sparse delayed reward challenges; and (iii) a Dual-Track Non-IID robust decentralized aggregation protocol leveraging gradient fingerprints for similarity-aware knowledge transfer and anomaly detection, and gradient tracking for optimization momentum. Extensive experiments on a distributed testbed with 20 heterogeneous silos and realistic IoT workloads demonstrate that DeFRiS significantly outperforms state-of-the-art baselines, reducing average response time by 6.4% and energy consumption by 7.2%, while lowering tail latency risk (CVaR$_{0.95}$) by 10.4% and achieving near-zero deadline violations. Furthermore, DeFRiS achieves over 3 times better performance retention as the system scales and over 8 times better stability in adversarial environments compared to the best-performing baseline.",
+      "authors": [
+        "Zhiyu Wang",
+        "Mohammad Goudarzi",
+        "Mingming Gong",
+        "Rajkumar Buyya"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "published": "2026-03-16T02:02:38+00:00",
+      "link": "https://arxiv.org/pdf/2603.14729v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "silo-cooperative scheduling and resource leveraging in decentralized FL",
+      "llm_evidence_cn": "去中心化联邦学习中的孤岛协作调度和资源利用",
+      "llm_evidence": "去中心化联邦学习中的孤岛协作调度和资源利用",
+      "canonical_evidence": "去中心化联邦学习中的孤岛协作调度和资源利用",
+      "llm_tldr_en": "Proposes DeFRiS for robust IoT application scheduling using decentralized federated reinforcement learning.",
+      "llm_tldr_cn": "提出 DeFRiS 框架，利用去中心化联邦强化学习实现鲁棒的物联网应用调度。",
+      "llm_tldr": "提出 DeFRiS 框架，利用去中心化联邦强化学习实现鲁棒的物联网应用调度。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation strategies for federated learning systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.07654v1",
+      "title": "Compressed Proximal Federated Learning for Non-Convex Composite Optimization on Heterogeneous Data",
+      "abstract": "Federated Composite Optimization (FCO) has emerged as a promising framework for training models with structural constraints (e.g., sparsity) in distributed edge networks. However, simultaneously achieving communication efficiency and convergence robustness remains a significant challenge, particularly when dealing with non-smooth regularizers, statistical heterogeneity, and the restrictions of biased compression. To address these issues, we propose FedCEF (Federated Composite Error Feedback), a novel algorithm tailored for non-convex FCO. FedCEF introduces a decoupled proximal update scheme that separates the proximal operator from communication, enabling clients to handle non-smooth terms locally while transmitting compressed information. To mitigate the noise from aggressive quantization and the bias from non-IID data, FedCEF integrates a rigorous error feedback mechanism with control variates. Furthermore, we design a communication-efficient pre-proximal downlink strategy that allows clients to exactly reconstruct global control variables without explicit transmission. We theoretically establish that FedCEF achieves sublinear convergence to a bounded residual error under general non-convexity, which is controllable via the step size and batch size. Extensive experiments on real datasets validate FedCEF maintains competitive model accuracy even under extreme compression ratios (e.g., 1%), significantly reducing the total communication volume compared to uncompressed baselines.",
+      "authors": [
+        "Pu Qiu",
+        "Chen Ouyang",
+        "Yongyang Xiong",
+        "Keyou You",
+        "Wanquan Liu",
+        "Yang Shi"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.LG"
+      ],
+      "published": "2026-03-08T14:37:16+00:00",
+      "link": "https://arxiv.org/pdf/2603.07654v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "communication efficiency and local proximal updates",
+      "llm_evidence_cn": "通信效率与本地近端更新",
+      "llm_evidence": "通信效率与本地近端更新",
+      "canonical_evidence": "通信效率与本地近端更新",
+      "llm_tldr_en": "Introduces FedCEF to improve communication efficiency and robustness in non-convex federated optimization.",
+      "llm_tldr_cn": "引入 FedCEF 算法，提高非凸联邦复合优化中的通信效率和收敛鲁棒性。",
+      "llm_tldr": "引入 FedCEF 算法，提高非凸联邦复合优化中的通信效率和收敛鲁棒性。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08687v1",
+      "title": "Split Federated Learning Architectures for High-Accuracy and Low-Delay Model Training",
+      "abstract": "Can we find a network architecture for ML model training so as to optimize training loss (and thus, accuracy) in Split Federated Learning (SFL)? And can this architecture also reduce training delay and communication overhead? While accuracy is not influenced by how we split the model in ordinary, state-of-the-art SFL, in this work we answer the questions above in the affirmative. Recent Hierarchical SFL (HSFL) architectures adopt a three-tier training structure consisting of clients, (local) aggregators, and a central server. In this architecture, the model is partitioned at two partitioning layers into three sub-models, which are executed across the three tiers. Despite their merits, HSFL architectures overlook the impact of the partitioning layers and client-to-aggregator assignments on accuracy, delay, and overhead. This work explicitly captures the impact of the partitioning layers and client-to-aggregator assignments on accuracy, delay and overhead by formulating a joint optimization problem. We prove that the problem is NP-hard and propose the first accuracy-aware heuristic algorithm that explicitly accounts for model accuracy, while remaining delay-efficient. Simulation results on public datasets show that our approach can improve accuracy by 3%, while reducing delay by 20% and overhead by 50%, compared to state-of-the-art SFL and HSFL schemes.",
+      "authors": [
+        "Yiannis Papageorgiou",
+        "Yannis Thomas",
+        "Ramin Khalili",
+        "Iordanis Koutsopoulos"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-09T17:53:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.08687v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Joint optimization of training loss and communication delay in Split FL",
+      "llm_evidence_cn": "拆分联邦学习中训练损失与通信延迟的联合优化",
+      "llm_evidence": "拆分联邦学习中训练损失与通信延迟的联合优化",
+      "canonical_evidence": "拆分联邦学习中训练损失与通信延迟的联合优化",
+      "llm_tldr_en": "Optimizes Split Federated Learning architectures to reduce training delay and communication overhead.",
+      "llm_tldr_cn": "优化拆分联邦学习架构，以减少训练延迟和通信开销。",
+      "llm_tldr": "优化拆分联邦学习架构，以减少训练延迟和通信开销。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.14773v1",
+      "title": "HO-SFL: Hybrid-Order Split Federated Learning with Backprop-Free Clients and Dimension-Free Aggregation",
+      "abstract": "Fine-tuning large models on edge devices is severely hindered by the memory-intensive backpropagation (BP) in standard frameworks like federated learning and split learning. While substituting BP with zeroth-order optimization can significantly reduce memory footprints, it typically suffers from prohibitively degraded convergence speed. To resolve this dilemma, we propose Hybrid-Order Split Federated Learning (HO-SFL). By reformulating the split learning process within a Lagrangian framework, HO-SFL decouples the optimization landscape: The server performs precise first-order updates (i.e., BP), whereas clients conduct memory-efficient zeroth-order optimization. This hybrid design not only eliminates the need for client-side BP but also enables dimension-free model aggregation, drastically lowering communication costs. Crucially, we provide a theoretical convergence analysis, demonstrating that HO-SFL mitigates the dimension-dependent convergence slowdown of zeroth-order optimization, achieving a convergence rate comparable to first-order methods. Extensive experiments on tasks across vision and language modalities validate that HO-SFL achieves convergence speeds comparable to first-order baselines while significantly reducing communication costs and client memory footprints.",
+      "authors": [
+        "Qiyuan Chen",
+        "Xian Wu",
+        "Yi Wang",
+        "Xianhao Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-16T03:13:01+00:00",
+      "link": "https://arxiv.org/pdf/2603.14773v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "joint optimization of server computation and client memory",
+      "llm_evidence_cn": "服务器计算与客户端内存的联合优化",
+      "llm_evidence": "服务器计算与客户端内存的联合优化",
+      "canonical_evidence": "服务器计算与客户端内存的联合优化",
+      "llm_tldr_en": "Proposes HO-SFL to decouple optimization, reducing client memory via zeroth-order updates.",
+      "llm_tldr_cn": "提出 HO-SFL 框架，通过零阶优化降低客户端内存占用，实现服务器与客户端的解耦优化。",
+      "llm_tldr": "提出 HO-SFL 框架，通过零阶优化降低客户端内存占用，实现服务器与客户端的解耦优化。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.07984v1",
+      "title": "Energy-Efficient Online Scheduling for Wireless Powered Mobile Edge Computing Networks",
+      "abstract": "Wireless Powered Mobile Edge Computing (WP-MEC) integrates mobile edge computing (MEC) with wireless power transfer (WPT) to simultaneously extend the operational lifetime and enhance the computational capability of wireless devices (WDs). In WPMEC systems, WPT and computation offloading compete for limited wireless resources, which makes their joint scheduling particularly challenging. In this paper, we investigate the energy-efficient online scheduling problem for WPMEC networks with multiple WDs and multiple access points (APs). Based on Lyapunov optimization, we develop an online optimization framework that transforms the original stochastic problem into deterministic per-slot optimization problems. To reduce computational complexity, we introduce the concept of marginal energy efficiency and derive an associated optimality condition, based on which a relax-then-adjust approach is proposed to efficiently obtain feasible solutions. For the resulting non-convex computation offloading subproblem, we analyze the structural properties of its optimal solution and transform it into an assignment problem that can be solved efficiently. We further provide theoretical performance guarantees for both the per-slot and long-term solution, establishing a fundamental trade-off between latency and energy consumption. To improve practical performance, additional mechanisms are introduced to balance the magnitudes of different queues and reduce latency without increasing energy consumption. Extensive simulation results demonstrate the effectiveness and robustness of the proposed algorithm under various system settings.",
+      "authors": [
+        "Xingqiu He",
+        "Chaoqun You",
+        "Yuzhi Yang",
+        "Zihan Chen",
+        "Yuhang Shen",
+        "Tony Q. S. Quek",
+        "Yue Gao"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-03-09T05:46:34+00:00",
+      "link": "https://arxiv.org/pdf/2603.07984v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "joint scheduling of wireless power transfer and computation offloading",
+      "llm_evidence_cn": "无线传能与计算卸载的联合调度",
+      "llm_evidence": "无线传能与计算卸载的联合调度",
+      "canonical_evidence": "无线传能与计算卸载的联合调度",
+      "llm_tldr_en": "Develops an online optimization framework for joint resource scheduling in wireless powered MEC networks.",
+      "llm_tldr_cn": "为无线供电的移动边缘计算网络开发了一个联合资源调度的在线优化框架。",
+      "llm_tldr": "为无线供电的移动边缘计算网络开发了一个联合资源调度的在线优化框架。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08911v1",
+      "title": "FedLECC: Cluster- and Loss-Guided Client Selection for Federated Learning under Non-IID Data",
+      "abstract": "Federated Learning (FL) enables distributed Artificial Intelligence (AI) across cloud-edge environments by allowing collaborative model training without centralizing data. In cross-device deployments, FL systems face strict communication and participation constraints, as well as strong non-independent and identically distributed (non-IID) data that degrades convergence and model quality. Since only a subset of devices (a.k.a clients) can participate per training round, intelligent client selection becomes a key systems challenge. This paper proposes FedLECC (Federated Learning with Enhanced Cluster Choice), a lightweight, cluster-aware, and loss-guided client selection strategy for cross-device FL. FedLECC groups clients by label-distribution similarity and prioritizes clusters and clients with higher local loss, enabling the selection of a small yet informative and diverse set of clients. Experimental results under severe label skew show that FedLECC improves test accuracy by up to 12%, while reducing communication rounds by approximately 22% and overall communication overhead by up to 50% compared to strong baselines. These results demonstrate that informed client selection improves the efficiency and scalability of FL workloads in cloud-edge systems.",
+      "authors": [
+        "Daniel M. Jimenez-Gutierrez",
+        "Giovanni Giunta",
+        "Mehrdad Hassanzadeh",
+        "Aris Anagnostopoulos",
+        "Ioannis Chatzigiannakis",
+        "Andrea Vitaletti"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-09T20:28:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.08911v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cluster-aware and loss-guided client selection strategy",
+      "llm_evidence_cn": "聚类感知和损失引导的客户端选择策略",
+      "llm_evidence": "聚类感知和损失引导的客户端选择策略",
+      "canonical_evidence": "聚类感知和损失引导的客户端选择策略",
+      "llm_tldr_en": "Introduces FedLECC, a client selection strategy to improve FL convergence under communication constraints.",
+      "llm_tldr_cn": "引入FedLECC客户端选择策略，旨在通信受限下提高联邦学习的收敛性。",
+      "llm_tldr": "引入FedLECC客户端选择策略，旨在通信受限下提高联邦学习的收敛性。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "client selection mechanisms for semi-asynchronous FL",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.09727v1",
+      "title": "A Multi-Prototype-Guided Federated Knowledge Distillation Approach in AI-RAN Enabled Multi-Access Edge Computing System",
+      "abstract": "With the development of wireless network, Multi-Access Edge Computing (MEC) and Artificial Intelligence (AI)-native Radio Access Network (RAN) have attracted significant attention. Particularly, the integration of AI-RAN and MEC is envisioned to transform network efficiency and responsiveness. Therefore, it is valuable to investigate AI-RAN enabled MEC system. Federated learning (FL) nowadays is emerging as a promising approach for AI-RAN enabled MEC system, in which edge devices are enabled to train a global model cooperatively without revealing their raw data. However, conventional FL encounters the challenge in processing the non-independent and identically distributed (non-IID) data. Single prototype obtained by averaging the embedding vectors per class can be employed in FL to handle the data heterogeneity issue. Nevertheless, this may result in the loss of useful information owing to the average operation. Therefore, in this paper, a multi-prototype-guided federated knowledge distillation (MP-FedKD) approach is proposed. Particularly, self-knowledge distillation is integrated into FL to deal with the non-IID issue. To cope with the problem of information loss caused by single prototype-based strategy, multi-prototype strategy is adopted, where we present a conditional hierarchical agglomerative clustering (CHAC) approach and a prototype alignment scheme. Additionally, we design a novel loss function (called LEMGP loss) for each local client, where the relationship between global prototypes and local embedding will be focused. Extensive experiments over multiple datasets with various non-IID settings showcase that the proposed MP-FedKD approach outperforms the considered state-of-the-art baselines regarding accuracy, average accuracy and errors (RMSE and MAE).",
+      "authors": [
+        "Luyao Zou",
+        "Hayoung Oh",
+        "Chu Myaet Thwal",
+        "Apurba Adhikary",
+        "Seohyeon Hong",
+        "Zhu Han"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-10T14:32:41+00:00",
+      "link": "https://arxiv.org/pdf/2603.09727v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "federated learning in AI-RAN enabled MEC systems",
+      "llm_evidence_cn": "AI-RAN 赋能的 MEC 系统中的联邦学习",
+      "llm_evidence": "AI-RAN 赋能的 MEC 系统中的联邦学习",
+      "canonical_evidence": "AI-RAN 赋能的 MEC 系统中的联邦学习",
+      "llm_tldr_en": "Explores federated knowledge distillation in AI-RAN MEC systems to handle non-IID data challenges.",
+      "llm_tldr_cn": "探索 AI-RAN MEC 系统中的联邦知识蒸馏，以应对非独立同分布数据挑战。",
+      "llm_tldr": "探索 AI-RAN MEC 系统中的联邦知识蒸馏，以应对非独立同分布数据挑战。",
+      "llm_tags": [
+        "query:fl-ra:composite"
+      ],
+      "matched_query_tag": "query:fl-ra:composite",
+      "matched_query_text": "Papers central to 联邦学习中半异步和资源分配相关的论文, especially work that connects or combines: semi-asynchronous communication protocols in federated learning; resource allocation strategies for federated learning systems; joint optimization of communication and computation in FL; handling stragglers in semi-asynchronous federated learning; dynamic bandwidth allocation for federated learning clients; client selection mechanisms for semi-asynchronous FL; resource allocation optimization for semi asynchronous federated learning; semi asynchronous federated learning protocols for heterogeneous devices.",
+      "matched_requirement_id": "req-composite-fl-ra",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.11390v1",
+      "title": "SliceFed: Federated Constrained Multi-Agent DRL for Dynamic Spectrum Slicing in 6G",
+      "abstract": "Dynamic spectrum slicing is a critical enabler for 6G Radio Access Networks (RANs), allowing the coexistence of heterogeneous services. However, optimizing resource allocation in dense, interference-limited deployments remains challenging due to non-stationary channel dynamics, strict Quality-of-Service (QoS) requirements, and the need for data privacy. In this paper, we propose SliceFed, a novel Federated Constrained Multi-Agent Deep Reinforcement Learning (F-MADRL) framework. SliceFed formulates the slicing problem as a Constrained Markov Decision Process (CMDP) where autonomous gNB agents maximize spectral efficiency while explicitly satisfying inter-cell interference budgets and hard ultra-reliable low-latency communication (URLLC) latency deadlines. We employ a Lagrangian primal-dual approach integrated with Proximal Policy Optimization (PPO) to enforce constraints, while Federated Averaging enables collaborative learning without exchanging raw local data. Extensive simulations in a dense multi-cell environment demonstrate that SliceFed converges to a stable, safety-aware policy. Unlike heuristic and unconstrained baselines, SliceFed achieves nearly 100% satisfaction of 1~ms URLLC latency deadlines and exhibits superior robustness to traffic load variations, verifying its potential for reliable and scalable 6G spectrum management.",
+      "authors": [
+        "Hossein Mohammadi",
+        "Seyed Bagher Hashemi Natanzi",
+        "Ramak Nassiri",
+        "Jamshid Hassanpour",
+        "Bo Tang",
+        "Vuk Marojevic"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "eess.SY"
+      ],
+      "published": "2026-03-12T00:08:05+00:00",
+      "link": "https://arxiv.org/pdf/2603.11390v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "dynamic spectrum slicing and resource allocation in 6G RAN using Federated DRL",
+      "llm_evidence_cn": "利用联邦深度强化学习进行 6G 无线接入网的动态频谱切片和资源分配",
+      "llm_evidence": "利用联邦深度强化学习进行 6G 无线接入网的动态频谱切片和资源分配",
+      "canonical_evidence": "利用联邦深度强化学习进行 6G 无线接入网的动态频谱切片和资源分配",
+      "llm_tldr_en": "Proposes SliceFed for dynamic spectrum slicing to optimize resource allocation in 6G networks.",
+      "llm_tldr_cn": "提出 SliceFed 用于动态频谱切片，以优化 6G 网络中的资源分配。",
+      "llm_tldr": "提出 SliceFed 用于动态频谱切片，以优化 6G 网络中的资源分配。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "dynamic bandwidth allocation for federated learning clients",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.12591v1",
+      "title": "CA-HFP: Curvature-Aware Heterogeneous Federated Pruning with Model Reconstruction",
+      "abstract": "Federated learning on heterogeneous edge devices requires personalized compression while preserving aggregation compatibility and stable convergence. We present Curvature-Aware Heterogeneous Federated Pruning (CA-HFP), a practical framework that enables each client perform structured, device-specific pruning guided by a curvature-informed significance score, and subsequently maps its compact submodel back into a common global parameter space via a lightweight reconstruction. We derive a convergence bound for federated optimization with multiple local SGD steps that explicitly accounts for local computation, data heterogeneity, and pruning-induced perturbations; from which a principled loss-based pruning criterion is derived. Extensive experiments on FMNIST, CIFAR-10, and CIFAR-100 using VGG and ResNet architectures under varying degrees of data heterogeneity demonstrate that CA-HFP preserves model accuracy while significantly reducing per-client computation and communication costs, outperforming standard federated training and existing pruning-based baselines.",
+      "authors": [
+        "Gang Hu",
+        "Yinglei Teng",
+        "Pengfei Wu",
+        "Shijun Ma"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-13T02:45:00+00:00",
+      "link": "https://arxiv.org/pdf/2603.12591v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "structured device-specific pruning for heterogeneous edge devices in FL",
+      "llm_evidence_cn": "联邦学习中针对异构边缘设备的结构化设备特定剪枝",
+      "llm_evidence": "联邦学习中针对异构边缘设备的结构化设备特定剪枝",
+      "canonical_evidence": "联邦学习中针对异构边缘设备的结构化设备特定剪枝",
+      "llm_tldr_en": "CA-HFP optimizes resource usage in FL through curvature-aware heterogeneous pruning for edge devices.",
+      "llm_tldr_cn": "CA-HFP通过针对边缘设备的曲率感知异构剪枝，优化了联邦学习中的资源利用。",
+      "llm_tldr": "CA-HFP通过针对边缘设备的曲率感知异构剪枝，优化了联邦学习中的资源利用。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation optimization for semi asynchronous federated learning",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.13909v1",
+      "title": "FedPBS: Proximal-Balanced Scaling Federated Learning Model for Robust Personalized Training for Non-IID Data",
+      "abstract": "Federated learning (FL) enables a set of distributed clients to jointly train machine learning models while preserving their local data privacy, making it attractive for applications in healthcare, finance, mobility, and smart-city systems. However, FL faces several challenges, including statistical heterogeneity and uneven client participation, which can degrade convergence and model quality. In this work, we propose FedPBS, an FL algorithm that couples complementary ideas from FedBS and FedProx to address these challenges. FedPBS dynamically adapts batch sizes to client resources to support balanced and scalable participation, and selectively applies a proximal correction to small-batch clients to stabilize local updates and reduce divergence from the global model. Experiments on benchmarking datasets such as CIFAR-10 and UCI-HAR under highly non-IID settings demonstrate that FedPBS consistently outperforms state-of-the-art methods, including FedBS, FedGA, MOON, and FedProx. The results demonstrate robust performance gains under extreme data heterogeneity, with smooth loss curves indicating stable convergence across diverse federated environments. FedPBS consistently outperforms state-of-the-art federated learning baselines on UCI-HAR and CIFAR-10 under severe non-IID conditions while maintaining stable and reliable convergence.",
+      "authors": [
+        "Eman M. AbouNassara",
+        "Amr Elshalla",
+        "Sameh Abdulah"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.DC"
+      ],
+      "published": "2026-03-14T11:44:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.13909v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adapts batch sizes to client resources",
+      "llm_evidence_cn": "根据客户端资源动态调整批大小",
+      "llm_evidence": "根据客户端资源动态调整批大小",
+      "canonical_evidence": "根据客户端资源动态调整批大小",
+      "llm_tldr_en": "FedPBS adapts batch sizes to client resources to handle uneven participation and heterogeneity.",
+      "llm_tldr_cn": "FedPBS 根据客户端资源动态调整批大小，解决参与不均和统计异构性问题。",
+      "llm_tldr": "FedPBS 根据客户端资源动态调整批大小，解决参与不均和统计异构性问题。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation strategies for federated learning systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    }
+  ]
+}
