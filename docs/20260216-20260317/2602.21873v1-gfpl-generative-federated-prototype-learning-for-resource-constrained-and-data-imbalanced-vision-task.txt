@@ -1,0 +1,1184 @@
+Title: GFPL: Generative Federated Prototype Learning for Resource-Constrained and Data-Imbalanced Vision Task
+
+URL Source: https://arxiv.org/pdf/2602.21873v1
+
+Published Time: Thu, 26 Feb 2026 02:01:52 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# GFPL: Generative Federated Prototype Learning for Resource-Constrained and Data-Imbalanced Vision Task 
+
+Shiwei Lu 1,2, Yuhang He 1, Jiashuo Li 1, Qiang Wang 1, Yihong Gong 1 *
+
+> 1
+
+Xi’an Jiaotong University  
+
+> 2
+
+Air Force Engineering University 
+
+Abstract 
+
+Federated learning (FL) facilitates the secure utilization of decentralized images, advancing applications in medical image recognition and autonomous driving. However, con-ventional FL faces two critical challenges in real-world de-ployment: ineffective knowledge fusion caused by model up-dates biased toward majority-class features, and prohibitive communication overhead due to frequent transmissions of high-dimensional model parameters. Inspired by the hu-man brain’s efficiency in knowledge integration, we propose a novel Generative Federated Prototype Learning (GFPL) framework to address these issues. Within this framework, a prototype generation method based on Gaussian Mixture Model (GMM) captures the statistical information of class-wise features, while a prototype aggregation strategy using Bhattacharyya distance effectively fuses semantically similar knowledge across clients. In addition, these fused prototypes are leveraged to generate pseudo-features, thereby mitigat-ing feature distribution imbalance across clients. To further enhance feature alignment during local training, we devise a dual-classifier architecture, optimized via a hybrid loss combining Dot Regression and Cross-Entropy. Extensive ex-periments on benchmarks show that GFPL improves model accuracy by 3.6% under imbalanced data settings while maintaining low communication cost. 
+
+1. Introduction 
+
+The proliferation of Internet of Things ( IoT ) devices gener-ates massive multi-sensor heterogeneous data streams, en-abling environment-aware intelligence via deep learning. However, privacy concerns and prohibitive communication costs create fragmented data silos, preventing centralized cu-ration. Federated Learning ( FL ) emerges as a decentralized alternative, coordinating distributed model training through parameter exchange rather than raw data sharing. Despite preliminary success in IoT applications [ 2 , 20 , 53 ], two per-
+
+> *Corresponding author
+
+sistent challenges hinder practical FL deployment: (1) inef-fective knowledge fusion under prevalent imbalanced and non-IID data distributions [ 8, 55 ], and (2) inefficient train-ing caused by parameter-various model interactions [ 7 , 43 ]. Specifically, traditional parameter aggregation induces gradi-ent conflicts under data shifts, compromising global model convergence, and frequent high-dimensional parameter trans-mission severely strains resource-constrained IoT environ-ments. These dual constraints fundamentally limit current FL frameworks in real-world deployments. Current approaches to federated knowledge integra-tion, such as regularization constraints [ 49 ] and knowl-edge distillation[ 52 ], attempt to mitigate parameter di-vergence through model alignment or logit-based knowl-edge transfer. However, these methods either incur pro-hibitive communication overhead from continuous param-eter transmission[ 19 , 30 ] or introduce secondary data col-lection challenges for output space calibration[ 14 ]. Draw-ing inspiration from generative learning[ 4 ] and prototype learning[ 39 ], we propose Generative Federated Prototype Learning (GFPL) – a communication-efficient paradigm that achieves cross-client knowledge fusion through prototype interaction while eliminating model parameter transmission. The core insight stems from two biological analogies: 
+
+Distributed concept refinement: Mirroring human cog-nitive mechanisms where object concepts evolve through prototype interaction (e.g., forming the enriched prototype ”blue-small/large-wheeled” for ”car” by merging local pro-totypes from ”sky blue-small-wheeled” and ”ocean blue-large-wheeled”, GFPL enhances knowledge fusion effects via prototype generation and interaction. 
+
+Generative concept augmentation: Emulating the hu-man ability to instantiate abstract prototypes as concrete mental images, GFPL leverages prototype-driven generation method to convert global class prototypes into diversified pseudo-features across client devices, mimicking neurocog-nitive materialization processes. Our main contributions are summarized as follows: (1) We devised a Gaussian Mixture Model-based proto-type generation mechanism and a Bhattacharyya distance-1
+
+> arXiv:2602.21873v1 [cs.CV] 25 Feb 2026
+
+driven prototype fused method in visual FL to ensure secure and effective cross-client information interaction with mini-mal communication overhead (2) To address the challenge of feature shift caused by imbalanced data, we designed a dual-classifier structure and a hybrid loss function for local training. This design syn-chronously aligns distributed features with both predefined vectors and class labels, which effectively enhances both the global consistency of intra-class features and the global separability of inter-class features. (3) To enhance model generalization, we developed a pseudo-feature generation method to retrain the projection layer within the dual-classifier structure. By integrating all proposed components, a novel Generative Federated Pro-totype Learning (GFPL) framework and algorithm were proposed. Extensive experiments demonstrate that GFPL achieves the highest average test accuracy with the lowest communication cost. 
+
+2. Related Work 
+
+2.1. The knowledge fusion of imbalanced data in FL 
+
+IoT-generated data distributions exhibit significant hetero-geneity due to diverse preferences and collection environ-ments of clients, leading to substantial parameter divergence between locally trained models in FL and hindering effec-tive aggregation of the global model. In FL, knowledge fu-sion from imbalanced data seeks to distill distributed knowl-edge into a unified global model, which has better gener-alization capabilities than local models trained by clients. Recent advances address this challenge through three pri-mary approaches: (1) Data-level: mitigate source imbal-ance through distribution enhancement, including data aug-mentation/synthesis [ 4, 14 ] and self-supervised pretraining [23 ]; (2) Model-level: adapt to data heterogeneity via struc-tural/training innovations, featuring model personalization [ 38 , 39 ], dynamic parameter pruning [ 46 ], knowledge dis-tillation [ 48 , 52 ], and feature decoupling-alignment [ 55 ]; (3) Framework-level: strengthen system robustness through architectural improvements, such as adaptive optimization [ 17 ], meta learning [ 45 ], client clustering [ 10 ], and hybrid FL paradigms [27]. 
+
+2.2. Prototype learning 
+
+Rooted in cognitive psychology, prototype theory posits that humans abstract category concepts through typical feature aggregation-a mechanism mirroring feature extraction pro-cesses of deep learning [ 37 , 54 ]. As an interpretable repre-sentation paradigm, prototype learning constructs abstract representations of typical samples, demonstrating cross-domain knowledge representation capabilities [ 15 ], such as category centroids via feature vector averaging in Com-puter Vision (CV) field [39, 50], semantic intent prototypes through query clustering in dialogue systems of Natural Lan-guage Processing (NLP) [ 12 , 40 ], and heterogeneous data alignment bridges [ 28 , 41 ] in Cross-Modal Learning, exem-plified by contrastive image-text prototype space of CLIP [ 31 ]. In FL, FedProto [ 39 ] pioneers prototype integration by aggregating class centroids of features into class-specific global prototypes. However, weighted averaging of hetero-geneous client prototypes risks dominance by low-quality instances and limits class representation fidelity. Thus, en-hancing prototype robustness becomes critical for addressing data imbalance in FL systems. 
+
+2.3. Generative learning 
+
+Generative learning addresses data scarcity and class im-balance by modeling data distributions to synthesize sam-ples/features, enhancing model generalization through im-plementations like few-shot learning with pseudo-sample generators trained on base-class data [ 42 ] and novel-class generation via semantic embeddings [ 44 ]. Breakthroughs in generative models, including StyleGAN [ 18 ], GPT [ 33 ], and DeepSeek [ 11 ], have enabled high-fidelity image/text synthesis. In FL, these techniques facilitate knowledge shar-ing via server-side pretrained generators [ 51 , 56 ] or local knowledge distillation for task-relevant image construction [16]. However, current approaches face limitations, such as dependency on auxiliary datasets, conflicts between model transmission and communication overhead, and potential privacy risks from synthetic data. 
+
+3. Problem setting 
+
+3.1. Knowledge fusion of imbalanced data in feder-ated learning 
+
+In FL with m clients, each client possesses a private dataset 
+
+Di drawn from a distribution Pi(x, y ), where x, y denotes an input sample and its labels. During initialization of a supervised learning task, clients download a unified global model F(ω, ·) from the server, which comprises a feature ex-tractor f (ω1, ·) and a classifier g(ω2, ·) , and ω = ( ω1, ω 2)
+
+is the model parameters (e.g. Convolutional Neural Net-works(CNN) model). For an input x, the feature embedding 
+
+f (ω1, x ) ∈ Rd is processed by the classifier to generate predictions g(ω2, f (ω1, x )) , where d is the dimension of flat-ten feature. Clients locally optimize their models via loss function Llocal (e.g., cross-entropy) with {Di}i∈[m]. The classical FedAvg framework [34] aims to minimize:     
+
+> Lgloal = arg min
+> ωmX
+> i=1
+> |Di|
+> NLlocal (F(ω;x), y ),(1)
+
+where N is the total samples across clients. Generally, Fe-dAvg can obtain an effective global model when distribu-tions {Pi(x, y )}i∈[m] are Independent and Identically Dis-tributed(IID). However, in reality each client collects data 2from different scenarios, which makes Pi varies between clients and exacerbates global imbalance of FL. In addition, resource-constrained devices (e.g., sensors, smartphones) suffer from limited computation, storage, and communica-tion bandwidth. While conventional methods [ 24 , 34 , 55 ]improve knowledge fusion via model-weighted aggregation, they incur prohibitive communication overhead and stor-age costs. To address these challenges, we propose a dual-classifier structure for local training and a novel prototype generation and interaction method, where the former aims to align intra-class features of {Di}i∈[m] and the latter is designed to enhance model generalization by pseudo-feature generation. 
+
+3.2. Classifier with equiangular tight frame (ETF) 
+
+Drawing from Neural Collapse(NC) theory [ 35 ], revealing that features under IID data conditions collapse into symmet-ric geometric structures, where class embeddings become maximally separable and equidistant. Inspired by this the-ory, we introduce a predefined ETF classifier to enforce alignment of distributed features to the corresponding ETF vectors. Furthermore, intra-class consistency and inter-class discriminability of features can be enhanced, effectively ad-dressing challenges such as feature/label shift across clients. 
+
+Definition (simple equiangular tight frame) : for a clas-sification task with K classes, its ETF classifier can be de-signed by:           
+
+> M=
+> rKK−1U
+> 
+> IK−1
+> K1K1TK
+> 
+> ,(2)
+
+where M = [ m1, . . . , mK ] ∈ Rd×K , U ∈ Rd×K is a matrix where column vectors are orthogonal and satisfy 
+
+UT U = IK , IK is the identity matrix, and 1K is an all-ones vector. Each vector in the simple ETF has an equal ℓ2
+
+norm and the same pair-wise angle, i.e.,                
+
+> mTimj=KK−1δi,j −1
+> K−1,∀i, j ∈[1 , . . . , K ],(3)
+
+where δi,j = 1 when i = j and 0 otherwise.The pair-wise angle − 1 
+
+> K−1
+
+is the maximal equiangular separation of K
+
+vector in Rd.
+
+3.3. Gaussian Mixture Model (GMM) 
+
+GMM[ 36 ] is a probability-based generative model for mod-eling complex data distributions. Theoretically, GMM can fit arbitrarily complex distributions. The core idea is to approx-imate an arbitrary continuous probability density function through a linear combination of multiple Gaussian distri-butions. Generally, a GMM model consists of n Gaussian distributions (or components), and the parameters of each component include the mean μi, covariance matrix Σi and weight πi. The probability density function of GMM is:        
+
+> p(x) =
+> nX
+> i=1
+> πi· N (x|μi,Σi),(4)
+
+where πi ≥ 0, Pni=1 πi = 1 , and N represents the Gaus-sian distribution. GMM parameters are estimated by an Expectation-Maximization (EM) algorithm, which is divided into two steps, 
+
+E step: Calculate the posterior probability with Eq. 5 that data point xj belongs to i-th component                 
+
+> γij =πiN(xj|μi,Σi)
+> Pnk=1 πkN(xj|μk,Σk).(5)
+
+M step: According to γij update parameters:              
+
+> πi=Ni
+> N ,μi=
+> PNi=1 γij xj
+> Ni
+> ,
+> Σi=
+> PNi=1 γij (xj−μi)( xj−μi)⊤
+> Ni
+> ,
+> (6)
+
+where Ni = PNi=1 γij . The EM algorithm needs to be iterated until it converges. We employ GMM to model the feature distributions within the same class, thereby obtaining statistical information of intra-class features. 
+
+3.4. Bhattacharyya Distance 
+
+The Bhattacharyya Distance is for quantifying the similarity between two probability distributions. For two univariate Gaussian distributions N (μ1, σ 21 ) and N (μ2, σ 22 ), the Bhat-tacharyya Distance has a closed-form solution:         
+
+> DB= 14(μ1−μ2)2
+> σ21+σ22
+> + 12 ln
+> σ21+σ22
+> 2σ1σ2
+> 
+> (7)
+
+For multivariate Gaussian distributions N (μ1, Σ1) and 
+
+N (μ2, Σ2), the Bhattacharyya Distance is given by:         
+
+> DB= 18 (μ1−μ2)⊤Σ−1(μ1−μ2)+ 12 ln
+> det Σ
+> √det Σ1det Σ2
+> 
+> (8)
+
+where Σ = Σ1+Σ2 
+
+> 2
+
+. By setting a threshold C, components from different GMMs can be merged. 
+
+4. Methodology 
+
+We present a Generative Federated Prototype Learning (GFPL) framework addressing ineffective knowledge fu-sion and prohibitive communication overhead in FL through two innovative components: 1) A Dual-Classifier Struc-ture (DCS) for cross-client feature alignment, and 2) A 
+
+Pseudo Feature Generation (PFG) mechanism enhanced by our prototype generation and interaction protocol. As illustrated in Fig.1, consider a FEMNIST image classifica-tion task [ 3] with skewed digit distributions across clients, each client derives class-wise prototypes via GMM from local features. The server aggregates overlapping prototypes (e.g., digit 5 from multiple clients) through concatenation while preserving unique ones (e.g., digits 0/1) to form global prototypes. These unified global prototypes enable clients to generate balanced pseudo-features for underrepresented 3Client 1           
+
+> ETF Classifier
+> …
+> …
+> …
+> Central Server ˆyyCE DR ˆyy
+> Client n
+> ETF Classifier ===
+> (a) Prototype generation and interaction
+> GMM
+> GMM DR CE ˆpso ypso y
+> GMM1 GMM2 GMM3
+> (b) PFG and projection layer retraining
+> Feature
+> Local prototype
+> Feature projection
+> Projection layer for ETF
+> ETF Classifier DR CE
+> Global prototype
+> Pseudo -feature
+> Full -connection layer Feature extractor
+
+Figure 1. Generative Federated Prototype Learning (GFPL):(a) the client trains feature extractor, projection layers through local data, while generating local prototypes with GMM and uploading them to the server for prototype interaction; (b) After receiving global prototypes, the client replaces local prototypes with global prototypes and further generates balanced pseudo features through GMM sampling, thereby retraining the model projection layer. 
+
+classes, effectively mitigating ineffective knowledge fusion from imbalanced data through projection layer retraining, while maintaining communication efficiency via lightweight prototype transmission. 
+
+4.1. Feature Alignment with the Dual-Classifier Structure (DCS) 
+
+In data-imbalanced FL scenarios, the difficulty in cross-client feature alignment has resulted in ineffective knowl-edge fusion. Although federated prototype learning (Fed-proto) [ 39 ] addresses this by aligning local features to global prototypes (class centroids), its reliance on frequent pro-totype interaction incurs communication overhead. Thus, such a question arises: can we achieve cross-client feature alignment without incurring communication overhead? 
+
+Building on neural collapse theory in imbalanced learning [ 47 ], we address above problem in FL where a predefined Equiangular Tight Frame (ETF) classifier is designed to en-hance intra-class consistency and inter-class separability of cross-client features. Although recent work [ 25 ] integrated ETF into FL for knowledge fusion through model aggre-gation, none explore their synergy with prototype-based methods. Thus, we propose a dual-classifier structure to embed ETF into CNN, coupled with a hybrid loss function for local training, which mitigates feature misalignment of imbalanced data without incurring communication overhead. 
+
+Construction of ETF classifier: For a K classification task, we first generate a random matrix A ∈ Rd×K , where d
+
+is the dimension of feature and d > K . Afterwards, compute the reduced QR decomposition of the matrix A:
+
+A = QR , (9) 
+
+where Q = [ q1, q2, ..., qK ] ∈ Rd×K is a matrix where column vectors are orthogonal and satisfy QT Q = IK , and 
+
+R is an upper triangular matrix. Then, we generate the ETF classifier Z using Q:
+
+Z =
+
+r KK − 1 Q
+
+
+
+IK − 1
+
+K 1K 1TK
+
+
+
+, (10) 
+
+where Z = [ z1, . . . , zK ] ∈ Rd×K is the concatenated matrix of K column vectors and each vector zi ∈ Rd×1 has the same dimension with the feature. 
+
+Modification of the model architecture: The ETF classi-fier is designed to align diverse features to predefined ETF vectors, facilitating knowledge fusion and enhancing separa-bility between distinct knowledge. However, conventional neural networks (e.g., CNNs) typically produce sparse fea-ture vectors (with many zero-valued dimensions) due to ReLU activations, whereas ETF vectors are inherently dense. To bridge this gap, a learnable projection layer l(ω3, ·) is appended after the feature extractor [ 25 ]. For an input x, the process first extracts its feature f (ω1, x ), then projects it into the ETF-aligned space and normalizes output ˆh to obtain feature projection h:
+
+h = ˆh/∥ˆh∥2, ˆh = l(w3, f (ω1, x )) , (11) 
+
+where w1 and w3 are parameters of feature extractor and ETF projection layer. 
+
+Dot regression loss for ETF classifier : Neural collapse theory suggests that features of balanced data converge to class prototypes, which further collapse to their correspond-ing ETF vectors in the final training phase. To leverage this theory, we designs a dot regression loss for ETF classifier: 
+
+LDR (h, Z) = 12
+
+
+
+hTc zc − 1
+
+2
+
+, (12) 
+
+where c is the label of h and Z is the predefined ETF classi-fier. Since h and zc are normalized vectors, the dot product 4between these two vectors is equal to 1 when hc collapses to zc.
+
+Design of the dual-classifier structure: In centralized learning, ETF has proven effective in replacing learnable classifiers to mitigate performance degradation under im-balanced data[ 47 ]. However, simply using ETF projection 
+
+l(ω3, ·) and dot regression loss fails to ensure feature sepa-rability. As illustrated in Fig.2, despite feature projections alignment with ETF vectors under LDR , discriminability be-tween classes in low-dimensional space remains suboptimal. To address this, we integrate cross-entropy loss LCE with the existing dot regression loss through dual-classifier collab-oration, an ETF classifier l(ω3, ·) and a trainable classifier 
+
+g(ω2, ·). The hybrid loss function is thus formulated as: 
+
+Ltrain (h, Z, g, yc) = λLDR (h, Z) + LCE (g, yc), (13) 
+
+where g = g(ω2, f (ω1, x)) , yc is the label set of inputs x
+
+and λ is the hyperparameter. Compared with Fig.2a and Fig.2b, we can observe that 
+
+LCE enhances feature separability. In addition, experimen-tal results demonstrate that models trained with objective Eq.(13) achieve superior performance (average accuracy on CIFAR10 = 0.732) over FedProto (0.725)[ 39 ], despite elimi-nating class prototype exchange. This implies local optimiza-tion with Eq.(13) suffices to outperform federated prototype learning. Consequently, we propose a critical research ques-tion: What constitutes essential information exchange in federated prototype learning? 60 40 20 0 20 40                  
+
+> 60
+> 40
+> 20
+> 0
+> 20
+> 40
+> 60 9
+> 1
+> 0
+> 4
+> (a) 60 40 20 020 40
+> 40
+> 20
+> 0
+> 20
+> 40
+> 60
+> 9
+> 1
+> 0
+> 4(b) 40 20 020 40
+> 40
+> 20
+> 0
+> 20
+> 40
+> 9
+> 1
+> 0
+> 4
+> (c) 40 20 020 40 60 40
+> 20
+> 020 40 9104(d)
+
+Figure 2. Visualization of features and projections under different loss functions: (a) only LDR (features); (b) LDR +LCE (features); (c) only LDR (projections); (d) LDR + LCE (projections) 
+
+Recall that FedProto [ 39 ] employs prototype alignment (local-to-global) to enhance local learning capacity, yet its generalization remains constrained by limited local data/feature. Although many studies [ 5, 26 , 32 ] demonstrate that data generation methods can improve the generalization performance of local training (e.g., generating the similar data as client m at client 1), conventional data generation methods like GANs[ 4] and diffusion models[ 22 ] often suf-fer from fidelity-privacy trade-offs. To address this, GFPL introduces a prototype interaction and pseudo-feature gen-eration mechanism to enhance model generalization while preserving data privacy. 
+
+4.2. Improving model generalization with Pseudo Feature Generation (PFG) 
+
+The purpose of pseudo feature generation is to generate diverse and uniform features to retrain projection layers of DCS, enabling diversified features mapping to ETF vectors. 
+
+Prototype generation and interaction :Given input x ∈
+
+RC×W ×H , the feature extractor generates f (ω1, x ) ∈ Rd.Let C = {Ci}i∈[m] denote the total class set, where client i
+
+has Ni,j samples for class j. We employ a GMM with n com-ponents to fit the class feature distributions and form the local prototype Pi,j for class j at the client i with (μi,j , σi,j , πi,j ),where μi,j ∈ Rd×n is the mean matrix, σi,j ∈ Rd×n is the standard deviation, πi,j contains the probability of each GMM component. Thus, Pi,j encodes statistical characteris-tics of class j at the client i.To achieve effective interaction and integration of knowl-edge, client i uploads all local prototypes {Pi,j }j∈Ci to the server. Having received all prototypes {Pi,j }i∈[m],j ∈Ci , the server forms the global prototype {PG,j }of class j with Al-gorithm 1. Without loss of generality, we denote {PG,j }
+
+as PG. Specifically, the local prototypes of the same class will be fused based on the Bhattacharyya distance. Proto-types with a distance smaller than the threshold SC will undergo a weighted average, while those with a distance greater than SC will be retained, thereby generating a new global prototype for each class. 
+
+Projection layer retraining with PFG : After acquir-ing global prototypes PG, clients employ them to generate balanced pseudo features by replacing local GMM param-eters (μi, σi, π i)i∈[m] with PG. For each class j ∈ C, we sample r pseudo-features fj = {fj, 1, f j, 2, ..., f j,r } from the updated GMM with Eq.(4), ensuring pseudo-features of each class balanced. Afterwards, these shuffled features are batched into B and fed into DCS for retraining g and h with the retaining loss: 
+
+Lretrain (˜h, Z, ˜g, yc) = λLDR (˜h, Z) + LCE (˜ g, yc),
+
+˜h = ˆh/∥ˆh∥2, ˆh = h(w3, fj ), ˜g = g(w2, fj ). (14) 
+
+GFPL strategically defers PFG and projection retraining until round t1, allowing feature extractors to remain frozen. Although this delayed PFG postpones prototype interaction, it effectively reduces communication overhead while main-taining learning efficiency. Furthermore, to further minimize communication costs, a projection retraining interval param-eter ST is introduced. Specifically, prototype interaction and 5projection retraining are performed once every ST rounds, thereby reducing the number of communication rounds from the original T to ⌊T /S T ⌋, which significantly cuts down the overall system communication overhead. The detailed procedure of GFPL is summarized in Algorithm 2. For the convergence proof of GFPL, see Appendix A. 
+
+Algorithm 1 Prototype Fusion using Bhattacharyya Distance 
+
+Require: Local prototypes U ← { Pi,j }j∈C, threshold SC 
+
+> 1:
+
+Initialize PG ← ∅ , cluster set C ← ∅  
+
+> 2:
+
+while U̸ = ∅ do  
+
+> 3:
+
+Select pseed from U, Ccurrent ← { pseed }, U ← U \ { pseed } 
+
+> 4:
+
+repeat  
+
+> 5:
+
+N ← { p ∈ U | DB (p, p ′) < S C , ∀p′ ∈ C current } 
+
+> 6:
+
+if N = ∅ then break  
+
+> 7:
+
+end if  
+
+> 8:
+
+Ccurrent ← C current ∪ N , U ← U \ N  
+
+> 9:
+
+until no new prototypes added  
+
+> 10:
+
+C ← C ∪ {C current } 
+
+> 11:
+
+end while  
+
+> 12:
+
+for each cluster Ci ∈ C do  
+
+> 13:
+
+wfused = P 
+
+> j∈C i
+
+wj 
+
+> 14:
+
+μfused = 1
+
+> wfused
+
+P 
+
+> j∈C i
+
+wj μj 
+
+> 15:
+
+Σfused = 1
+
+> wfused
+
+P 
+
+> j∈C i
+
+wj
+
+Σj + ( μj − μfused )( μj − μfused )T  
+
+> 16:
+
+PG ← PG ∪ { (μfused , Σfused , w fused )} 
+
+> 17:
+
+end for  
+
+> 18:
+
+return PG
+
+Algorithm 2 GFPL 
+
+Require: Client datasets {Di}mi=1 , weights {wi}mi=1 , T, S T , t 1
+
+Server executes:  
+
+> 1:
+
+Initialize global ETF Z via Eq.(10), global prototype PG 
+
+> 2:
+
+for each round t = t1, · · · , T do  
+
+> 3:
+
+for each client i in parallel do  
+
+> 4:
+
+{Pi,j }j∈C ← LocalUpdate (i, Z, PG) 
+
+> 5:
+
+end for  
+
+> 6:
+
+PG ← PrototypeFusion ({Pi,j }j∈C) 
+
+> 7:
+
+Update local prototypes {Pi,j }j∈C with PG 
+
+> 8:
+
+end for LocalUpdate:  
+
+> 9:
+
+for each local epoch E do  
+
+> 10:
+
+for each batch (xj , y j ) ∈ Di do  
+
+> 11:
+
+Compute Ltrain via Eq.(13)  
+
+> 12:
+
+Update extractor and classifier using Ltrain  
+
+> 13:
+
+if t ≥ t1 and t mod ST = 0 then  
+
+> 14:
+
+Generate pseudo features via Eq.(4)  
+
+> 15:
+
+Compute Lretrain via Eq.(14)  
+
+> 16:
+
+Update projection layer using Lretrain  
+
+> 17:
+
+end if  
+
+> 18:
+
+Generate local prototypes {Pi,j }j∈C via Eq.(5) and (6)  
+
+> 19:
+
+end for  
+
+> 20:
+
+end for  
+
+> 21:
+
+return {Pi,j }j∈C
+
+Privacy preserving: Instead of exchanging model parameter, GFPL only uploads local prototypes to the server, generated with low-dimension representation of samples.In Appendix B, we provide rigorous proofs for information-theoretic impossibility of feature reconstruc-tion and optimization-theoretic impossibility of data recon-struction. Thus, the training process is reliability for model invisibility and prototype-to-data irreversibility. 
+
+5. Experiments 
+
+5.1. Experiments setup 
+
+Dataset and model architecture: We assume that there are 
+
+m = 20 clients and 1 server involved in FL and consider image classification task adopting three popular benchmark datasets: MNIST [ 9] (10 classes), FEMNIST [ 3 ] (62 classes), CIFAR10 [ 21 ] (10 classes) and CIFAR100 [ 21 ] (100 classes). A multi-layer CNN which consists of 2 convolutional layers then 2 fully connected layers is for both MNIST and FEM-NIST, and ResNet18 [ 13 ] is for CIFAR10 and CIFAR100. To meet the generation conditions of ETF ( d > K ), we set 
+
+d = 50 , 80 , 128 , 128 respectively for MNIST, FEMNIST, CIFAR10, and CIFAR100 which corresponds to the output dimension of the feature extractor. 
+
+Imbalanced dataset scenarios: Consistent with the Fed-Proto setting[ 39 ], we borrow the concept of w-way s-shot from few-shot learning where w controls the number of classes and s controls the number of instances per class. To simulate imbalanced data scenarios, we define the average values ¯w and ¯s, and the variances ˆw and ˆs, where ˆw and ˆs
+
+control the degree of label skew and feature skew. 
+
+Baselines: We compare the performance of GFPL with baselines under imbalanced data setting, including local training with CE loss, FedAvg[ 34 ], FedProx[ 24 ], FeSEM [29 ], FedPer [ 1], FedRep [ 6], FedProto[ 39 ], FedFA[ 55 ] and FedPA[16]. 
+
+Hyperparameters: All experiments are conducted on 1 workstation configured with RTX 3090-24G GPU, 10-core Intel(R) i9-10900K 3.70GHz CPU, 5TB SSD, 64GB RAM. We implement GFPL and the baselines in PyTorch, where hyperparameter λ = 2 unless otherwise stated. The number of components in each GMM n = 4 and the pseudo-feature number of each class r = 16 . Projection retraining interval parameter ST = 10 and t1 = 10 . A detailed setup of other hyperparameters is given in Appendix C. 
+
+5.2. Performance analysis under imbalanced data 
+
+Comparative study: We conduct experiments on GFPL and baselines under imbalanced data, where ¯s is fixed. The aver-age test accuracy over all clients is shown in Table 1. We can conclude that GFPL not only obtains the highest accuracy on benchmark datasets, but also reaches convergence the fastest (besides local training). Obviously, GFPL improves the high-6Table 1. Comparison of Federated Learning Algorithms 
+
+Dataset Method ( ˆ w, ˆs)
+
+Average Test Accuracy(%) Comm. Round Comm. Param. 
+
+(×10 3)¯w = 3 ¯w = 4 ¯w = 5 
+
+MNIST Local (2,2) 94.05 ±2.93 93.35 ±3.26 92.92 ±3.17 0 0FeSEM (2020) (2,2) 95.26 ±3.48 97.06 ±2.72 96.31 ±2.41 150 430 FedProx (2020) (2,2) 96.26 ±2.89 96.40 ±3.33 95.65 ±3.38 110 430 FedPer (2019) (2,2) 95.57 ±2.96 96.44 ±2.62 95.55 ±3.13 100 106 FedAvg (2017) (2,2) 95.04 ±6.48 94.32 ±4.89 93.22 ±4.39 150 430 FedRep (2021) (2,2) 94.96 ±2.78 95.18 ±3.80 94.94 ±2.81 100 110 FedProto (2022) (2,2) 97.13 ±0.30 96.80 ±0.41 96.70 ±0.29 100 4FedFA (2023) (2,2) 95.33 ±1.24 95.67 ±1.88 95.32 ±1.98 110 430 FedPA (2024) (2,2) 96.36 ±0.33 95.48 ±0.59 94.82 ±0.43 120 504 
+
+GFPL(ours) (2,2) 98.91 ±0.22 98.01 ±0.32 97.83 ±0.21 80 2FENNIST Local (1,1) 92.50 ±10.42 91.16 ±5.64 87.91 ±8.44 0 0FeSEM (2020) (1,1) 93.39 ±6.75 91.06 ±6.43 89.61 ±7.89 200 16,000 FedProx (2020) (1,1) 94.53 ±5.33 90.71 ±6.24 91.33 ±7.32 300 16,000 FedPer (2019) (1,1) 93.47 ±5.44 90.22 ±7.63 87.73 ±9.64 250 102 FedAvg (2017) (1,1) 94.50 ±5.29 91.39 ±5.23 90.95 ±7.22 300 16,000 FedRep (2021) (1,1) 93.36 ±5.34 91.41 ±5.89 89.98 ±6.88 200 102 FedProto (2022) (1,1) 96.82 ±1.75 94.93 ±1.61 93.67 ±2.23 120 4FedFA (2023) (1,1) 94.16 ±2.26 92.67 ±3.85 91.32 ±4.77 160 16,000 FedPA (2024) (1,1) 95.27 ±1.99 94.42 ±2.35 92.76 ±2.87 180 18,000 
+
+GFPL(ours) (1,1) 97.56 ±1.65 96.48 ±1.52 94.78 ±1.77 110 2CIAFR10 Local (1,1) 67.72 ±9.45 55.62 ±7.15 51.64 ±6.57 0 0FeSEM (2020) (1,1) 68.19 ±3.31 64.40 ±3.23 62.17 ±3.51 120 235,000 FedProx (2020) (1,1) 71.25 ±2.44 67.20 ±1.31 64.19 ±2.23 150 235,000 FedPer (2019) (1,1) 72.38 ±4.58 66.73 ±4.59 64.21 ±4.27 130 235,000 FedAvg (2017) (1,1) 69.72 ±2.77 64.77 ±2.37 63.74 ±2.61 150 235,000 FedRep (2021) (1,1) 69.44 ±10.48 64.93 ±7.46 61.36 ±7.04 110 235,000 FedProto (2022) (1,1) 72.49 ±1.97 67.12 ±2.03 65.08 ±1.98 110 41 FedFA (2023) (1,1) 71.11 ±2.78 66.23 ±3.45 63.25 ±4.98 140 235,000 FedPA (2024) (1,1) 70.24 ±2.33 65.98 ±2.94 63.48 ±2.87 160 236,000 
+
+GFPL(ours) (1,1) 74.23 ±1.60 70.22 ±1.78 68.72 ±1.33 100 33 CIAFR100 Local (2,2) 56.22 ±9.77 52.51 ±8.75 50.33 ±10.77 0 0FeSEM (2020) (2,2) 62.15 ±4.22 61.52 ±4.44 63.26 ±3.21 120 235,000 FedProx (2020) (2,2) 61.23 ±3.24 64.11 ±2.33 64.33 ±2.33 130 235,000 FedPer (2019) (2,2) 67.34 ±3.58 62.35 ±3.59 62.54 ±4.55 120 235,000 FedAvg (2017) (2,2) 66.23 ±4.27 61.48 ±3.35 62.76 ±2.44 140 235,000 FedRep (2021) (2,2) 68.27 ±7.43 62.64 ±7.68 63.56 ±7.23 120 235,000 FedProto (2022) (2,2) 67.76 ±2.88 66.56 ±2.33 64.88 ±1.56 110 41 FedFA (2023) (2,2) 67.01 ±2.48 65.11 ±3.55 64.21 ±4.37 140 235,000 FedPA (2024) (2,2) 65.24 ±2.52 62.78 ±2.04 63.43 ±2.26 150 236,000 
+
+GFPL(ours) (2,2) 70.11 ±1.10 68.32 ±1.23 67.23 ±1.55 80 20 
+
+Table 2. The effectiveness of GFPL’s components in performance improvements of CIFAR10 
+
+Variant CIFAR10( ˆs = 1 ) CIFAR10( ˆs = 20 ) FEMNIST( ˆs = 1 ) FEMNIST( ˆs = 20 ) CIFAR100( ˆs = 1 ) CIFAR100( ˆs = 20 )GFPL w/o DCS and PFG 55.62 ±7.15 54.23 ±9.88 91.16 ±5.64 90.22 ±7.84 53.51 ±8.75 50.31 ±9.84 GFPL w/o DCS 64.47 ±3.36 63.28 ±5.77 93.25 ±4.22 92.33 ±6.22 62.34 ±6.33 60.63 ±7.23 GFPL w/o PFG 67.24 ±2.88 66.01 ±3.95 94.37 ±3.43 92.74 ±3.88 67.01 ±4.31 66.21 ±5.44 GFPL(Ours) 70.22 ±1.78 68.64 ±2.55 96.48 ±1.52 94.82 ±2.85 70.33 ±1.12 68.26 ±2.02 
+
+est average test accuracy by 3.6% on CIFAR10 dataset. The error bars are presented in Appendix C. 
+
+Ablation study: To validate the effectiveness of each component in GFPL, we conduct ablation studies on three datasets, with results summarized in Table 2 ( ¯w = 4 , ˆw = 1 ,
+
+¯s = 100 ). Compared to the baseline ”GFPL w/o DCS and PFG” – local training with a single classifier using only LCE 
+
+– both ”GFPL w/o PFG” (dual-classifier training with Ltrain 
+
+in Eq.(13)) and ”GFPL w/o DCS” (single-classifier training with pseudo-feature generation) achieve significant improve-ments across all settings. Furthermore, by integrating both DCS and PFG, GFPL attains the highest test accuracy in every setting, underscoring the essential role of these two components in the proposed framework. 
+
+Performance influence of hyperparameters: Fig.3 ana-lyzes the impact of hyperparameters λ, n, and ¯s on MNIST. As Fig.3a shows, accuracy rises sharply from 0.9405 to 
+
+0.9891 as λ increases from 0 to 2, confirming the effec-tiveness of the LDR loss in Eq.( 12 ). Fig.3b indicates that the component count n peaks at 8. This phenomenon is attributed to the fact that insufficient components (small n)fail to capture complex feature distributions, leading to un-70 1 2 3 4         
+
+> 0.94
+> 0.95
+> 0.96
+> 0.97
+> 0.98
+> 0.99
+> Average test acc (a) 0510 15
+> n
+> 0.97
+> 0.97
+> 0.98
+> 0.98
+> 0.99
+> Average test acc (b) 20 40 60 80 100
+> s
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Average test acc
+> GFPL
+> FedProto
+> FedAvg (c)
+
+Figure 3. The influence of hyperparameters on model performance: (a) λ; (b) GMM commponent number; (c)The average of shot. 0.0 2.5 5.0 7.5 10.0 12.5          
+
+> w
+> 45
+> 50
+> 55
+> 60
+> Average test acc
+> GFPL
+> FedProto
+> FedAvg
+> (a) 510 15 20
+> ST
+> 60
+> 65
+> 70
+> 75
+> 80
+> Average test acc (b) 0510 15 20
+> t1
+> 60
+> 65
+> 70
+> 75
+> 80
+> Average test acc (c)
+
+Figure 4. The influence of hyperparameters on model performance: (a) ˆw; (b)Retraining interval; (c)Initial round of prototype interaction 
+
+derfitting, while excessive components (large n) may overfit noise, thereby weakening generalization ability. In Fig.3c, GFPL maintains more stable accuracy than FedProto and Fe-dAvg as client sample size ˆs decreases, indicating its superior scalability across different sample sizes. Additionally, we conducted performance analysis exper-iments on ˆw, projection layer retraining interval ST , and the initial round for prototype interaction t1, with results presented in Fig.4a-4c. The findings demonstrate that GFPL consistently outperforms Fedproto across different ˆw set-tings, which is mainly attributed to its well-designed feature alignment method and pseudo-feature generation mecha-nism. Regarding ST , the results suggest that a smaller value is not always optimal, as overly frequent information ex-change (small ST ) result in insufficient local training within a single communication round. Conversely, a moderately increased ST effectively raises the number of local train-ing epochs, thereby reducing the total number of required communication rounds. Finally, we observed that the se-lection of t1 requires careful consideration. It is generally preferable to select a moment when the local features have achieved a certain degree of intra-class cohesion. Initiating prototype interaction too early may lead to unrepresenta-tive initial prototypes, whereas excessively delaying it can cause untimely information fusion, resulting in local training converging to suboptimal solutions and thus hindering the rapid improvement of model accuracy. Further analysis of hyperparameters is provided in Appendix C. 
+
+Communication overhead: Table 1 demonstrates that GFPL achieves the highest accuracy improvement with min-imal communication overhead. This superior efficiency is primarily attributed to the designed delayed prototype in-teraction strategy and periodic prototype fusion mechanism. Here, all communication overhead originates solely from the interaction of prototypes across all clients, which aims to generate effective pseudo-features locally for retraining the projection layer. The experimental results underscore that selecting the appropriate timing for information interac-tion is a crucial research problem in federated learning, as it directly influences the trade-off between model accuracy and communication costs. Further analysis is provided in Appendix D. 
+
+6. Conclusion 
+
+In this paper, we innovatively integrate prototype learning and generative methods into the FL framework, thereby offering a novel perspective to enhance knowledge fusion and model generalization. Specifically, unlike previous ap-proaches that directly utilize feature centroids, GFPL pi-oneers the use of GMM to derive feature prototypes and successfully implements prototype fusion based on the Bhat-tacharyya distance, thus opening new avenues for effective prototype learning and cross-client knowledge fusion. Look-ing ahead, future research could explore the potential of using more advanced generative models, such as GANs or diffusion models, as alternative tools for prototype extraction and pseudo-feature generation. However, their substantial parameter requirements currently render them unsuitable for resource-constrained federated learning scenarios. Fur-ther discussion and analysis regarding these directions are provided in Appendix D. 8A. Convergence Analysis 
+
+This section provides a theoretical convergence guarantee for the proposed GFPL framework. We first formulate the optimization problem and then present the main convergence theorem along with its proof. 
+
+A.1. Problem Formulation 
+
+Let Di denote the local dataset on client i. The overall goal is to minimize the global objective function: 
+
+F (Θ) = 
+
+> N
+
+X
+
+> i=1
+
+piE(x,y )∼D i
+
+Li
+
+> total
+
+(x, y ; Θ)  , (15) where Θ = {θf , θ h1 , θ h2 } represents the parameters of the feature extractor, the conventional classifier, and the projection layer, respectively. pi ≥ 0 is the weight for client 
+
+i with P 
+
+> i
+
+pi = 1 . The local loss Li 
+
+> total
+
+for client i is defined as: 
+
+Li 
+
+> total
+
+= LCE (h1(f (x; θf ); θh1 ), y )+λLalign (h2(f (x; θf ); θh2 ), vy ) , (16) where LCE is the cross-entropy loss, Lalign is the align-ment loss (e.g., dot product loss) between the projected features and the ETF vector vy for class y, and λ is a hyper-parameter balancing the two terms. 
+
+A.2. Assumptions 
+
+To facilitate the analysis, we make the following standard assumptions: 1. (L-Smoothness) The global objective function F (Θ) is 
+
+L-smooth: 
+
+∥∇ F (Θ) − ∇ F (Θ ′)∥ ≤ L∥Θ − Θ′∥, ∀Θ, Θ′. (17) 2. (Bounded Gradient) The stochastic gradient on any client i and sample (x, y ) is bounded: 
+
+E ∥∇L i
+
+> total
+
+(x, y ; Θ) ∥2 ≤ G2. (18) 3. (Bounded Prototype Fusion Error) The error intro-duced by the prototype fusion on the server is bounded. Formally, for any client i and class j, the deviation be-tween the fused global prototype PG,j and the ideal pro-totype P∗ 
+
+> i,j
+
+(computed on the entire data distribution) satisfies: 
+
+E ∥PG,j − P∗ 
+
+> i,j
+
+∥ ≤ δ. (19) This holds under the Bhattacharyya distance-based fusion with threshold SC , given the asymptotic consistency of GMM estimation. 4. (Bounded Pseudo-feature Quality) The gradient com-puted using pseudo-features ˜x generated from the global prototype PG,j is a good approximation of the gradient computed with real features. Specifically, the deviation is bounded: 
+
+E [∥gpseudo − greal ∥] ≤ ϵ, (20) where gpseudo = ∇L align (˜ x, vy ; θh2 ) and greal =
+
+∇L align (x, vy ; θh2 ).
+
+A.3. Main Convergence Theorem 
+
+Theorem A.1. Under Assumptions 1-4, if the learning rate 
+
+η satisfies η ≤ 1 
+
+> L
+
+, then after T communication rounds, the sequence of parameters {Θt} generated by the GFPL algo-rithm satisfies: 
+
+min   
+
+> t∈[0 ,...,T −1]
+
+E ∥∇ F (Θ t)∥2 ≤ O 
+
+ 1
+
+√T
+
+
+
++ C1δ + C2ϵ, 
+
+(21) 
+
+where C1 and C2 are positive constants. Proof. Let Θt be the model parameters at communication round t. The update in a round may involve multiple local epochs on the primary loss and potential retraining of the projection layer using pseudo-features. From the L-smoothness assumption (Assumption 1), we have the following descent lemma for an update with learn-ing rate η:
+
+F (Θ t+1 ) ≤ F (Θ t)+ ⟨∇ F (Θ t), Θt+1 −Θt⟩+ L
+
+2 ∥Θt+1 −Θt∥2.
+
+(22) Taking the expectation and considering the update direc-tion, which is a stochastic gradient potentially perturbed by prototype fusion and pseudo-feature generation errors, we derive: 
+
+E[F (Θ t+1 )] − E[F (Θ t)] ≤ − η
+
+2 E[∥∇ F (Θ t)∥2] + Lη 2
+
+2 G2
+
++η · E[⟨∇ F (Θ t), ∆fusion ⟩]
+
+| {z }
+
+> ≤C1δ
+
++η · E[⟨∇ F (Θ t), ∆pseudo ⟩]
+
+| {z }
+
+> ≤C2ϵ
+
+.
+
+(23) Here, ∆fusion and ∆pseudo represent the error vectors due to prototype fusion and pseudo-feature generation, respectively, whose inner products with the true gradient are bounded by Assumptions 3 and 4, and the bounded gradient assumption (Assumption 2). Summing the above inequality for t = 0 to T − 1, rear-ranging terms, and dividing by T , we obtain: 
+
+1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E[∥∇ F (Θ t)∥2] ≤ 2( F (Θ 0) − F ∗)
+
+ηT + LηG 2
+
++2( C1δ + C2ϵ), (24) 1where F ∗ is a lower bound of the objective function. Choosing η = 1√T yields the final result: 
+
+min   
+
+> t∈[0 ,...,T −1]
+
+E ∥∇ F (Θ t)∥2 ≤ 1
+
+T 
+
+> T−1
+
+X
+
+> t=0
+
+E[∥∇ F (Θ t)∥2]
+
+≤ O 
+
+ 1
+
+√T
+
+
+
++ 2( C1δ + C2ϵ). (25) This completes the proof. 
+
+A.4. Discussion 
+
+Theorem A.1 guarantees that GFPL converges to a stationary point at a sublinear rate of O(1 /√T ). The final expected gradient norm is bounded by a constant proportional to the prototype fusion error δ and the pseudo-feature quality error 
+
+ϵ.This theoretical result provides the following key insights, which align with our empirical design: • The delayed prototype interaction (starting at round t1)allows the local feature extractor to produce more stable and representative features in the early stages. This directly reduces the initial prototype fusion error δ, leading to better convergence. • The periodic projection layer retraining (with interval 
+
+ST ) helps control the error ϵ introduced by the pseudo-features. A moderately large ST allows prototypes to stabilize between retraining phases, improving the quality of generated features and thus reducing ϵ.• The communication efficiency is inherent as the algo-rithm only transmits prototypes (GMM parameters). The analysis shows that while this efficient communication introduces a bounded error δ, it does not prevent the algo-rithm from converging. 
+
+B. Privacy Security Analysis 
+
+we provide a rigorous mathematical proof demonstrating that sharing GMM prototypes cannot leak raw data privacy, as reconstructing raw data requires inverting two fundamentally irreversible transformations. 
+
+B.1. Information-Theoretic Impossibility of Fea-ture Reconstruction 
+
+Let 
+
+1. x ∈ RDx be raw data (e.g., Dx = 3072(32 ∗ 32 ∗ 3) 
+
+for CIFAR-10). 2. z = fθ (x) ∈ RDz be feature vectors ( Dz ≪ Dx,e.g., 512). 3. P = {πk, μ k, Σk}Kk=1 be GMM prototypes. 
+
+Proposition 1: Reconstruction of client-specific features 
+
+zi from P is information-theoretically infeasible. 
+
+Proof: 
+
+1. P encodes population statistics, not sample-specific information: 
+
+p(z|P ) = 
+
+> K
+
+X
+
+> k=1
+
+πkN (z; μk, Σk).
+
+This represents a many-to-one mapping where distinct 
+
+{zi}Ni=1 collapse to the same distribution. 2. Mutual information I(z; P) is bounded by: 
+
+I(z; P) ≤ Dz
+
+2 log(2 πeσ 2 
+
+> z
+
+) − 12
+
+> K
+
+X
+
+> k=1
+
+πk log det(2 πe Σk).
+
+For typical values ( Dz = 512 , σ 2 
+
+> z
+
+= 0.1, det Σ k ≈
+
+10 −5): 
+
+I(z; P) < 0.005 bits (99% information loss ).
+
+3. Empirical validation: Sampling z′ ∼ p(z|P ) yields features with ∥z′ − zi∥2 ≥ 0.85 (cosine similarity < 0.15) on CIFAR-10. 
+
+B.2. Optimization-Theoretic Impossibility of Data Reconstruction 
+
+Proposition 2: Even given z, reconstructing x is provably ill-posed. 
+
+Proof: 1. Reconstruction requires solving: 
+
+x∗ = arg min  
+
+> x
+
+L(x) = ∥fθ (x) − z∥2.
+
+2. The Hessian ∇2
+
+> x
+
+L has rank deficiency: 
+
+rank (∇2
+
+> x
+
+L) ≤ rank (J⊤ 
+
+> f
+
+Jf ) ≤ Dz ≪ Dx.
+
+where Jf ∈ RDz ×Dx is the CNN Jacobian. This implies a null space of dimension ≥ Dx − Dz .
+
+3. For Lipschitz continuous fθ (ReLU CNNs satisfy 
+
+L ≈ 8): 
+
+∥x1 − x2∥ ≥ 1
+
+L ∥fθ (x1) − fθ (x2)∥.
+
+Equality holds iff fθ is bijective—impossible for Dz < D x.
+
+4. Consequence: Solutions form a manifold Mz = {x :
+
+fθ (x) = z} with dim Mz ≥ Dx − Dz . Reconstruction error is bounded below: 
+
+inf 
+
+> x∗∈M z
+
+∥x∗ − x∥ ≥ δ > 0.
+
+Thus, GMM prototypes cannot leak privacy of raw data because: 
+
+(1) P → z reconstruction loses > 99.99% information 
+
+(I(z; P) → 0) .
+
+(2) z → x inversion is ill-posed (rank deficiency in Jf ). 2C. Experiment Details 
+
+C.1. Optimizer Parameters 
+
+Both of local training and projection layer retraining use SGD optimizer to train network parameters, where momen-tum is 0.5 unless otherwise stated. In addition, projection layer retraining requires freezing the parameters of the fea-ture extractor f (ω1, ·).
+
+C.2. Hyperparameters Settings 
+
+Table 3. Detailed hyperparameters of GFPL 
+
+MNIST FEMNIST CIFAR10 CIFAR100 Projection dim 50 128 80 80 Average shot ¯s 100 92 100 100 Learning rate η 0.01 0.01 0.01 0.01 
+
+λ 2 2 2 2Batch size B 4 4 32 32 Num channels 1 1 3 3Threshold SC 1 1 1 1
+
+C.3. Error Bars 
+
+We conduct comparative study on three datasets: MNIST, FEMNIST and CIFAR10 and different average of ways ¯w =3, ¯w = 4 , ¯w = 5 . To mitigate the impact of random errors on the experimental conclusions, each configuration was independently tested five times, and the averaged results are reported in Table 1. The error bars for test accuracy across the datasets are illustrated in Fig. 5. 
+
+C.4. Further Hyperparameters Settings 
+
+Fig.6 shows the average test accuracy and communication under different threshold SC . We observe that the choice of the threshold SC critically influences the model’s final average test accuracy. An inappropriately set threshold can lead to two distinct issues: • Excessively small SC : A threshold that is too small im-pedes the effective fusion of Gaussian mixture components with highly overlapping distributions during the proto-type fusion process. This results in a larger number of unmerged prototypes in the global prototype set, conse-quently increasing both communication and computational overhead. • Excessively large SC : Conversely, an overly large thresh-old causes the fusion of prototypes with substantially di-vergent distributions. This inappropriate merging yields fused prototypes that lack representativeness, ultimately degrading the quality of the generated pseudo-features and model performance. Therefore, selecting an optimal SC value is crucial for balancing prototype fusion efficacy and feature representa-tion quality. Local 
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 94
+> 96
+> 98
+> 100
+> Test accuracy
+
+(a) MNIST, ¯w = 3 Local  
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 92
+> 94
+> 96
+> 98
+> Test accuracy
+
+(b) MNIST, ¯w = 4 Local  
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 92
+> 94
+> 96
+> 98
+> Test accuracy
+
+(c) MNIST, ¯w = 5 Local 
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 92
+> 94
+> 96
+> 98
+> Test accuracy
+
+(d) FEMNIST, ¯w = 3 Local  
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 90
+> 92
+> 94
+> 96
+> Test accuracy
+
+(e) FEMNIST, ¯w = 4 Local  
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 87.5
+> 90.0
+> 92.5
+> 95.0
+> Test accuracy
+
+(f) FEMNIST, ¯w = 5 Local 
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL 66
+> 68
+> 70
+> 72
+> 74
+> Test accuracy
+
+(g) CIFAR10, ¯w = 3 Local  
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 55
+> 60
+> 65
+> 70
+> Test accuracy
+
+(h) CIFAR10, ¯w = 4 Local  
+
+> FeSEM
+> FedProx
+> FedPer
+> FedAvg
+> FedRep
+> FedProto
+> FedFA
+> FedPA
+> GFPL
+> 50
+> 55
+> 60
+> 65
+> Test accuracy
+
+(i) CIFAR10, ¯w = 5 
+
+Figure 5. Error bars of test accuracy on different datasets: (a-c) MNIST dataset with different ¯w values; (d-f) FEMNIST dataset with different ¯w values; (g-i) CIFAR10 dataset with different ¯w.0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 
+
+> SC
+> 0.67
+> 0.68
+> 0.69
+> 0.70
+> 0.71
+> Average Test Accuracy (%)
+
+(a) 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0  
+
+> SC
+> 27.5
+> 30.0
+> 32.5
+> 35.0
+> 37.5
+> 40.0
+> 42.5
+> 45.0
+> Communication overhead (KB)
+
+(b) 
+
+Figure 6. The influence of hyperparameters SC on average test accuracy and communication overhead 
+
+D. Communication Overhead 
+
+The communication overhead of each client in GFPL is pri-marily influenced by three hyperparameters: n, m, ¯w. As illustrated in Fig. 7a, the communication overhead scales linearly with n, where n represents the component number of the Gaussian Mixture Model (GMM) used to generate the local prototypes Pi,j and the size of local prototype is determined by n. Since n directly determines both the model accuracy and communication efficiency, selecting an appro-priate GMM component number is critical for balancing these two aspects in GFPL. Fig. 7b demonstrates the correlation between the client number m and the communication overhead. An increase in 
+
+m necessitates more frequent splicing operations for global prototype aggregation, which linearly amplifies the global prototype size and consequently raises the communication 3overhead on individual clients. Furthermore, Fig. 7c reveals that a higher average number of local classes per client ( ¯w) leads to increased communi-cation overhead. This arises from the expanded volume of local prototypes of identical classes, which further enlarges the global prototype size during concatenation. These observations highlight two key directions for fu-ture GFPL research: (1) adaptive optimization of the GMM component number n, and (2) development of efficient local prototype aggregation strategies to mitigate communication costs while maintaining model performance. 0 5 10 15 
+
+> n
+> 0
+> 250
+> 500
+> 750
+> 1000
+> 1250
+> Comm. param.(× 10 3) MNIST
+> FEMNIST
+> CIFAR10
+
+(a) GMM components n10 20 30 40 50  
+
+> m
+> 0
+> 200
+> 400
+> 600
+> 800
+> Comm. param.(× 10 3) MNIST
+> FEMNIST
+> CIFAR10
+
+(b) Clients m3 4 5 6 7 
+
+> w
+> 0
+> 200
+> 400
+> 600
+> 800
+> Comm. param.(× 10 3)
+> MNIST
+> FEMNIST
+> CIFAR10
+
+(c) Class number average 
+
+Figure 7. The influence of hyperparameters on communication overhead: (a) The number of GMM components n; (b) The number of clients m; (c) The average of class number for all clients. 
+
+References 
+
+[1] Manoj Ghuhan Arivazhagan, Vinay Aggarwal, Aaditya Ku-mar Singh, and Sunav Choudhary. Federated learning with personalization layers. arXiv preprint arXiv:1912.00818 ,2019. 6 [2] Anushiya Arunan, Yan Qin, Xiaoli Li, and Chau Yuen. A federated learning-based industrial health prognostics for het-erogeneous edge devices using matched feature extraction. 
+
+IEEE Transactions on Automation Science and Engineering ,2023. 1 [3] Sebastian Caldas, Sai Meher Karthik Duddu, Peter Wu, Tian Li, Jakub Kone ˇcn `y, H Brendan McMahan, Virginia Smith, and Ameet Talwalkar. Leaf: A benchmark for federated settings. arXiv preprint arXiv:1812.01097 , 2018. 3, 6 [4] Xingjian Cao, Gang Sun, Hongfang Yu, and Mohsen Guizani. Perfed-gan: Personalized federated learning via generative adversarial networks. IEEE Internet of Things Journal , 10(5): 3749–3762, 2022. 1, 2, 5 [5] Huancheng Chen and Haris Vikalo. Federated learning in non-iid settings aided by differentially private synthetic data. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5027–5036, 2023. 5 [6] Liam Collins, Hamed Hassani, Aryan Mokhtari, and Sanjay Shakkottai. Exploiting shared representations for person-alized federated learning. In International conference on machine learning , pages 2089–2099. PMLR, 2021. 6 [7] Michael Crawshaw and Mingrui Liu. Federated learning un-der periodic client participation and heterogeneous data: A new communication-efficient algorithm and analysis. Ad-vances in Neural Information Processing Systems , 37:8240– 8299, 2024. 1 [8] Yutong Dai, Zeyuan Chen, Junnan Li, Shelby Heinecke, Lichao Sun, and Ran Xu. Tackling data heterogeneity in federated learning with class prototypes. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 7314– 7322, 2023. 1 [9] Li Deng. The mnist database of handwritten digit images for machine learning research. IEEE Signal Processing Maga-zine , 29(6):141–142, 2012. 6 [10] Avishek Ghosh, Jichan Chung, Dong Yin, and Kannan Ram-chandran. An efficient framework for clustered federated learning. Advances in neural information processing systems ,33:19586–19597, 2020. 2 [11] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 , 2025. 2 [12] Junxian He, Taylor Berg-Kirkpatrick, and Graham Neubig. Learning sparse prototypes for text generation. Advances in Neural Information Processing Systems , 33:14724–14735, 2020. 2 [13] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In Proceed-ings of the IEEE conference on computer vision and pattern recognition , pages 770–778, 2016. 6 [14] Minui Hong, Junhyeog Yun, Insu Jeon, and Gunhee Kim. Fedavp: Augment local data via shared policy in federated learning. Advances in Neural Information Processing Systems ,37:18090–18121, 2024. 1, 2 [15] Wenke Huang, Mang Ye, Zekun Shi, He Li, and Bo Du. Rethinking federated learning with domain shift: A prototype view. In 2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , pages 16312–16322. IEEE, 2023. 2 [16] Lei Jiang, Xiaoding Wang, Xu Yang, Jiwu Shu, Hui Lin, and Xun Yi. Fedpa: Generator-based heterogeneous feder-ated prototype adversarial learning. IEEE Transactions on Dependable and Secure Computing , 2024. 2, 6 [17] Sai Praneeth Karimireddy, Satyen Kale, Mehryar Mohri, Sashank Reddi, Sebastian Stich, and Ananda Theertha Suresh. Scaffold: Stochastic controlled averaging for federated learn-ing. In International conference on machine learning , pages 5132–5143. PMLR, 2020. 2 [18] Tero Karras, Samuli Laine, and Timo Aila. A style-based generator architecture for generative adversarial networks. In 
+
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 4401–4410, 2019. 2 [19] Minsu Kim, Walid Saad, Merouane Debbah, and Choong S Hong. Spafl: Communication-efficient federated learning with sparse models and low computational overhead. Ad-vances in Neural Information Processing Systems , 37:86500– 86527, 2024. 1 [20] WeiBin Kou, Qingfeng Lin, Ming Tang, Rongguang Ye, Shuai Wang, Guangxu Zhu, and Yik-Chung Wu. Fast-convergent and communication-alleviated heterogeneous hierarchical fed-erated learning in autonomous driving. IEEE Transactions on Intelligent Transportation Systems , 2025. 1 
+
+4[21] Alex Krizhevsky, Geoffrey Hinton, et al. Learning multiple layers of features from tiny images. 2009. 6 [22] Daixun Li, Weiying Xie, Zixuan Wang, Yibing Lu, Yun-song Li, and Leyuan Fang. Feddiff: Diffusion model driven federated learning for multi-modal and multi-clients. IEEE Transactions on Circuits and Systems for Video Technology ,2024. 5 [23] Qinbin Li, Bingsheng He, and Dawn Song. Model-contrastive federated learning. In Proceedings of the IEEE/CVF con-ference on computer vision and pattern recognition , pages 10713–10722, 2021. 2 [24] Tian Li, Anit Kumar Sahu, Manzil Zaheer, Maziar Sanjabi, Ameet Talwalkar, and Virginia Smith. Federated optimization in heterogeneous networks. Proceedings of Machine learning and systems , 2:429–450, 2020. 3, 6 [25] Zexi Li, Xinyi Shang, Rui He, Tao Lin, and Chao Wu. No fear of classifier biases: Neural collapse inspired federated learning with synthetic and fixed classifier. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 5319–5329, 2023. 4 [26] Zijian Li, Yuchang Sun, Jiawei Shao, Yuyi Mao, Jessie Hui Wang, and Jun Zhang. Feature matching data synthesis for non-iid federated learning. IEEE Transactions on Mobile Computing , 23(10):9352–9367, 2024. 5 [27] Jianchun Liu, Yujia Huo, Pengcheng Qu, Sun Xu, Zhi Liu, Qianpiao Ma, and Jinyang Huang. Fedcd: A hybrid federated learning framework for efficient training with iot devices. 
+
+IEEE Internet of Things Journal , 2024. 2 [28] Yang Liu, Qingchao Chen, and Samuel Albanie. Adaptive cross-modal prototypes for cross-domain visual-language re-trieval. In Proceedings of the IEEE/CVF conference on com-puter vision and pattern recognition , pages 14954–14964, 2021. 2 [29] Guodong Long, Ming Xie, Tao Shen, Tianyi Zhou, Xianzhi Wang, and Jing Jiang. Multi-center federated learning: clients clustering for better personalization. World Wide Web , 26(1): 481–500, 2023. 6 [30] Shiwei Lu, Ruihu Li, Wenbin Liu, Chaofeng Guan, and Xi-aopeng Yang. Top-k sparsification with secure aggregation for privacy-preserving federated learning. Computers & Security ,124:102993, 2023. 1 [31] Timo L ¨uddecke and Alexander Ecker. Image segmentation us-ing text and image prompts. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 7086–7096, 2022. 2 [32] Mi Luo, Fei Chen, Dapeng Hu, Yifan Zhang, Jian Liang, and Jiashi Feng. No fear of heterogeneity: Classifier calibration for federated learning with non-iid data. Advances in Neural Information Processing Systems , 34:5972–5984, 2021. 5 [33] Ben Mann, N Ryder, M Subbiah, J Kaplan, P Dhariwal, A Neelakantan, P Shyam, G Sastry, A Askell, S Agarwal, et al. Language models are few-shot learners. arXiv preprint arXiv:2005.14165 , 1:3, 2020. 2 [34] Brendan McMahan, Eider Moore, Daniel Ramage, Seth Hampson, and Blaise Aguera y Arcas. Communication-efficient learning of deep networks from decentralized data. In 
+
+Artificial intelligence and statistics , pages 1273–1282. PMLR, 2017. 2, 3, 6 [35] Vardan Papyan, XY Han, and David L Donoho. Prevalence of neural collapse during the terminal phase of deep learning training. Proceedings of the National Academy of Sciences ,117(40):24652–24663, 2020. 3 [36] Douglas A Reynolds et al. Gaussian mixture models. Ency-clopedia of biometrics , 741(659-663):3, 2009. 3 [37] Jake Snell, Kevin Swersky, and Richard Zemel. Prototypical networks for few-shot learning. Advances in neural informa-tion processing systems , 30, 2017. 2 [38] Alysa Ziying Tan, Han Yu, Lizhen Cui, and Qiang Yang. Towards personalized federated learning. IEEE transactions on neural networks and learning systems , 34(12):9587–9603, 2022. 2 [39] Yue Tan, Guodong Long, Lu Liu, Tianyi Zhou, Qinghua Lu, Jing Jiang, and Chengqi Zhang. Fedproto: Federated proto-type learning across heterogeneous clients. In Proceedings of the AAAI conference on artificial intelligence , pages 8432– 8440, 2022. 1, 2, 4, 5, 6 [40] Weijie Tu, Weijian Deng, Tom Gedeon, and Liang Zheng. A bag-of-prototypes representation for dataset-level appli-cations. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 2881–2892, 2023. 2 [41] Jun Wang, Abhir Bhalerao, and Yulan He. Cross-modal prototype driven network for radiology report generation. In 
+
+European Conference on Computer Vision , pages 563–579. Springer, 2022. 2 [42] Yaqing Wang, Quanming Yao, James T Kwok, and Lionel M Ni. Generalizing from a few examples: A survey on few-shot learning. ACM computing surveys (csur) , 53(3):1–34, 2020. 2[43] Yuanhao Xiong, Ruochen Wang, Minhao Cheng, Felix Yu, and Cho-Jui Hsieh. Feddm: Iterative distribution matching for communication-efficient federated learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 16323–16332, 2023. 1 [44] Jingyi Xu and Hieu Le. Generating representative samples for few-shot classification. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 9003–9013, 2022. 2 [45] Lei Yang, Jiaming Huang, Wanyu Lin, and Jiannong Cao. Per-sonalized federated learning on non-iid data via group-based meta-learning. ACM Transactions on Knowledge Discovery from Data , 17(4):1–20, 2023. 2 [46] Xiyuan Yang, Wenke Huang, and Mang Ye. Dynamic per-sonalized federated learning with adaptive differential pri-vacy. Advances in Neural Information Processing Systems ,36:72181–72192, 2023. 2 [47] Yibo Yang, Shixiang Chen, Xiangtai Li, Liang Xie, Zhouchen Lin, and Dacheng Tao. Inducing neural collapse in imbal-anced learning: Do we really need a learnable classifier at the end of deep neural network? Advances in neural information processing systems , 35:37991–38002, 2022. 4, 5 [48] Dezhong Yao, Wanning Pan, Yutong Dai, Yao Wan, Xiaofeng Ding, Chen Yu, Hai Jin, Zheng Xu, and Lichao Sun. Fedgkd: Toward heterogeneous federated learning via global knowl-edge distillation. IEEE Transactions on Computers , 73(1): 3–17, 2023. 2 
+
+5[49] Xiaotong Yuan and Ping Li. On convergence of fedprox: Local dissimilarity invariant bounds, non-smoothness and beyond. Advances in Neural Information Processing Systems ,35:10752–10765, 2022. 1 [50] Jianqing Zhang, Yang Liu, Yang Hua, and Jian Cao. Fedtgp: Trainable global prototypes with adaptive-margin-enhanced contrastive learning for data and model heterogeneity in fed-erated learning. In Proceedings of the AAAI conference on artificial intelligence , pages 16768–16776, 2024. 2 [51] Jianqing Zhang, Yang Liu, Yang Hua, and Jian Cao. An upload-efficient scheme for transferring knowledge from a server-side pre-trained generator to clients in heterogeneous federated learning. In Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition , pages 12109–12119, 2024. 2 [52] Lin Zhang, Li Shen, Liang Ding, Dacheng Tao, and Ling-Yu Duan. Fine-tuning global model via data-free knowledge distillation for non-iid federated learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 10174–10183, 2022. 1, 2 [53] Rongqing Zhang, Jingxin Mao, Hanqiu Wang, Bing Li, Xiang Cheng, and Liuqing Yang. A survey on federated learning in intelligent transportation systems. IEEE Transactions on Intelligent Vehicles , 2024. 1 [54] Fei Zhou, Peng Wang, Lei Zhang, Wei Wei, and Yanning Zhang. Revisiting prototypical network for cross domain few-shot learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 20061–20070, 2023. 2 [55] Tailin Zhou, Jun Zhang, and Danny HK Tsang. Fedfa: Fed-erated learning with feature anchors to align features and classifiers for heterogeneous data. IEEE Transactions on Mobile Computing , 23(6):6731–6742, 2023. 1, 2, 3, 6 [56] Zhuangdi Zhu, Junyuan Hong, and Jiayu Zhou. Data-free knowledge distillation for heterogeneous federated learn-ing. In International conference on machine learning , pages 12878–12889. PMLR, 2021. 2 
+
+6

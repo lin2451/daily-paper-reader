@@ -1,0 +1,763 @@
+Title: FedPSA: Modeling Behavioral Staleness in Asynchronous Federated Learning
+
+URL Source: https://arxiv.org/pdf/2602.15337v2
+
+Published Time: Mon, 23 Feb 2026 01:32:45 GMT
+
+Number of Pages: 27
+
+Markdown Content:
+# Graphical Abstract 
+
+FedPSA: Modeling Behavioral Staleness in Asynchronous Federated Learning 
+
+Chaoyi Lu, Yiding Sun, Zhichuan Yang, Jinqian Chen, Dongfu Yin ∗, Jihua Zhu ,∗20 40 60 80 100 
+
+Training Rounds 
+
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Staleness Metric
+
+Model Staleness Evolution 
+
+> FedPSA (iid)
+> FedPSA (non-iid)
+> FedAsync
+> FedPSA (iid)
+> FedPSA (non-iid)
+> FedAsync (iid)
+> FedAsync (non-iid)
+> 70
+> 75
+> 80
+> 85
+> 90
+> 95
+> 100
+> Final Accuracy (%)  93%
+> 81%
+> 91%
+> 76%
+
+Final Model Accuracy Comparison 
+
+Comparison of weighting coefficients and final accuracy between FedPSA and FedAsync. 
+
+Traditional methods overlook the details during aggregation, leading to poor final performance. 
+
+> arXiv:2602.15337v2 [cs.LG] 20 Feb 2026
+
+# Highlights 
+
+FedPSA: Modeling Behavioral Staleness in Asynchronous Federated Learning 
+
+Chaoyi Lu, Yiding Sun, Zhichuan Yang, Jinqian Chen, Dongfu Yin ∗, Jihua Zhu ,∗
+
+• We propose FedPSA, a novel asynchronous federated learning framework that moves be-yond round-gap-based staleness by introducing a behavioral staleness metric derived from parameter-sensitivity patterns, enabling the server to directly assess the compatibility be-tween client updates and the current global training dynamics. • We design an efficient and stage-adaptive aggregation scheme: clients compute sensitivity on a shared calibration batch, compress it via random projection sketching, and the server combines the resulting cosine-similarity signal with a momentum-queue-based training ther-mometer to dynamically adjust the sharpness of softmax weighting across training stages. • We validate FedPSA via extensive experiments and ablation studies on multiple benchmarks. The results show that FedPSA achieves strong performance under both IID and non-IID data distributions, and is resilient to heterogeneous system latency. FedPSA: Modeling Behavioral Staleness in Asynchronous Federated Learning 
+
+Chaoyi Lu a,b,c,1 , Yiding Sun a,1 , Zhichuan Yang a, Jinqian Chen a, Dongfu Yin ∗,c , Jihua Zhu ∗,a,b 
+
+> aSchool of Software Engineering, Xi’an Jiaotong University, Xi’an, 710049, China
+> bState Key Laboratory of Integrated Services Networks, Xidian University, Xi’an, 710071, China
+> cGuangdong Laboratory of Artificial Intelligence and Digital Economy(SZ), Shenzhen, 518107, China
+
+Abstract 
+
+Asynchronous Federated Learning (AFL) has emerged as a significant research area in recent years. By not waiting for slower clients and executing the training process concurrently, it achieves faster training speed compared to traditional federated learning. However, due to the staleness introduced by the asynchronous process, its performance may degrade in some scenarios. Existing methods often use the round difference between the current model and the global model as the sole measure of staleness, which is coarse-grained and lacks observation of the model itself, thereby limiting the performance ceiling of asynchronous methods. In this paper, we propose FedPSA (Parameter Sensitivity-based Asynchronous Federated Learning), a more fine-grained AFL framework that leverages parameter sensitivity to measure model obsolescence and establishes a dynamic momen-tum queue to assess the current training phase in real time, thereby adjusting the tolerance for outdated information dynamically. Extensive experiments on multiple datasets and comparisons with various methods demonstrate the superior performance of FedPSA, achieving up to 6.37% improvement over baseline methods and 1.93% over the current state-of-the-art method. 
+
+Keywords: Federated learning, asynchronous federated learning, parameter sensitivity, staleness modeling 
+
+1. Introduction 
+
+Over the course of recent years, the increasing emphasis on information security has drawn researchers’ attention to a novel machine learning paradigm known as Federated Learning (FL) [1, 2]. As a privacy-preserving machine learning method, it replaces data sharing with model parameter sharing, thereby avoiding data leakage while maintaining training effectiveness [3, 4]. To coordinate multiple clients for collaborative training, the traditional FL process operates as follows [5]: First, a server is established to collect and broadcast various types of information during the training process. In each round, the server selects a subset of clients and broadcasts the current global model to them, instructing them to train the model using their local data [6, 7, 8, 9].            
+
+> ∗Corresponding Author
+> Email addresses: chaoyi@stu.xjtu.edu.cn (Chaoyi Lu), sunyiding@stu.xjtu.edu.cn (Yiding Sun), zhichuan@stu.xjtu.edu.cn (Zhichuan Yang), chenjinqian@stu.xjtu.edu.cn (Jinqian Chen),
+> yindongfu@gml.ac.cn (Dongfu Yin ∗), zhujh@xjtu.edu.cn (Jihua Zhu ,∗)
+> 1Equal Contribution
+
+The server then waits for all selected clients to complete their training and upload their updated models. Afterward, it aggregates all the received client models to form a new global model for the next round. This process repeats until a predefined number of rounds is reached or other exit conditions are met. By transmitting model parameters instead of the training data itself, FL effectively ensures data security. The drawbacks of traditional FL are also evident: since each round of training requires waiting for all selected clients to complete their training, even if just one client responds slowly in a given round, it can significantly slow down the entire training progress. This issue is referred to as the “straggler problem" [10, 11, 12], which severely limits the broader applicability of traditional FL, making it difficult to deploy in scenarios with significant disparities in device performance [13]. To address this problem, researchers have recently proposed an Asynchronous Federated Learn-ing (AFL) framework [14, 15]. By maintaining a pool of participating clients above a specified concurrency threshold, rather than designating and waiting for a fixed set of clients to complete training in each round, this framework effectively prevents the emergence of stragglers. However, the asynchronous nature of AFL also raises new concerns. In this framework, the server does not wait for all clients to finish training before performing aggregation. By the time a client completes its training and uploads its model, the global model on the server may have been updated many times. This creates a version difference between the client’s model and the server’s model. This version gap is referred to as staleness [16, 17, 18]. Since the uploaded models from clients can be outdated, the information they contribute is less valuable. Although AFL performs updates much more frequently, the lower quality of each update often results in poorer overall training performance. To mitigate the impact of staleness in AFL, existing methods can be broadly categorized into two directions: 1) Establishing a buffer on the server to receive gradients and performing aggre-gation only when the buffer is full [19, 20]. This method reduces the frequency of global model updates from aggregating every time gradients are uploaded to aggregating only when the buffer is full, effectively decreasing the negative impact of staleness. 2) Reducing the weight of outdated information [14, 21]. Most methods in this category still rely solely on version differences to mea-sure staleness, lacking attention to the detailed information of the models themselves, which in fact limits the performance of AFL. Therefore, existing methods still struggle to fully leverage the advantages of AFL. In this paper, we propose a novel AFL framework, FedPSA, which further unleashes the po-tential of AFL by observing and leveraging the behavioral information of the models themselves. We define behavioral staleness as a measure of discrepancy between client and global model be-haviors, quantified via parameter sensitivity patterns. Parameter sensitivity is derived from each model itself and can effectively quantify the conflict level between models, helping to determine whether they can collaborate smoothly. To enhance the exploratory nature of the algorithm during the early training stages, FedPSA also incorporates a dynamic queue to store the recent training momentum uploaded by clients. By averaging the momentum stored in the queue, FedPSA esti-mates the current training phase. Consequently, it can accommodate larger variations in parameter sensitivity during the exploratory early stages, while imposing stricter constraints on sensitivity differences as the model approaches convergence. Our contributions are as follows: • We propose FedPSA, a novel asynchronous federated learning framework that moves be-yond round-gap-based staleness by introducing a behavioral staleness metric derived from 2parameter-sensitivity patterns, enabling the server to directly assess the compatibility be-tween client updates and the current global training dynamics. • We design an efficient and stage-adaptive aggregation scheme: clients compute sensitivity on a shared calibration batch, compress it via random projection sketching, and the server combines the resulting cosine-similarity signal with a momentum-queue-based training ther-mometer to dynamically adjust the sharpness of softmax weighting across training stages. • We validate FedPSA via extensive experiments and ablation studies on multiple benchmarks. The results show that FedPSA achieves strong performance under both IID and non-IID data distributions, and is resilient to heterogeneous system latency. 
+
+2. Related Work 
+
+2.1. Traditional Federated Learning 
+
+Federated learning was originally formulated as a synchronous distributed optimization paradigm, where a central server coordinates a subset of clients to perform local updates and aggregates them only after all selected clients have finished their computations. The seminal FedAvg algorithm [5] averages local model parameters from participating clients to update the global model, and has be-come the de facto baseline for synchronous FL. To better handle data heterogeneity across clients, FedProx [22] introduces a proximal term that penalizes deviations from the global model during local training, while SCAFFOLD [23] leverages control variates to correct client drift in non-IID scenarios. Subsequent work further improves robustness and accuracy under heterogeneous data. For example, FedCM [24] exploits historical gradient information to reduce aggregation bias, and bMOM [25] adopts a bootstrap median-of-means strategy for robust aggregation against outliers. Despite their success, these methods all follow the synchronous “round-based” protocol: in each communication round, the server must wait for all selected clients to return their updates before proceeding. As a consequence, the overall training speed is dominated by the slowest devices, leading to the well-known “straggler problem" and motivating the development of AFL. 
+
+2.2. Asynchronous Federated Learning and Staleness Modeling 
+
+AFL alleviates the “straggler problem" by allowing the server to update the global model when-ever a client upload arrives, without waiting for other clients. In one of the earliest AFL frame-works, FedAsync [14], the server assigns aggregation weights according to the staleness of each update, which is defined as the version (or round) gap between the local model and the current global model. More recent algorithms refine this idea. FedASMU [26] requires clients to pull the latest global model before local training to reduce bias, while FedFa [27] maintains a queue on the server and discards outdated updates when the queue overflows. Another influential line of work introduces buffering mechanisms to mitigate the negative effect of stale updates. Buffer-based AFL methods [19, 20] maintain a server-side buffer that temporarily accumulates multiple client updates and triggers aggregation only when the buffer is full. This design reduces the frequency of global model updates compared with aggregating every single incoming update, and has been shown to improve convergence stability in highly asynchronous environments. Beyond supervised learning, AFL has also been extended to more complex set-tings. Asyn2F [28] proposes bidirectional model aggregation between clients and the server, 3momentum-approximation techniques [29] enable scalable private AFL over large client pools, and AFedPG [30] adapts asynchronous ideas to policy-gradient reinforcement learning. Despite these advances, the way staleness is quantified in AFL remains largely time-based. In most existing methods, the aggregation weight of a client update is modeled as a function of the iteration or version gap between the client and the server, e.g. , through monotonically decreasing functions of the round difference. This treatment implicitly assumes that all updates with the same time gap should have the same importance, and ignores the behavioral information of the models themselves. As a result, these methods cannot distinguish, for example, between two equally delayed updates generated at different training stages or under different local data distributions. Our work moves beyond this purely temporal view and proposes a behavioral-aware staleness metric based on parameter sensitivity. 
+
+2.3. Model Parameter Sensitivity and Behavior-Aware Aggregation 
+
+Parameter sensitivity analysis has a long history in machine learning and neural networks. In general, it studies how perturbations to individual parameters or input features affect the model loss, and is widely used to improve interpretability, robustness, and pruning efficiency [31]. Clas-sical methods such as the Lek-profile [32] systematically vary inputs or parameters to reveal non-linear dependencies between explanatory and response variables. More recent work leverages data-driven perturbation strategies to explore high-dimensional input spaces and quantify the im-portance of individual or grouped features in complex engineering applications [33]. In the context of FL, parameter sensitivity has been introduced mainly for model compression and personalization. For example, some methods adaptively interpolate client models based on parameter sensitivity and reduce the update frequency of highly sensitive parameters, thereby mit-igating client drift in traditional FL [34]. FedCAC [35] uses parameter sensitivity to determine collaboration relationships among clients, improving personalized FL by sharing only those pa-rameters that are less sensitive to local objectives. These methods demonstrate that sensitivity is a powerful tool for capturing parameter importance and client heterogeneity. However, existing sensitivity-based methods are still designed for synchronous or personalized FL and do not address the staleness issue in asynchronous settings. To the best of our knowledge, no prior work uses parameter sensitivity to quantify staleness and to directly control the aggrega-tion weights in AFL. In contrast, FedPSA introduces a sensitivity-driven, behavior-aware staleness metric: it compares the sensitivity patterns of client and server models (on a shared calibration batch), compresses them via random projections into low-dimensional sketches, and uses their cosine similarity as a proxy for behavioral freshness. Combined with a training thermometer that adapts the tolerance to behavioral discrepancies across different training stages, this design enables a finer-grained and more informative staleness modeling than traditional schemes based solely on time gaps or version gaps. 
+
+3. Preliminaries 
+
+We consider a standard FL setup with n clients, indexed by i ∈ { 1, . . . , n }. Client i holds a pri-vate dataset Di = {(xi,j , y i,j )}|D i|
+
+> j=1
+
+, where xi,j denotes the input features and yi,j the corresponding label. Due to privacy or regulatory constraints, clients cannot share their raw data with a central entity. Instead, a trusted server coordinates model training by exchanging model parameters or updates with the clients. 4The goal is to collaboratively learn a global model parameter w ∈ Rd that minimizes the following weighted empirical risk: 
+
+F (w) = 
+
+> n
+
+X
+
+> i=1
+
+pifi(w), (1) where fi(w) = 1
+
+> |D i|
+
+P 
+
+> (x,y )∈D i
+
+ℓ(w; x, y ) is the local loss on client i, ℓ(·) is the task-specific loss function, and pi = |D i|Pnj=1 |D j | reflects the relative data size of client i.In synchronous FL, the server proceeds in communication rounds: it broadcasts the current global model to a subset of clients, waits until all selected clients finish local training, and then aggregates their updates to obtain the next global model [5]. This round-based protocol ensures that all aggregated updates are computed from the same global model, but also makes the overall training speed sensitive to the slowest clients. AFL removes this strict synchronization requirement. Let wt denote the global model at (log-ical) iteration t, and suppose client i performs local training starting from an older global model 
+
+wt−τi , where τi ≥ 0 is the version gap between the local and current global models. After local training, client i uploads an update ∆wt−τi 
+
+> i
+
+to the server, and a generic asynchronous update can be written as 
+
+wt+1 = wt + αi ∆wt−τi 
+
+> i
+
+, (2) where αi is an aggregation weight that typically depends on the staleness τi. Most existing AFL methods model staleness purely through this time or version-gap and choose αi as a decreasing function of τi, without inspecting the behavioral information of the models themselves. As dis-cussed in Section 4, such a time-based metric is often too coarse to capture the true quality of client updates at different training stages and under heterogeneous data distributions. 
+
+4. Motivation 
+
+Most existing asynchronous FL methods quantify model staleness solely by the round gap between a client model and the latest global model, i.e. , using a scalar function s(τ ) of the iteration difference τ . The resulting aggregation weights depend only on τ , implicitly assuming that updates with the same round gap should have the same importance. This simplification ignores several key factors. First, the same round gap can correspond to very different degrees of model drift at different training stages. In the early phase, when the global model is still far from convergence, a stale update may deviate significantly from the current global model. In the late phase, when the model is close to convergence, an update with the same round gap may be almost indistinguishable from the latest global model. However, a purely round-gap-based staleness metric assigns them identical weights, regardless of their actual behavioral discrepancy. Second, for two client models with the same round gap, their impact on the global model can still be very different under heterogeneous data. Intuitively, given the same τ , the update from a client with a larger distribution shift should receive a smaller aggregation weight. If both updates are aggregated with equal weights, the global model will be biased towards clients whose local data diverge more from the global data distribution. These examples illustrate a broader problem: when training stages differ and data distributions are heterogeneous, using a single scalar function of the iteration difference as the staleness metric 520 40 60 80 100 
+
+> Training Rounds
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> 0.9
+> 1.0
+> Staleness Metric
+> Model Staleness Evolution
+> FedPSA (iid)
+> FedPSA (non-iid)
+> FedAsync
+> FedPSA (iid)
+> FedPSA (non-iid)
+> FedAsync (iid)
+> FedAsync (non-iid)
+> 70
+> 75
+> 80
+> 85
+> 90
+> 95
+> 100
+> Final Accuracy (%)  93%
+> 81%
+> 91%
+> 76%
+> Final Model Accuracy Comparison
+
+Figure 1: Comparison of weighting coefficients and final accuracy between FedPSA and FedAsync. Tradi-tional methods overlook the details during aggregation, leading to poor final performance. 
+
+inevitably limits the effectiveness of training. This motivates us to move beyond coarse, time-only notions of staleness and seek a metric that captures the behavioral discrepancy between models. In this work, we propose to measure staleness from the perspective of parameter sensitivity. Parameter sensitivity reflects how critical each parameter is to the model’s loss, thus providing fine-grained, parameter-level information about the model state. By comparing sensitivity patterns between client and server models, we can obtain a behavioral-aware notion of staleness that goes beyond mere iteration differences. To validate this idea, we conduct a series of comparative experiments to examine how tradi-tional round-gap-based staleness and sensitivity-based staleness behave under different scenarios. The experimental results are illustrated in Figs. 1 and 2. As long as the round difference is fixed, traditional metrics always produce identical staleness values, regardless of training stage or data distribution. In contrast, sensitivity-based staleness exhibits the following desirable properties: 1. Distribution awareness. When a client update is generated under a large data distribution shift, its sensitivity pattern differs more from the server’s, leading to a lower aggregation weight. 2. Stage awareness. For the same round gap, updates in the early phase and late phase receive different weights, reflecting the changing dynamics as the model converge. 3. Saturation effect. As the round gap grows beyond a certain threshold, the measured stale-ness gradually saturates, rather than increasing unboundedly, which better matches the em-pirical behavior of asynchronous training. These observations suggest that parameter sensitivity offers a more reasonable and informative proxy for model staleness, forming the foundation of our proposed aggregation scheme. 
+
+5. Methodology 
+
+In this section, we describe the workflow of FedPSA, an AFL algorithm designed to assist in aggregation by leveraging parameter sensitivity. By down-weighting conflicting updates during aggregation, it can effectively improve the final model performance. Additionally, we provide the convergence analysis of FedPSA in Appendix. 6Figure 2: Weighting schemes in AFL: round gap vs. behavioral information (FedPSA). The traditional method selects 1√τ +1 as the weighting scheme. 
+
+5.1. FedPSA Overview 
+
+Based on the aforementioned motivations, we propose FedPSA, a simple yet effective method improved upon FedBuff. This method only adjusts the weight calculation method during the server-side aggregation phase. However, by examining the model staleness issue from a novel per-spective, FedPSA successfully establishes a new criterion for assessing model staleness in AFL, thereby further unlocking the potential of asynchronous methods. To facilitate readers’ quick understanding of the FedPSA framework, the following section provides an overview of its algorithmic process. The buffer, as a successful design in AFL, can temporarily store model updates while supporting concurrent client training, significantly reducing the frequency of global model updates and thus mitigating the negative impact of model staleness. Therefore, FedPSA also adopts this design. The core innovation of FedPSA lies in its weighting strategy within the buffer: although it also performs a weighted average of the updates in the buffer based on staleness, its criterion for judging staleness is fundamentally different from traditional methods. FedPSA requires each client to submit its parameter sensitivity matrix along with the model update when uploading. When the buffer is full, the server compares this matrix with the param-eter sensitivity matrix of the global model to generate a corresponding matrix similarity score, which is used to evaluate model staleness. However, this score alone does not directly determine the aggregation weights. FedPSA also incorporates the current training phase for a comprehen-sive judgment. Specifically, FedPSA exhibits varying degrees of tolerance for model staleness at different training stages: it encourages exploration of more solution spaces in the early stages of training, while promoting stable model convergence in the later stages. To identify the cur-rent training phase, FedPSA introduces a queue structure called the training thermometer, which records the momentum information of recent client training. By integrating both the training tem-perature and model staleness, FedPSA performs a weighted aggregation of the gradients in the buffer. The specific process is outlined in Algorithm 1. 
+
+5.2. Model Parameter Sensitivity 
+
+We follow the standard pruning literature [36, 37] and define the sensitivity of a model param-eter as the change of the loss when this parameter is set to zero. Consider a model with parameter vector Θ = {θ1, θ 2, . . . , θ d} and loss function F(Θ) . The sensitivity of the i-th parameter is 
+
+si = F(Θ) − F (Θ − θiei) , (3) 7Algorithm 1 FedPSA 
+
+Require: initial server model w0 
+
+> g
+
+, all clients cn, thermometer queue Q, queue length Lq, buffer S,buffer size Ls, local epochs E, random projection matrix R 
+
+> 1:
+
+The server broadcast the public batch data Db and projection matrix R to all clients cn. 
+
+> 2:
+
+for each round t = 1 , 2, . . . , T do  
+
+> 3:
+
+sample available clients cavail from cn 
+
+> 4:
+
+Clients Execute:  
+
+> 5:
+
+for each client ci in cavail parallel do do  
+
+> 6:
+
+initialize w0 
+
+> i
+
+← wt−1 
+
+> g
+> 7:
+
+wti ← LocalUpdate (w0 
+
+> i
+
+, D i) 
+
+> 8:
+
+∆wi = wti − w0 
+
+> i
+> 9:
+
+si ← ComputeSensitivity (wti , D b) 
+
+> 10:
+
+˜si ← R si 
+
+> 11:
+
+send (∆ wi, ˜si) to Server  
+
+> 12:
+
+end for  
+
+> 13:
+
+Server Executes:  
+
+> 14:
+
+if receive clients’ package then  
+
+> 15:
+
+Receive (∆ wi, ˜si) from client i 
+
+> 16:
+
+Push tuple( ∆wi,κi ← CosineSimilarity (˜ si, ˜sg)) into buffer S, mi ← Pdj=1 (∆ w(j) 
+
+> i
+
+)2
+
+into queue Q 
+
+> 17:
+
+if queue Q not full then  
+
+> 18:
+
+Weighting scheme: uniform averaging  
+
+> 19:
+
+else if queue Q is full for the first time then  
+
+> 20:
+
+M0 = Average (Q) 
+
+> 21:
+
+end if  
+
+> 22:
+
+Mcur = Average (Q) 
+
+> 23:
+
+Temp =
+
+Mcur 
+
+M0
+
+
+
+· γ + δ 
+
+> 24:
+
+if length (S) ≥ L s then  
+
+> 25:
+
+if Weighting scheme is null then  
+
+> 26:
+
+for each i in buffer S do  
+
+> 27:
+
+Weight i = exp( κi/T emp )
+
+PLs 
+
+> j=1
+
+exp( κj /T emp ) 
+
+> 28:
+
+end for  
+
+> 29:
+
+end if  
+
+> 30:
+
+wtg = wt−1 
+
+> g
+
++ PLs 
+
+> i=1
+
+Weight i · ∆wi 
+
+> 31:
+
+clear buffer S 
+
+> 32:
+
+end if  
+
+> 33:
+
+end if  
+
+> 34:
+
+end for Ensure: the fully trained server model wTg
+
+where ei denotes the i-th canonical basis vector. Computing si exactly for all parameters requires one forward pass per parameter, which is prohibitive for modern deep models. We therefore ap-proximate using a second-order Taylor expansion. 
+
+Second-order Taylor approximation . We expand the loss at Θ along the direction −θiei up to second order: 
+
+F(Θ − θiei) ≈ F (Θ) + ∇iF(Θ)( −θi) + 12(−θi)Hii (Θ)( −θi)+ R2
+
+= F(Θ) − ∇ iF(Θ) θi + 12Hii (Θ) θ2
+
+i + R2,
+
+(4) 8where ∇iF(Θ) is the partial derivative w.r.t. θi, Hii (Θ) is the i-th diagonal element of the Hessian 
+
+H(Θ) = ∇2F(Θ) , and R2 is the remainder term. Ignoring R2, we obtain 
+
+si = F(Θ) − F (Θ − θiei)
+
+≈ ∇iF(Θ) θi − 12Hii (Θ) θ2 
+
+> i
+
+. (5) Equation (5) is the ideal second-order sensitivity, but still requires access to the diagonal of the Hessian and the gradient at Θ.
+
+Approximating the Hessian diagonal by the Fisher information . Explicitly forming the Hessian 
+
+H(Θ) costs O(n2) and is intractable for high-dimensional models. For losses that are (or are close to) negative log-likelihoods and for models near a local optimum, it is standard to approximate the Hessian by the Fisher information matrix. Concretely, given a dataset or mini-batch {xk}mk=1 
+
+and the corresponding per-sample (or mini-batch) losses Fk(Θ) , we define the empirical Fisher diagonal as 
+
+Fii (Θ) = 1
+
+m
+
+> m
+
+X
+
+> k=1
+
+ ∇θi Fk(Θ) 2. (6) Under the usual regularity assumptions from information geometry, Fii (Θ) provides an approx-imation of the expected Hessian diagonal E[Hii (Θ)] . We therefore replace Hii (Θ) in Equation (5) by Fii (Θ) , yielding 
+
+si ≈ ∇iF(Θ) θi − 12Fii (Θ) θ2 
+
+> i
+
+. (7) 
+
+Practical sensitivity in FedPSA . In FedPSA, we evaluate the above approximation at the current model Θt at round t. For the i-th parameter, the resulting second-order sensitivity is 
+
+sti ≈ ∇iF(Θ t) θti − 12Fii (Θ t) ( θti )2 . (8) Both the gradient ∇F (Θ t) and the Fisher diagonal Fii (Θ t) are computed on a small calibration mini-batch that is shared across all clients (see below), so that sensitivities are directly comparable across clients without leaking private data. Note that Equation (8) contains no additional task-specific hyperparameters: it follows directly from the second-order Taylor expansion and the Fisher approximation. 
+
+Common calibration data for comparable sensitivities . To ensure that sensitivity scores from dif-ferent clients are comparable and are not dominated by idiosyncrasies of local data, the server constructs and samples a small shared calibration mini-batch and broadcasts it to all participating clients prior to training. This calibration batch does not need to contain any real user data; in practice, it can be instantiated entirely by synthetic samples ( e.g. , i.i.d. Gaussian noise), so that no additional privacy risk is introduced beyond standard FL. During training, each client period-ically evaluates the gradients ∇θi Fk(Θ t) and the Fisher diagonals Fii (Θ t) on this shared calibra-tion batch, and computes its local sensitivity matrix according to Equation (8). These sensitivity matrices are sent to the server together with the model updates and are then used in FedPSA’s aggregation rule. 95.3. Why Parameter Sensitivity Instead of Other Signals 
+
+A natural question is whether behavioral staleness in AFL can be measured by other signals be-yond parameter sensitivity. We considered three alternatives that are commonly used to character-ize client updates: (a) gradient-similarity-based weighting, (b) representation/feature-consistency-based alignment, and (c) client-drift or distance-to-global proxies. However, each of them has a notable drawback in the asynchronous setting. First, gradient similarity is often computed on stale gradients produced by past model versions; due to the version gap, the similarity can quickly be-come uninformative or even misleading for the current global model. Second, feature-consistency objectives typically require transmitting or reconstructing intermediate activations, additional aux-iliary statistics, or extra forward/backward passes, which increases communication and computa-tion overhead beyond what is desirable in lightweight AFL. Third, drift-based proxies are usually coarse distance surrogates that do not distinguish “far but directionally consistent” updates from “near but directionally conflicting” ones, which is exactly the type of ambiguity that behavioral staleness should resolve. These limitations motivate our choice of parameter sensitivity patterns evaluated on a shared calibration batch, which provide a model-intrinsic, direction-aware, and communication-efficient signal after sketching. 
+
+5.4. Behavioral Staleness via Sensitivity Sketching 
+
+In this paper, we use the term behavioral information to refer to the behavioral response of a model to a shared calibration batch, captured by its parameter-sensitivity pattern. Thus,“behavioral” here contrasts with purely time-based quantities, and focuses on how the model functionally be-haves on data rather than when the update was generated. In most existing asynchronous FL methods, the aggregation weight of a client update is mod-eled as a function of the version gap between the client and the server. Let τ time  
+
+> i
+
+denote the round difference between the local model of client i and the latest global model on the server. A typical time-based staleness model takes the form 
+
+αi = α τ time 
+
+> i
+
+, (9) where more recent updates (smaller τ time  
+
+> i
+
+) receive larger weights. While convenient, this definition treats staleness as a purely temporal quantity and ignores how the models themselves behave. As discussed in Section 4, the same version gap can correspond to very different update qualities at different training stages and under different data distributions. To move beyond this coarse notion, FedPSA interprets staleness through the lens of behavioral similarity between models. Intuitively, instead of asking “how many rounds old is this update”, we ask “how compatible is this update with the current global training dynamics”. This behavioral view is realized via the parameter-sensitivity vectors introduced in Section 5.2. Let si ∈ Rd denote the flattened parameter-sensitivity vector of client i (evaluated on the shared calibration batch), and let sg ∈ Rd be the sensitivity vector of the current global model. In the full parameter space, their behavioral alignment can be characterized by the cosine similarity 
+
+cos  si, sg
+
+ = si, sg
+
+si 2 sg 2
+
+∈ [−1, 1] , (10) where a larger value indicates that the client and server respond to the calibration data in a more similar way. Updates with high cosine similarity are thus considered behaviorally “fresh”, whereas 10 updates with low or even negative similarity are treated as behaviorally “stale” because they push the model in a direction that conflicts with the current global behavior. In principle, one could directly use the full-space cosine Equation (10) as the behavioral stale-ness signal. However, transmitting the full d-dimensional sensitivity vector si from each client in every upload can be costly when the model contains millions of parameters. To make the behav-ioral staleness practical in large-scale settings, FedPSA employs a simple random-projection-based sensitivity sketch, which preserves the relevant geometry while significantly reducing communi-cation overhead. At the beginning of training, the server samples a random projection matrix R ∈ Rk×d with 
+
+k ≪ d (e.g. , with i.i.d. entries of zero mean and variance 1/k ) and broadcasts R to all clients. The same matrix R is reused throughout training. Given its full sensitivity vector si, client i forms a 
+
+k-dimensional sketch by 
+
+˜si = R si ∈ Rk, ˜sg = R sg ∈ Rk, (11) and only needs to transmit ˜si to the server together with the model update. On the server side, the behavioral similarity used by FedPSA is then evaluated directly in the sketch space as 
+
+κi = cos  ˜si, ˜sg
+
+ = ˜si, ˜sg
+
+˜si 2 ˜sg 2
+
+. (12) We use κi in all subsequent formulas as the behavioral similarity score of client i. Conceptually, it can be viewed as a low-dimensional approximation of the full-space cosine in Equation (10). With this sketching mechanism, the communication cost per client upload for sensitivity in-formation is reduced from d floating-point entries to k entries. The effective compression ratio is compression ratio = kd , (13) which can be smaller than 10 −2 when d is on the order of 10 5–10 6 and k is fixed to a few hundred. Classical Johnson–Lindenstrauss (JL) results provide a theoretical justification for using such random projections. Let {xℓ}Nℓ=1 ⊂ Rd be a collection of vectors of interest. There exists a random linear map P ∈ Rk×d with k = O(log N/ε 2) such that, with high probability, all pairwise squared distances are preserved up to a factor (1 ± ε):
+
+(1 − ε) ∥x − y∥22 ≤ ∥ P x − P y ∥22 ≤ (1 + ε) ∥x − y∥22,
+
+∀ x, y ∈ { xℓ}. (14) For ℓ2-normalized vectors, squared distance and cosine similarity are linked via 
+
+∥x − y∥22 = 2 − 2⟨x, y ⟩ = 2  1 − cos( x, y ), (15) so the preservation of distances in Equation (14) directly implies that the cosine similarity com-puted in the sketch space is close to that in the original space. 11 0 2 4 6 8 10                                
+
+> Time (day)
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Accuracy
+> Best (AUC)
+> CIFAR10_ 0.1 (Best: FedPSA)
+> 0246810
+> Time (day)
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Accuracy
+> Best (AUC)
+> CIFAR10_ 0.5 (Best: FedPSA)
+> 0246810
+> Time (day)
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> Accuracy
+> Best (AUC)
+> CIFAR10_ 1.0 (Best: FedPSA)
+> 0246810
+> Time (day)
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> Accuracy
+> Best (AUC) CIFAR100_ 0.1 (Best: FedPSA)
+> 0246810
+> Time (day)
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> Accuracy
+> Best (AUC) CIFAR100_ 0.5 (Best: FedPSA)
+> 0246810
+> Time (day)
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> 0.20
+> 0.25
+> 0.30
+> Accuracy
+> Best (AUC) CIFAR100_ 1.0 (Best: FedPSA)
+> FedPAC FedFa FedBuff FedAVG FedAsync FedPSA CA2FL
+
+Figure 3: Convergence curves of different algorithms on the CIFAR dataset. 
+
+5.5. Training Thermometer 
+
+As training proceeds, the global model gradually converges and the scale of parameter updates typically decreases. Intuitively, in the early stage the model is still far from a good solution and can benefit from exploring more diverse directions, whereas in the late stage it becomes important to emphasize only those updates that are highly consistent with the current optimization trajectory. To let FedPSA adapt its tolerance to behavioral staleness across different training phases, we introduce a simple training thermometer. Recall that FedPSA measures the behavioral compatibility between client i and the server by the cosine similarity κi between their parameter-sensitivity sketches (Section 5.4). Larger κi indi-cates better alignment and thus lower behavioral staleness. If we directly feed κi into a weighting scheme, the resulting weights would implicitly assume a fixed “temperature”: the same level of misalignment would be treated equally at the beginning and near convergence. The training ther-mometer instead makes this temperature depend on the recent dynamics of the model updates. Concretely, the server maintains a fixed-size queue Q to store a scalar measure of the magnitude of recent client updates. When client i uploads an update ∆wi, the server computes its squared ℓ2
+
+norm 
+
+mi = ∥∆wi∥22 =
+
+dX
+
+j=1 
+
+ ∆w(j)
+
+i
+
+2, (16) and pushes mi into Q. Once the queue is full, the oldest entry is dropped for each new insertion. Let Mcur denote the average update magnitude over the current queue, 
+
+Mcur = 1
+
+|Q|
+
+X
+
+m∈Q
+
+m, (17) 12 and let M0 be the value of this average when the queue is filled for the first time. We then define the current training temperature as 
+
+Temp = 
+
+Mcur 
+
+M0
+
+
+
+γ + δ, (18) where γ and δ are hyperparameters. In the early stage of training, the updates are large and Mcur ≈
+
+M0, so Temp stays relatively high. As the model converges and the updates become smaller, the ratio Mcur /M 0 decreases and Temp gradually drops. Given the behavioral similarity scores {κi} for the updates stored in the buffer and the current temperature Temp , FedPSA assigns aggregation weights via a softmax function: 
+
+Weight i = exp  κi/Temp PLs 
+
+> j=1
+
+exp  κj /Temp , (19) where Ls is the number of updates in the buffer. A higher temperature flattens the softmax and thus tolerates a broader range of behavioral discrepancies, which is desirable in the exploratory early stage. A lower temperature sharpens the softmax and focuses the aggregation on a few highly aligned updates, which stabilizes convergence in the late stage. Finally, once the buffer is full, the server aggregates the stored updates according to these weights and applies them to the global model: 
+
+wround  
+
+> g
+
+= wround −1 
+
+> g
+
++
+
+> ns
+
+X
+
+> i=1
+
+Weight i ∆wi. (20) Equations (18)–(20) together realize a temperature-controlled aggregation mechanism: in the early phase, FedPSA allows behaviorally diverse updates to contribute, while in the later phase, it increasingly suppresses behaviorally stale updates and relies mainly on those that are well aligned with the global sensitivity pattern. 
+
+6. Experiment 
+
+6.1. Experimental Setup 
+
+In this section, we use the FLGO [38] framework to compare FedPSA with 6 state-of-the-art baselines on 4 datasets. In the FLGO framework, one virtual day consists of 86,400 atomic time units. All experiments were run on 8 NVIDIA A100-SXM4-80GB GPUs. 
+
+Baselines . To validate the effectiveness of our proposed FedPSA method, we conducted compar-ative experiments against six state-of-the-art baselines: FedAvg [5], FedAsync [14], FedBuff [39], CA2FL [15], FedFa [27], and FedPAC [40]. FedAvg and FedAsync represent pioneering works in synchronous and AFL, respectively, and hold irreplaceable significance in the field. FedBuff introduced the concept of a buffer in AFL for the first time, substantially enhancing performance. CA2FL calibrates global updates by caching the latest client updates. FedFa designs the buffer as a queue structure to enable fully asynchronous training. FedPAC utilizes global behavioral knowledge for feature alignment to learn better representations. For any method-specific hyperpa-rameters, we adhered to the values recommended in the original publications. 13 Table 1: Final accuracy (%) of MNIST / FMNIST after 10 days of virtual time. Best results are in bold .                                               
+
+> MNIST FMNIST Method α=0 .1α=0 .5α=1 .0α=0 .1α=0 .5α=1 .0
+> FedBuff (Base) 98 .66 98 .76 98 .70 84 .03 83 .87 84 .06
+> FedAvg 98 .35 98 .67 98 .70 80 .77 78 .38 82 .46
+> FedAsync 95 .62 97 .59 97 .95 82 .59 82 .82 83 .00
+> CA2FL 98 .49 98 .73 98 .79 83 .26 83 .60 83 .78
+> FedFa 94 .72 97 .12 97 .75 82 .19 82 .73 83 .25
+> FedPAC 85 .75 96 .46 97 .23 –FedPSA (Ours) 98.53 98.79 98.84 83.84 83.93 84.14
+
+Table 2: Final accuracy (%) of CIFAR-10 / CIFAR-100 after 10 days of virtual time. Best results are in 
+
+bold .                                                 
+
+> CIFAR-10 CIFAR-100 Method α=0 .1α=0 .5α=1 .0α=0 .1α=0 .5α=1 .0
+> FedBuff (Base) 58 .09 62 .60 64 .50 20 .33 24 .19 25 .97
+> FedAvg 57 .09 62 .86 63 .22 24 .08 26 .07 27 .98
+> FedAsync 47 .30 52 .80 55 .93 12 .20 15 .83 17 .45
+> CA2FL 59 .90 63 .81 63 .95 26 .61 27 .77 30 .01
+> FedFa 44 .27 50 .42 54 .52 12 .92 15 .49 17 .26
+> FedPAC 18 .40 36 .31 48 .08 5.94 7.76 8.42
+> FedPSA (Ours) 61.83 63.98 64.04 26.70 28.37 30.45
+
+Datasets . To evaluate the performance of different methods, we conducted experiments on four commonly used benchmark datasets in FL, including MNIST [41], FMNIST [42], CIFAR-10 [43], and CIFAR-100 [43]. We divided each dataset into a test set comprising 10% of the data and a training set comprising the remainder. To simulate data heterogeneity, we adopted the Dirichlet distribution, widely used in FL, with the parameter α set to 0.1, 0.5, and 1.0. Here, a smaller α
+
+value corresponds to a higher degree of data heterogeneity. 
+
+Network Architectures . To ensure a comprehensive evaluation, we employ distinct network archi-tectures for different datasets, following standard practices in the field. For the MNIST dataset, we utilize a Convolutional Neural Network (CNN) [44]. The model comprises two 5 ×5 convolutional layers (the first with 32 channels, the second with 64 channels, each followed by a ReLU activation and a 2 ×2 max-pooling layer), a flatten layer, and a fully-connected layer with 512 units and ReLU activation [45]. The final classification is performed by a linear output layer with 10 dimensions. For the FMNIST dataset, we adopt a simple linear model. This model consists of a single fully-connected layer that maps the 784-dimensional input directly to a 10-dimensional output, with its bias terms initialized to zero. For the CIFAR-10 dataset, we employ a deeper CNN. This network features two 5 ×5 convo-lutional layers (both with 64 channels, each followed by a ReLU activation and a 2 ×2 max-pooling layer), followed by a flatten layer and two fully-connected layers (the first with 384 output units and the second with 192 output units, both using ReLU activation). The results are obtained via a final linear output layer with 10 dimensions. 14 Table 3: Comparison of AULC after 10 days of virtual time across CIFAR datasets. Best results are in bold .                                                               
+
+> Method Dataset CIFAR-10 CIFAR-100 Avg
+> α= 0 .1α= 0 .5α= 1 .0α= 0 .1α= 0 .5α= 1 .0
+> FedBuff (Base) 5.255 5.848 6.098 1.930 2.241 2.460 3.972 FedAvg 5.149 5.764 5.934 1.996 2.276 2.490 3.934 FedAsync 4.431 5.038 5.351 1.109 1.451 1.600 3.163 CA2FL 5.424 5.943 6.111 2.192 2.387 2.595 4.108 FedFa 4.187 4.841 5.269 1.194 1.447 1.614 3.092 FedPAC 2.919 3.890 4.842 0.460 0.619 0.792 2.253 FedPSA (Ours) 5.859 6.181 6.246 2.472 2.646 2.871 4.379
+
+For the CIFAR-100 dataset, we use the same CNN backbone architecture as for CIFAR-10. To accommodate the larger number of classes, the final output layer is adjusted to have 100 dimensions. 
+
+Parameter Settings . To ensure a fair comparison between methods, the common hyperparameters of all methods remain consistent. The sampling rate for synchronous FL and the concurrency rate for AFL are both set to 20%. The initial learning rate is 0.01, with a learning rate decay of 0.999, meaning that after each round, the learning rate decreases to 99.9% of its previous value. The local epochs for clients are set to 5, batch sizes are set to 64, and SGD is used as the optimizer. The number of clients is set to 50, with each client’s response time following a uniform distribution between 10 and 500 virtual time units. Ls is set to 5, Lq is set to 50, γ is set to 5, δ is set to 0.5, and the compressed dimension k is set to 16. 
+
+6.2. Performance Analysis 
+
+Final Accuracy . This section compares the proposed FedPSA method with various baseline meth-ods. Table 1 and Table 2 present the final accuracy of all methods across different datasets, since the model used for the FMNIST task contains only a single fully connected layer, the hierarchical model-based method FedPAC cannot be tested on this task. The experimental results demonstrate that FedPSA achieves the best performance under various datasets and different heterogeneity set-tings of the same dataset, validating the effectiveness of our method. In particular, on the most challenging dataset, CIFAR-100, FedPSA shows a significant improvement in final accuracy com-pared to the baseline method FedBuff, further highlighting its capability to effectively mitigate model conflicts in high-difficulty tasks. 
+
+Convergence Efficiency . To evaluate the performance of the proposed method, we compared the convergence efficiency of FedPSA with various existing methods. As shown in Fig. 3, we plot the learning curves of different methods on two more challenging CIFAR datasets. The convergence trajectory of FedPSA consistently remains above those of other methods. To further quantify the convergence performance of each method, we integrate the learning curves in the figure and derive the Area Under the Learning Curve (AULC) metric, with the specific results summarized in Table 3. 15 Robustness to System Heterogeneity . FedPSA shifts the criterion for staleness evaluation from round differences to the behavioral information of the model. Theoretically, under higher system latency, this method should demonstrate superior performance compared to traditional methods. To evaluate the robustness of FedPSA against system latency, we designed six different system heterogeneity settings, where client response times follow the following distributions: a uniform distribution of 10-500, a long-tail distribution of 10-500, a uniform distribution of 20-1000, a long-tail distribution of 20-1000, a uniform distribution of 50-2500, and a long-tail distribution of 50-2500. Experiments were conducted on the CIFAR-100 dataset, and the results are shown in Table 4. Due to the nature of the long-tail distributions, where most response times cluster around 10, the performance differences among all methods under various long-tail settings are not significant. In the uniform distribution scenarios, FedPSA maintains nearly consistent performance even when client response times double. Moreover, when the response time increases to five times the original, the accuracy drops by only 1.19%, which is considerably less than the decreases observed in FedBuff (2.36%) and CA2FL (2.37%). These results fully demonstrate that FedPSA exhibits stronger robustness in handling system heterogeneity. 
+
+6.3. Hyperparameter Analysis 
+
+To investigate the impact of different hyper-parameters on FedPSA, we conducted a grid-search experiment, the results are shown in Figure 4. 
+
+Hyperparameter γ and δ. The parameters γ and δ are used to adjust the coefficients in the tem-perature calculation. As can be observed from Figure 4, when both hyperparameters are set to relatively small values, the performance of FedPSA drops significantly, whereas in other value ranges, the performance exhibits only minor fluctuations. Therefore, it is not recommended to set both γ and δ to excessively small values simultaneously. 
+
+Buffer Length Ls and Queue Length Lq. The hyperparameters Ls and Lq control the size of the buffer and the length of the stored momentum queue in FedPSA, respectively. When Lq is set too large, the model struggles to accurately identify the current training phase, leading to perfor-mance degradation. Thus, it is advisable to set its value between 10 and 50. If Ls is assigned a relatively large value, the update frequency of the model decreases, which also adversely affects performance. Therefore, it is recommended to set Ls within the range of 5 to 20. 
+
+6.4. Ablation Study 
+
+Component . To evaluate the effectiveness of the FedPSA framework, we conduct three ablation studies: (1) w/o T (without temperature control): the thermometer mechanism is removed, so gradient weights in the buffer no longer adapt to the current training stage. (2) w/o S (without parameter-sensitivity matrix): raw model parameters are used instead of the parameter-sensitivity matrix to measure behavioral similarity. (3) w/o T&S (without both): both temperature control and the parameter-sensitivity matrix are eliminated. As shown in Table 6, under the Non-IID scenario, removing any component of FedPSA leads to a significant drop in accuracy. This indicates that FedPSA exhibits strong robustness in Non-IID settings due to its increased attention to model-specific details. Moreover, replacing parameter sensitivity with the model itself results in performance degradation, which suggests that parameter sensitivity better captures the behavioral information of the model during training. 16 Figure 4: Performance of FedPSA under different hyperparameters. Table 4: Final accuracy (%) of different algorithms under various system heterogeneity settings. Bold                      
+
+> indicates the best.
+> Setting Algorithm Accuracy (%) Uniform Long-tail 10–500 FedBuff 25 .75 30 .23
+> CA2FL 28 .57 30 .66
+> FedPSA (Ours) 30.23 31.05
+> 20–1000 FedBuff 24 .92 29 .79
+> CA2FL 27 .59 30 .94
+> FedPSA (Ours) 30.21 30.98
+> 50–2500 FedBuff 23 .39 29 .89
+> CA2FL 26 .20 29 .23
+> FedPSA (Ours) 29.04 30.70
+
+Calibration Batch Choice . A key design choice in FedPSA is the construction of the shared cal-ibration batch Db, which is used solely to compute parameter sensitivity and the corresponding behavioral similarity scores, rather than to train the model itself. To assess how sensitive FedPSA is to the specific choice of Db, we conduct an ablation study comparing two configurations: (i) a calibration batch sampled from the original training data distribution, and (ii) a purely synthetic calibration batch whose inputs are drawn from an i.i.d. Gaussian distribution with zero mean and unit variance. In both cases, the size of Db and the overall training protocol are kept identical. The results in Table 5 show that replacing real data with Gaussian noise in Db leads to negligi-ble differences in final test accuracy and convergence speed across all datasets and asynchronous settings. This observation is consistent with the role of Db in FedPSA: the algorithm only relies on the relative geometry between the sensitivity vectors of client and server models, which is subse-quently smoothed by mini-batch averaging and random projection into low-dimensional sketches. As long as all models are evaluated on the same shared batch, even a simple noise-based Db pro-17 Figure 5: Computational and communication overheads of different methods on diverse datasets. Table 5: Ablation on the calibration batch Db on CIFAR-10 with different Dirichlet partition parameters. We report final test accuracy (%) for real-data and Gaussian calibration batches under various batch sizes.                                  
+
+> Dataset Batch size Real-data DbGaussian DbAbs. ∆
+> CIFAR-10 ( α= 0 .1)16 63.30 63.68 -0.38 32 63.91 63.67 +0.24 128 63.84 63.24 +0.60 512 63.76 63.61 +0.15 CIFAR-10 ( α= 1 .0)16 66.15 66.11 +0.04 32 66.16 66.35 -0.19 128 66.42 66.42 +0.00 512 66.13 66.65 -0.52
+
+vides a sufficiently informative probe to distinguish behaviorally aligned and misaligned updates. Practically, this robustness implies that FedPSA does not require access to additional public or de-identified task data for calibration; instead, one can construct Db from synthetic noise without sacrificing performance, which further reduces the risk of privacy leakage associated with sharing calibration data. 
+
+6.5. Communication and Computation Overhead 
+
+Although FedPSA introduces additional parameter sensitivity into the aggregation process, its communication and computation costs remain comparable to existing asynchronous baselines. To verify this, we profile both server-side and client-side computation, as well as the total communi-cation volume, on all four datasets. The aggregated results are summarized in Fig. 5, where the bars denote computation cost and the line denotes communication cost. From Fig. 5 we observe that the costs of FedPSA and baselines are on the same order of magnitude across all datasets. In particular, the client-side communication of FedPSA is almost identical to that of FedBuff, because all methods transmit the same model parameters during each upload. The additional behavioral information accounts for only a very small fraction of the total communication volume. On the computation side, the client cost of FedPSA is also very close to, and in some cases slightly lower than, that of the baselines, indicating that the additional sensitivity computation does not introduce a noticeable burden in practice. This efficiency mainly comes from two design choices in FedPSA. First, the parameter sensi-tivity is always evaluated on a fixed public mini-batch rather than on the full local dataset. The 18 Table 6: Ablation Study of FedPSA under Different Settings. Bold text represents the highest value.                                   
+
+> Dirichlet Setting Method Concurrency Rate pp= 0 .1p= 0 .2p= 0 .3
+> IID ( α= 1 )w/o T 62.8 63.54 64.98 w/o S 61.43 61.77 63.97 w/o T&S 61.51 61.68 62.74
+> Full 63.22 64.30 65.76
+> NIID ( α= 0 .1)w/o T 53.30 56.90 59.15 w/o S 54.07 56.71 58.56 w/o T&S 44.08 51.09 55.16
+> Full 59.78 61.22 62.39 -0.0 0.1
+> 0.1 0.2
+> 0.2 0.3
+> 0.3 0.4
+> 0.4 0.5
+> 0.5 0.6
+> 0.6 0.7
+> 0.7 0.8
+> 0.8 0.9
+> 0.9 1.0
+> kappa bin range
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> Mean alignment
+> empty bins: 0.1 0.2
+> 0
+> 2000
+> 4000
+> 6000
+> 8000
+> 10000
+> 12000
+> Count
+
+Figure 6: Relationship between behavioral similarity κ and gradient alignment. “Count” denotes the number of samples in each bin. 
+
+extra cost is negligible compared to the normal local training over multiple epochs. Second, instead of transmitting the full high-dimensional sensitivity vector, FedPSA applies a random projection to obtain a low-dimensional sensitivity sketch. Since the sketch dimension is much smaller than the number of model parameters, the communication overhead of sending sensitivity information is reduced by orders of magnitude. These results demonstrate that FedPSA achieves superior accuracy and robustness while in-curring only marginal additional overhead compared with existing asynchronous FL methods. In other words, practitioners do not need to worry about extra communication or computation cost when deploying FedPSA in real-world systems. 
+
+6.6. Validation of κ as a Behavioral Staleness Indicator 
+
+In this subsection, we empirically examine whether the proposed behavioral similarity score 
+
+κ can effectively reflect behavioral staleness in asynchronous federated learning. Intuitively, if a client update is behaviorally stale with respect to the current global model, its update direction is more likely to conflict with the server-side optimization direction. We therefore study the relation-ship between κ and the alignment between client updates and the server gradient. 
+
+Experimental protocol. To characterize the behavioral consistency between the client update and the server, we compute the gradients of the global objective on a held-out test batch for both the 19 client and the server: 
+
+gclient = ∇wL(wclient ; Dtest ), gserver = ∇wL(wserver ; Dtest ). (21) We then measure the directional alignment between the client and server gradients as the cosine similarity: align i = cos( gclient , g server ). (22) A higher alignment indicates that the client update direction is more consistent with the current server-side optimization trajectory, while a lower alignment suggests stronger behavioral conflict. We record pairs (κi, align i) for all received updates throughout training. To reduce the influ-ence of high variance induced by client heterogeneity and asynchronous delays, we further group updates into bins according to κ (with bin width 0.1) and compute the average alignment within each bin. 
+
+Correlation analysis. We first report the correlation between κ and alignment at the sample level. The Pearson and Spearman correlation coefficients are Pearson r = 0 .1908 , Spearman ρ = 0 .1338 .
+
+The relatively weak sample-wise correlation is expected in asynchronous federated learning, where individual client updates exhibit substantial variance due to heterogeneous data distributions, dif-ferent local training stages, and varying staleness levels. More importantly, behavioral staleness is inherently a population-level property that affects aggregation rather than individual updates. We therefore examine the relationship between κ and alignment in expectation by analyzing binned averages. After binning updates by κ, a strong positive and monotonic relationship emerges: Pearson r = 0 .7620 , Spearman ρ = 0 .6833 .
+
+This indicates that updates with larger κ values are, on average, much more aligned with the server gradient, whereas updates with smaller κ tend to exhibit stronger directional inconsistency. 
+
+Results and implications. Figure 6 visualizes the mean alignment as a function of κ bins, together with the number of samples in each bin. Overall, the mean alignment increases with κ, indicating that updates with higher behavioral similarity tend to be more consistent with the server optimiza-tion direction. We observe that the relationship is not strictly linear, especially in the low κ regime. This phenomenon can be explained by two factors. First, asynchronous training combined with data heterogeneity introduces substantial variance, which leads to noisy alignment measurements at the level of individual updates. Second, several κ bins contain only a limited number of samples, which reduces the statistical reliability of the corresponding averaged alignment values. In partic-ular, some low κ bins are sparsely populated or contain no samples at all, and the observed mean alignment in these bins should therefore be interpreted with caution. Despite these local fluctuations, the overall monotonic trend remains clear. Updates with larger 
+
+κ values consistently exhibit higher average alignment with the server gradient. This result con-firms that κ captures meaningful behavioral information related to client staleness in expectation. 20 Consequently, using κ as the core signal in the aggregation rule of FedPSA is well motivated, as it enables the server to emphasize behaviorally consistent updates while suppressing updates that are behaviorally stale. 
+
+7. Conclusion 
+
+In this paper, we propose FedPSA, a novel AFL framework that fundamentally addresses a key limitation of existing asynchronous methods: their reliance on coarse-grained staleness met-rics based solely on round or version differences. By introducing parameter sensitivity as a fine-grained, model-intrinsic measure of update staleness, FedPSA directly quantifies the behavioral conflict between client updates and the current global model, thereby enabling more accurate as-sessment of the actual staleness degree of contributions. Furthermore, we propose a training tem-perature mechanism implemented through dynamic momentum queues, allowing the framework to adaptively adjust its tolerance for staleness according to the training phase. This mechanism permits broader exploration during early stages when gradient momentum is high, while enforcing stricter convergence behavior in later phases. These two innovations synergize within a buffer-based asynchronous aggregation workflow, significantly mitigating the adverse effects of stale gra-dients while preserving the efficiency advantages of asynchrony. Extensive experimental results on multiple benchmark datasets and under varying degrees of data heterogeneity demonstrate that FedPSA consistently outperforms state-of-the-art baselines, achieving higher final accuracy and faster effective convergence in the presence of straggler issues. 
+
+ACKNOWLEDGMENTS 
+
+This work was supported in part by the Open Project Program of State Key Laboratory of Integrated Services Networks of Xidian University under Grant. ISN25-25, the Key Research and Development Program of Shaanxi under Grant No. 2024GX-YBXM-556 and the Shenzhen Science and Technology Program under Grant KJZD20240903104400001. 
+
+References 
+
+[1] T. Li, A. K. Sahu, A. Talwalkar, and V. Smith, “Federated learning: Challenges, methods, and future directions,” IEEE Signal Processing Magazine , vol. 37, no. 3, pp. 50–60, 2020. [2] P. Kairouz, H. B. McMahan, B. Avent, A. Bellet, M. Bennis, A. N. Bhagoji, K. Bonawitz, and et al., “Advances and open problems in federated learning,” Found. Trends Mach. Learn. , vol. 14, no. 1–2, p. 1–210, Jun. 2021. [Online]. Available: https://doi.org/10.1561/2200000083 [3] H. Zhang and Q. Su, “Pjpfl: Personalized federated learning with privacy preser-vation based on sample similarity,” Information Fusion , vol. 122, 2025. [Online]. Available: https://www.scopus.com/inward/record.uri?eid=2-s2.0-105003372565&doi=10. 1016%2fj.inffus.2025.103221&partnerID=40&md5=6ff1200dc233b38208b37040a0d10bed [4] J. Wang, M. T. Quasim, and B. Yi, “Privacy-preserving het-erogeneous multi-modal sensor data fusion via federated learning for 21 smart healthcare,” Information Fusion , vol. 120, 2025. [Online]. Avail-able: https://www.scopus.com/inward/record.uri?eid=2-s2.0-86000482694&doi=10.1016% 2fj.inffus.2025.103084&partnerID=40&md5=041c422b07bbaba1865b03b232680b8d [5] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y. Arcas, “Communication-Efficient Learning of Deep Networks from Decentralized Data,” in Proceedings of the 20th International Conference on Artificial Intelligence and Statistics , ser. Proceedings of Machine Learning Research, A. Singh and J. Zhu, Eds., vol. 54. PMLR, 20–22 Apr 2017, pp. 1273–1282. [Online]. Available: https://proceedings.mlr.press/v54/mcmahan17a.html [6] C. Lu, Y. Sun, J. Chen, Z. Yang, J. Pan, and J. Zhu, “Afbs: buffer gradient selection in semi-asynchronous federated learning,” Knowledge-Based Systems , vol. 330, p. 114632, 2025. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0950705125016715 [7] M. Usman and Y. Lee, “Dfdg: Adaptive federated learning for dynamic graph-based traffic forecasting,” Knowledge-Based Systems , vol. 326, p. 114019, 2025. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0950705125010640 [8] Z. Li, S. Guan, and D. Wang, “Feddhe: A dual entropy-driven framework for robust federated learning in heterogeneous environments,” Knowledge-Based Systems , vol. 333, p. 114972, 2026. [Online]. Available: https://www.sciencedirect.com/science/article/pii/ S0950705125020106 [9] S. Zhang, J. He, Y. Yang, H. Tang, and Y. Cao, “Fedaatke: Adaptive aggregation and targeted knowledge exchange for communication-efficient personalized federated learning,” Knowledge-Based Systems , vol. 336, p. 115335, 2026. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S095070512600078X [10] I. Wang, P. J. Nair, and D. Mahajan, “Fluid: mitigating stragglers in federated learning using invariant dropout,” in Proceedings of the 37th International Conference on Neural Informa-tion Processing Systems , ser. NIPS ’23. Red Hook, NY, USA: Curran Associates Inc., 2023. [11] B. Liu, Y. Ma, Z. Zhou, Y. Shi, S. Li, and Y. Tong, “Casa: Clustered federated learning with asynchronous clients,” in Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , ser. KDD ’24. New York, NY, USA: Association for Computing Machinery, 2024, p. 1851–1862. [Online]. Available: https://doi.org/10.1145/3637528.3671979 [12] J. Park, D.-J. Han, M. Choi, and J. Moon, “Sageflow: Robust federated learning against both stragglers and adversaries,” in Advances in Neural Information Processing Systems ,M. Ranzato, A. Beygelzimer, Y. Dauphin, P. Liang, and J. W. Vaughan, Eds., vol. 34. Curran Associates, Inc., 2021, pp. 840–851. [Online]. Available: https://proceedings.neurips. cc/paper_files/paper/2021/file/076a8133735eb5d7552dc195b125a454-Paper.pdf [13] N. Singh and M. Adhikari, “Selffed: Self-adaptive federated learning with non-iid data on heterogeneous edge devices for bias mitigation and en-hance training efficiency,” Information Fusion , vol. 118, 2025. [Online]. Avail-able: https://www.scopus.com/inward/record.uri?eid=2-s2.0-85214582408&doi=10.1016% 2fj.inffus.2025.102932&partnerID=40&md5=8e952aad010f44e5472484d8d6054cfd 22 [14] C. Xie, S. Koyejo, and I. Gupta, “Asynchronous federated optimization,” 2020. [Online]. Available: https://arxiv.org/abs/1903.03934 [15] Y. Wang, Y. Cao, J. Wu, R. Chen, and J. Chen, “Tackling the data heterogeneity in asynchronous federated learning with cached update calibration,” in The Twelfth International Conference on Learning Representations , 2024. [Online]. Available: https://openreview.net/forum?id=4aywmeb97I [16] G. Damaskinos, R. Guerraoui, A.-M. Kermarrec, V. Nitu, R. Patra, and F. Taiani, “Fleet: Online federated learning via staleness awareness and performance prediction,” 
+
+ACM Trans. Intell. Syst. Technol. , vol. 13, no. 5, Sep. 2022. [Online]. Available: https://doi.org/10.1145/3527621 [17] S. Sun, Z. Zhang, Q. Pan, M. Liu, Y. Wang, T. He, Y. Chen, and Z. Wu, “Staleness-controlled asynchronous federated learning: Accuracy and efficiency tradeoff,” IEEE Transactions on Mobile Computing , vol. 23, no. 12, pp. 12 621–12 634, 2024. [18] T. Zhang, L. Gao, S. Lee, M. Zhang, and S. Avestimehr, “ TimelyFL: Heterogeneity-aware Asynchronous Federated Learning with Adaptive Partial Training ,” in 2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW) . Los Alamitos, CA, USA: IEEE Computer Society, Jun. 2023, pp. 5064–5073. [Online]. Available: https://doi.ieeecomputersociety.org/10.1109/CVPRW59228.2023.00535 [19] K. Niu, J. Cai, and X. Feng, “Safedhdm: Semi-asynchronous fed-erated learning with highlight diffusion model for medical image seg-mentation,” Information Fusion , vol. 126, 2026. [Online]. Avail-able: https://www.scopus.com/inward/record.uri?eid=2-s2.0-105013740693&doi=10. 1016%2fj.inffus.2025.103615&partnerID=40&md5=42c19a311042c422177c44ddc04e47f6 [20] W. Wu, L. He, W. Lin, R. Mao, C. Maple, and S. Jarvis, “Safa: A semi-asynchronous protocol for fast federated learning with low overhead,” IEEE Transactions on Computers , vol. 70, no. 5, pp. 655–668, 2021. [21] J. Liu, H. Xu, L. Wang, Y. Xu, C. Qian, J. Huang, and H. Huang, “Adaptive asynchronous federated learning in resource-constrained edge computing,” IEEE Transactions on Mobile Computing , vol. 22, no. 2, pp. 674–690, 2023. [22] T. Li, A. K. Sahu, M. Zaheer, M. Sanjabi, A. Talwalkar, and V. Smith, “Federated optimization in heterogeneous networks,” 2020. [Online]. Available: https://arxiv.org/abs/ 1812.06127 [23] S. P. Karimireddy, S. Kale, M. Mohri, S. J. Reddi, S. U. Stich, and A. T. Suresh, “Scaffold: stochastic controlled averaging for federated learning,” in Proceedings of the 37th Interna-tional Conference on Machine Learning , ser. ICML’20. JMLR.org, 2020. [24] J. Xu, S. Wang, L. Wang, and A. C.-C. Yao, “Fedcm: Federated learning with client-level momentum,” 2021. [Online]. Available: https://arxiv.org/abs/2106.10874 23 [25] M. Xie, J. MA, G. Long, and C. Zhang, “Robust clustered federated learning with bootstrap median-of-means,” in Web and Big Data: 6th International Joint Conference, APWeb-WAIM 2022, Nanjing, China, November 25–27, 2022, Proceedings, Part I . Berlin, Heidelberg: Springer-Verlag, 2022, p. 237–250. [Online]. Available: https://doi.org/10.1007/978-3-031-25158-0_19 [26] J. Liu, J. Jia, T. Che, C. Huo, J. Ren, Y. Zhou, H. Dai, and D. Dou, “Fedasmu: efficient asynchronous federated learning with dynamic staleness-aware model update,” in 
+
+Proceedings of the Thirty-Eighth AAAI Conference on Artificial Intelligence and Thirty-Sixth Conference on Innovative Applications of Artificial Intelligence and Fourteenth Symposium on Educational Advances in Artificial Intelligence , ser. AAAI’24/IAAI’24/EAAI’24. AAAI Press, 2024. [Online]. Available: https://doi.org/10.1609/aaai.v38i12.29297 [27] H. Xu, Z. Zhang, S. Di, B. Liu, K. A. Alharthi, and J. Cao, “Fedfa: a fully asynchronous training paradigm for federated learning,” in Proceedings of the Thirty-Third International Joint Conference on Artificial Intelligence , ser. IJCAI ’24, 2025. [Online]. Available: https://doi.org/10.24963/ijcai.2024/584 [28] T.-D. Cao, N. T. Vuong, T. Q. Le, H. V. N. Dao, and T. T. Huu, “Asyn2f: An asynchronous federated learning framework with bidirectional model aggregation,” ArXiv ,vol. abs/2403.01417, 2024. [Online]. Available: https://api.semanticscholar.org/CorpusID: 268247987 [29] T. Yu, C. Song, J. Wang, and M. Chitnis, “Momentum approximation in asynchronous private federated learning,” ArXiv , vol. abs/2402.09247, 2024. [Online]. Available: https://api.semanticscholar.org/CorpusID:267658075 [30] G. Lan, D.-J. Han, A. Hashemi, V. Aggarwal, and C. G. Brinton, “Asynchronous federated reinforcement learning with policy gradient updates: Algorithm design and convergence analysis,” CoRR , vol. abs/2404.08003, 2024. [Online]. Available: https://doi.org/10.48550/arXiv.2404.08003 [31] C. A. Scholbeck, J. Moosbauer, G. Casalicchio, H. Gupta, B. Bischl, and C. Heumann, “Position paper: Bridging the gap between machine learning and sensitivity analysis,” 2024. [Online]. Available: https://arxiv.org/abs/2312.13234 [32] S. Lek, M. Delacoste, P. Baran, I. Dimopoulos, J. Lauga, and S. Aulagnier, “Application of neural networks to modelling nonlinear relationships in ecology,” 
+
+Ecological Modelling , vol. 90, no. 1, pp. 39–52, 1996. [Online]. Available: https: //www.sciencedirect.com/science/article/pii/0304380095001425 [33] A. T. Tunkiel, D. Sui, and T. Wiktorski, “Data-driven sensitivity analysis of complex machine learning models: A case study of directional drilling,” Journal of Petroleum Science and Engineering , vol. 195, p. 107630, 2020. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0920410520306975 24 [34] D. Chen, J. Hu, V. J. Tan, X. Wei, and E. Wu, “Elastic aggregation for federated optimization,” in 2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023, pp. 12 187–12 197. [35] L. Wu et al. , “Bold but cautious: Unlocking the potential of personalized federated learning through cautiously aggressive collaboration,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023. [36] N. Lee, T. Ajanthan, and P. H. S. Torr, “Snip: single-shot network pruning based on connection sensitivity,” in 7th International Conference on Learning Representations, ICLR 2019, New Orleans, LA, USA, May 6-9, 2019 . OpenReview.net, 2019. [Online]. Available: https://openreview.net/forum?id=B1VZqjAcYX [37] P. Molchanov, A. Mallya, S. Tyree, I. Frosio, and J. Kautz, “Importance estimation for neural network pruning,” 06 2019, pp. 11 256–11 264. [38] Z. Wang, X. Fan, Z. Peng, X. Li, Z. Yang, M. Feng, Z. Yang, X. Liu, and C. Wang, “Flgo: A fully customizable federated learning platform,” 2023. [Online]. Available: https://arxiv.org/abs/2306.12079 [39] J. Nguyen, K. Malik, H. Zhan, A. Yousefpour, M. Rabbat, M. Malek, and D. Huba, “Federated learning with buffered asynchronous aggregation,” 2022. [Online]. Available: https://arxiv.org/abs/2106.06639 [40] J. Xu, X. Tong, and S.-L. Huang, “Personalized federated learning with feature alignment and classifier collaboration,” 2023. [Online]. Available: https://arxiv.org/abs/2306.11867 [41] Y. LeCun, C. Cortes, and C. Burges, “Mnist handwritten digit database,” ATT Labs [Online]. Available: http://yann.lecun.com/exdb/mnist , vol. 2, 2010. [42] H. Xiao, K. Rasul, and R. Vollgraf, “Fashion-mnist: a novel image dataset for benchmarking machine learning algorithms,” ArXiv , vol. abs/1708.07747, 2017. [Online]. Available: https://api.semanticscholar.org/CorpusID:702279 [43] A. Krizhevsky, “Learning multiple layers of features from tiny images,” University of Toronto, Tech. Rep., 2009. [44] K. O’Shea and R. Nash, “An introduction to convolutional neural networks,” 2015. [Online]. Available: https://arxiv.org/abs/1511.08458 [45] A. F. Agarap, “Deep learning using rectified linear units (relu),” 2019. [Online]. Available: https://arxiv.org/abs/1803.08375 25

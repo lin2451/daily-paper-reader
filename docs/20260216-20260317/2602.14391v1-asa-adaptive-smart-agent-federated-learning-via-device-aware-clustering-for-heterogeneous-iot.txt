@@ -1,0 +1,689 @@
+Title: ASA: Adaptive Smart Agent Federated Learning via Device-Aware Clustering for Heterogeneous IoT
+
+URL Source: https://arxiv.org/pdf/2602.14391v1
+
+Published Time: Tue, 17 Feb 2026 02:28:39 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# ASA: Adaptive Smart Agent Federated Learning via Device-Aware Clustering for Heterogeneous IoT 
+
+Ali Salimi a, Saadat Izadi a, Mahmood Ahmadi a∗, Hadi Tabatabaee Malazi b
+
+> aComputer Engineering and Information Technology Department, Razi University, Kermanshah, Iran
+> bSchool of Computer Science, University College Dublin, Dublin 4, Dublin, Ireland
+
+Abstract 
+
+Federated learning (FL) has become a promising answer to facilitating privacy-preserving collaborative learning in distributed IoT devices. However, device heterogeneity is a key challenge because IoT networks include devices with very di ff erent computational powers, memory availability, and network environments. To this end, we introduce ASA (Adaptive Smart Agent). This new framework clusters devices adaptively based on real-time resource profiles and adapts customized models suited to every cluster’s capability. ASA capitalizes on an intelligent agent layer that examines CPU power, available memory, and network environment to categorize devices into three levels: high-performance, mid-tier, and low-capability. Each level is provided with a model tuned to its computational power to ensure inclusive engagement across the network. Experimental evaluation on two benchmark datasets, MNIST and CIFAR-10, proves that ASA decreases communication burden by 43% to 50%, improves resource utilization by 43%, and achieves final model accuracies of 98.89% on MNIST and 85.30% on CIFAR-10. These results highlight ASA’s e ffi cacy in enhancing e ffi ciency, scalability, and fairness in heterogeneous FL environments, rendering it a suitable answer for real-world IoT apps. 
+
+Keywords: Federated Learning, IoT Device Heterogeneity, Adaptive Clustering, Model Optimization, Resource E ffi ciency, Edge Intelligence, Distributed Learning, Smart Agent Framework. 
+
+1. Introduction 
+
+The rapid expansion of the Internet of Things (IoT) has fun-damentally reshaped the development of smart systems, en-abling billions of devices to autonomously sense, generate, and process massive volumes of data across diverse application do-mains. In such decentralized ecosystems, conventional central-ized machine learning approaches, which require transferring raw data to a central server, face major limitations—including privacy risks, communication bottlenecks, and energy ine ffi -ciency. Federated Learning (FL) has emerged as an e ff ective solution to these challenges by enabling collaborative model training directly on local devices. Instead of transmitting sen-sitive data, only model updates are shared with a central ag-gregator, preserving user privacy and reducing bandwidth us-age. This decentralized framework makes FL highly compati-ble with IoT settings, where data is inherently distributed and privacy preservation is critical. However, the real-world imple-mentation of FL in IoT systems remains challenging due to the inherent heterogeneity of devices such as di ff erences in hard-ware capacity, network stability, and non-identical data distri-butions which can severely impact model convergence, fairness,    
+
+> Email address: a.salimi@razi.ac.ir, s.izadi@razi.ac.ir, m.ahmadi@razi.ac.ir (* Corresponding author), hadi.tabatabaeemalazi@ucd.ie (Ali Salimi a, Saadat Izadi a, Mahmood Ahmadi a∗, Hadi Tabatabaee Malazi b)
+
+and overall system e ffi ciency [1, 2]. IoT devices are inherently heterogeneous with respect to computational power, memory capacity, energy constraints, and network bandwidth. This di-versity often leads to an imbalance in the training process, as resource-limited devices may struggle to keep pace with more capable peers. As a result, significant disparities in local model updates can emerge, causing convergence instability, degraded overall performance, and even exclusion of weaker nodes from the federated optimization cycle. Addressing this performance gap is crucial for achieving fair and e ffi cient federated [3]. High-powered devices can perform computations quickly, with resource-limited devices, or even "stragglers" as they are some-times referred to, taking a long time or even dropping out en-tirely. Current FL systems commonly embrace a "one-size-fits-all" framework, implementing identical models on all devices. This not only worsens ine ffi ciencies created by di ff erences in resources, it can also exclude lower-powered devices, result-ing in underutilization of information available and reduced overall model accuracy. In addition, the dynamics involved in IoT environments, such as device dropouts, fluctuating net-work states, and heterogeneous data distribution, make imple-menting FL even more complicated [4, 5]. To address these challenges, this thesis introduces a novel framework known as Adaptive Smart Agent (ASA), designed to enhance FL in het-erogeneous IoT environments. ASA incorporates an agent layer that profiles devices based on their computational capabilities. Through the execution of standardized tests with operations on 
+
+> arXiv:2602.14391v1 [cs.NI] 16 Feb 2026
+
+matrix multiplications, convolutional computations, and mem-ory tests, the agent layer accurately profiles devices’ capabili-ties. Using the K-Means algorithm for grouping, ASA classi-fies devices into performance levels: high-performance, mid-tier, and low-capability. This grouping establishes a framework for the allocation of models customized to fit every group, such that devices with or without computational capabilities can ef-fectively contribute to the FL process. ASA’s key contributions involve tailoring lightweight models for low-capability devices, complex models for mid-tier devices, and high-performance de-vices with sophisticated architectures. These models are initial-ized on devices and aggregated on the central server by a robust algorithm that includes variations in model complexities. ASA also incorporates features addressing real-world cases such as device dropouts, delays in the network, and resuming training from the last valid checkpoint on an error. The applications and impacts introduced by this thesis include: 
+
+• A new framework, ASA, is proposed to handle het-erogeneity in federated learning in a systematic manner through smart device profiling and adaptive grouping. 
+
+• The models are specially tailored for diverse device groups, facilitating equal participation by all devices as well as enhancing model accuracy. 
+
+• Mechanisms for robustness and adaptability to actual IoT constraints, such as network variation and device failure, are incorporated. 
+
+• The e ffi cacy of ASA is evident through extensive exper-imentation on various datasets with remarkable gains in communication e ffi ciency, resource use, and overall model performance. The rest of this paper is laid out below. In Section 2, we re-view previous work in FL and its limitations in heterogeneous environments. In Section 3, we describe the ASA framework with its agent layer, clustering process, and model design. Sec-tion 4 is dedicated to presenting results and discussion with an explanation of ASA’s performance. Lastly, Section 5 summa-rizes the conclusion and future research directions. 
+
+2. Related Work 
+
+FL has become a critical framework for distributed learn-ing in IoT environments, facilitating devices to learn collabo-ratively without sharing raw data. The heterogeneity of IoT devices poses distinctive challenges, such as diverse computa-tional capabilities, communication bandwidths, and data distri-butions. A variety of studies have introduced solutions address-ing these challenges, with extensive gaps in terms of adaptabil-ity and dynamic optimization of resources. In this review, we compare most contemporary studies in this area with ASA’s (Adaptive Smart Agent) framework. AlSaleh et al.’s semi-decentralized FL framework, addressing heterogeneity in IoT networks by introducing BiLSTM models for detecting intru-sions, is an excellent representative in this area. This framework effi ciently lessens computational loads on low-resource devices by employing a layered FL system. The framework, however, is not augmented with an adaptive device participation optimiza-tion mechanism. ASA di ff ers by expanding on this concept by dynamically characterizing devices and grouping them by computational capabilities, thus ensuring optimal device uti-lization at di ff erent performance levels [1]. Another research study intensifies scalability issues in industrial IoT (IIoT) sys-tems with a hierarchical update strategy to handle large-scale systems. Although this method improves scalability dramat-ically by solving device heterogeneity at the system level, it does not ensure personalized model adaptations for various de-vices [2]. ASA builds on this by not only grouping devices into performance-based categories, as mentioned above, but also into device-specific models suited to computational capabili-ties, optimizing both scalability and utilization. The "FedStrag" method aims at minimizing the impact of low-capability de-vices, or "stragglers" as they are referred to, in FL. By creating a mechanism that is aware of stragglers, this research minimizes delays and enhances the training process as a whole. How-ever, it lacks functionality to provide di ff erent models as per device capabilities. ASA overcomes this shortcoming by pre-senting lightweight, moderate, and complicated models suited to device groups, ensuring timely engagement and fair utiliza-tion of resources across the network [3]. The FedSeq method involves sequential layer unfolding to personalize FL for het-erogeneous data distribution. Although this improves accuracy by dynamically adjusting to local data features, it does not cater to hardware heterogeneity across devices. ASA overcomes this by addressing hardware and data heterogeneity simultaneously, presenting an integrated solution to IoT environments with low capabilities in terms of resources [4]. Sparse gradients have been o ff ered as a means to improve communication e ffi ciency in FL, as shown in federated collaborative learning architectures. Although this reduces communication e ffi ciently, it does not in-clude adaptation tools for model complexity levels as a function of device capabilities. ASA not only minimizes communication overhead but also ensures meaningful participation from all de-vices by personalizing models to device capabilities [5]. Gen-erative AI has also been utilized in FL to handle heterogeneity with promising performance in resource scheduling and model performance. These methods, however, do not have adaptive device clustering, thus cannot e ff ectively optimize resource uti-lization. ASA builds on this research by combining adaptable device clustering with personalized model assignment, facili-tating more optimal resource utilization as well as better model performance [6]. Graph-based hierarchical FL architectures have been introduced to manage non-IID data distribution in IoT systems. These architectures, despite solving data-oriented challenges e ff ectively, do not optimize device utilization based on computational discrepancies. ASA includes device profiling and adaptable device clustering, ensuring that devices utilize their optimal resource range, thus enhancing computational e ffi -ciency as well as accuracy [7]. A semi-synchronous FL method targeting 6G-enabled industrial networks addresses latencies as well as communication e ffi ciency. Although this work aims at minimizing latencies, it does not incorporate adaptive device 2grouping or resource-conscious model training, critical compo-nents o ff ered by ASA to maximize participation in heteroge-neous devices [8]. Privacy-preserving FL based on homomor-phic encryption has been investigated to encrypt model updates in IoT networks. While these methods provide data confiden-tiality, they also do not handle device-level heterogeneity or re-source optimization. ASA builds on these privacy techniques by applying adaptable device grouping as well as customized model training, ensuring inclusive and optimally e ffi cient learn-ing while ensuring data security [9]. FL has been utilized to identify intrusions in IoT networks with a strong potential to improve security. These applications, however, do not con-sider computational discrepancies among devices. ASA builds on these security-oriented frameworks by introducing adaptable device grouping and resource-conscious model training, ensur-ing optimally e ffi cient and meaningful participation from all de-vices despite di ff erences in their computational capabilities. A model discrepancy and variance reduction study explore a new method for mitigating client-side variance in FL by implement-ing sophisticated variance reduction techniques. The method ensures quicker convergence rates, particularly in heteroge-neous IoT systems. The method, though, is mainly centered on dealing with data variance and failing to adjust model complex-ity to device capabilities, which is what ASA attains through dynamic clustering and adapted model allocation [10]. Another paper addresses multimodal client drift due to modality hetero-geneity in multimodal FL by utilizing cluster-based FL strate-gies to reduce drift in di ff erent modalities. While e ffi cient in addressing multimodal heterogeneity in data, the method does not incorporate mechanisms to handle hardware heterogeneity, an aspect ASA covers through its resource-optimal model opti-mization [11]. Tri-AFLLM, a resource-e ffi cient asynchronous FL with large language models, registers high reductions in communication expenditure. Its design, though, is mainly geared towards high-resource environments and does not ad-dress the high levels of computational heterogeneity charac-teristic in IoT environments. ASA expands FL applicability by proposing device-specific clustering and lightweight mod-els adapted to less capable devices, promoting equal participa-tion citeQiao2024. Contextual federated reinforcement learn-ing with momentum-based adaptations provides momentum-based adaptations for improved learning speed and robustness in heterogeneous environments. Though e ffi cient in dealing with heterogeneity in data, it does not have evident mechanisms to cluster devices or allocate customized models based on ca-pabilities like ASA does. This is a hindrance to its e ffi cacy in very heterogeneous IoT systems [12]. Another research in-corporates a reinforcement learning-based dual-identity double auction machinery for personalized federated learning. In an innovative way, it presents auction-based personalization. The method, though, is mainly centered on personalization at the level of users and does not address resource usages or adapted model allocation, as ASA is built with these features at its core [5]. An alternative view is o ff ered by research on robust peo-ple detection in decentralized surveillance systems via feder-ated learning. This research simulates heterogeneity conditions in real-world data distribution rather than addressing computa-tional or resource heterogeneities. ASA’s provision of coping with both hardware and data heterogeneity via dynamic device clustering and customized models presents a more holistic so-lution for such applications [13]. Intra-cluster uniform sam-pling and heterogeneity-aware clustering are introduced in a study to compensate for imbalanced data and resource avail-ability. While e ffi cient at aggregating devices with compara-ble data distributions, this method is not equipped with ASA’s advanced profile and model complexity optimization, ensuring every group operates within its optimal resource constraints [14]. Privacy protection in human-computer interaction is in-vestigated in a di ff erent study via adaptive federated learning. While the research focuses on privacy-preserving strategies, it does not incorporate robust means to adapt models to het-erogeneous devices’ computational capabilities, an aspect in which ASA excels [15]. Federated edge intelligence for se-cure healthcare systems utilizes distillation-based security re-inforcement in federated edge networks. While this strategy incorporates robust security features, computational disparities among devices involved in the network are not addressed. ASA enhances such systems by dynamically grouping devices and distributing resource-optimized models to maximize e ffi cient participation from across the network [16]. Tensor-empowered lightweight embedding is introduced to address heterogeneity and anonymity challenges in 6G networks. While this method effi ciently handles communication bottlenecks and anonymity, it does not include adaptive grouping and customized models, crucial in ensuring fair trade-o ff s in diverse IoT environments, an aspect ASA e ff ectively addresses [17]. In conclusion, while reviewed research gives considerable insight into addressing in-dividual challenges in FL, most neglect a holistic mechanism to simultaneously manage device and data heterogeneity. ASA improves the state of the art by combining dynamic device grouping, resource-conscious model training, and adaptation to provide inclusive, e ffi cient, and scalable federated learning in very heterogeneous IoT environments. 
+
+3. Proposed ASA Framework 
+
+The problem is defined first in this section, followed by an exposition on how this is going to be addressed. Overview and architecture of ASA framework, theory and analysis, and ASA design and implementation details. Figure 1 displays the hier-archical architecture of this proposed ASA framework for ad-dressing e ffi ciently IoT environment heterogeneity challenges. A four-layer framework is utilized with every layer focusing on specific resource management and distributing learning mod-els. The use of a layered framework allows computational tasks to seamlessly coordinate and promote scalability to handle IoT diversity in diverse IoT infrastructures. The cloud layer rests at the apex of this hierarchy and serves as the coordination hub. This is in charge of global model management and global updates aggregating from distributed devices. Maintaining a single global model state, the cloud orchestrates learning at a global level, ensuring consistency and convergence within the network. Playing an intelligent intermediary role, its key role 3is to conduct resource profiling and management to ensure ef-ficient allocation across heterogeneous devices. With constant monitoring of device capabilities and network state, agent layer dynamically partitions devices into performance-based groups and deploys group-specific models. This layer improves sig-nificantly resource utilization while minimizing bottlenecks in heterogeneous environments. Between the agent and edge lay-ers is The fog layer, sitting at a position intermediate to agent and edge layers. This layer mediates communication from and to the upper and lower layers by aggregating local models at groups of edge devices. The fog layer also decreases com-munication overhead by routing data intelligently and making it local to updates, thus making training optimal at an overall level. The edge layer is at the bottom of this hierarchy and con-tains the heterogeneous IoT devices involved in federated learn-ing. The devices’ computational power, memories, and network connections are diverse, making them the basis for heteroge-nous environment. There is local model training at this layer with every device contributing its input to this overall learn-ing process. Figure 2 represents bidirectional interconnectivity that allows constant exchange of model updates, resource infor-mation, and control signals among layers. Hierarchical design allows e ffi cient use of computational and communication re-sources along with ensuring system reliability and scalability in heterogeneous and dynamic IoT setups. 
+
+> Figure 1: Cloud-to-edge federated model training and deployment.
+
+3.1. An Overview and Architecture of the ASA Framework 
+
+The Adaptive Smart Agent (ASA) framework is an intelli-gent framework designed to overcome limitations imposed by intrinsic heterogeneity in heterogeneous FL in IoT environ-ments, including extreme heterogeneity in computational capa-bilities, size, and network conditions, typically rendering exist-ing FL frameworks ine ff ective. The ASA overcomes such chal-lenges by addressing them with a modular and adaptive frame-work that provides better resource profiling, group dynamics, and model allocation. Figure 2 is a detailed overview of com-ponents involved and how they relate with others in framework. The agent core functions or decision-making module forms the center of ASA framework. Its role is coordinating resource al-location and model distribution process. For this to be accom-plished, the module has three interdependent modules harmo-niously interworking. The first module is the benchmarking module, whose function is to analyze key performance drivers like CPU capabilities, size, and availability of GPUs on ev-ery IoT device. By utilizing standardized tests in evaluation, a quantitative value is given to every device, representative of its total computational capabilities. This value is utilized as a ref-erence in grouping devices based on performance. The bench-mark scores serve as input for the clustering module for group-ing devices by performance profiles. Advanced algorithms like K-Means are utilized to dynamically group devices in di ff er-ent categories high-performance, mid-level, and low-capability. Grouping ensures devices with same profiles are grouped in support groups accordingly, removing ine ffi ciencies and ensur-ing optimal distribution of workload. The group process for every group is carried out on an ongoing basis to incorporate real-time device capabilities and network conditions, ensuring that framework is capable of reacting accordingly to variations. After the devices are divided into clusters, the best machine learning models to deploy in each of them are selected by the model allocation module. The high-performance devices, such as GPUs and high-RAM devices, receive high-complexity and compute-intensive models. Medium-performance devices with medium CPU and medium-level resources receive medium-level-complexity models. Low-performance devices get light models optimized to run within the limited resources. The adaptive assignment allows all the devices, in spite of the limi-tations, to meaningfully contribute to the learning process, thus maximizing inclusivity and resource optimization. ASA also comprises a vast system of performance observation with real-time feedback on usage of resources and the models’ perfor-mance. The resource usage channel o ff ers real-time observation of such critical metrics as CPU usage, used memory, and GPU usage. Such metrics o ff er insightful data about the resource availability of the system and usage patterns, and hence the possibility to make pre-emptive adjustments to the allocation. At the same time, the model performance surveillance module checks critical indicators like the accuracy of the assigned mod-els and the computational e ffi ciency of the assigned models to make sure that the assigned models are contributing in a useful manner to the FL process. The ongoing feedback mechanism provided by the surveillance system enables the dynamic op-timization of resource allocation and deployment strategies of the models. The edge layer of the framework represents the distributed IoT system, and as such, it comprises computational capabilities in a heterogeneous manner. The organized classifi-cation of devices into tiers prevents all tiers of the devices from being overutilized without contributing to the system’s general working. A high-level feedback mechanism sustains the ASA framework, with real-time resource allocation and deployment strategy adjustments possible. With the runtime metrics and de-vice specifications continuously monitored, the framework dy-namically optimizes operations to constantly deliver high levels of scalability and e ffi ciency. The two-way exchange of control signals, the performance metrics, and the optimization feedback means that the system remains in tune to the varying conditions and e ff ectively meets the issues of heterogeneity in IoT. With 4the use of its modular approach, dynamic adaptability, and sys-tematic optimization of resources, the ASA framework marks a major leap in the case of federated learning in heterogeneous environments of IoT. It attains e ffi cient utilization of the re-sources, high scalability, and inclusive participation across a heterogeneous device spectrum to deliver uniform and reliable responses from the models. 
+
+> Figure 2: Internal architecture of the Adaptive Smart Agent (ASA) framework.
+
+3.2. Theoretical foundations and analysis 
+
+To give a complete picture of the ASA framework, the system model, problem definition, and essential analytical issues such as convergence and complexity analysis, theoretical bounds, and optimality promises are described in this section. By sys-tematically tackling the constraints and heterogeneity of the IoT environments, the ASA framework provides e ffi cient and stable FL. The succeeding subsection provides in-depth descriptions of the most important parts of the system, including equations and proofs to justify the framework’s performance and theoret-ical correctness. 
+
+3.2.1. System Model and Notations 
+
+In this work, we are dealing with a heterogeneous IoT net-work as N = (D, E), where D refers to the set of IoT devices, and E refers to the communication links between them. De-vices in set D are split into three classes depending upon their computational capabilities. 
+
+D = {H ∪ M ∪ L} (1) Where, H denotes high-performance devices equipped with advanced hardware, such as GPUs with at least 8 GB of RAM, 
+
+M refers to mid-range devices with moderate resources, typi-cally characterized by RAM capacities ranging between 2 GB and 4 GB and L includes low-end devices with constrained computational and memory resources. Each device di is char-acterized by a resource profile tensor, expressed as: 
+
+Ri = [Ci, Mi, Ni] ∈ R 3×k (2) Where, Ci is the computational capability vector of device di ,which may include features such as the number of CPU cores, processing speed, or GPU capabilities, Mi represents the mem-ory resource vector, encompassing metrics like available RAM and storage capacity, Ni denotes the network characteristics vector, such as bandwidth, latency, or reliability. The tensor Ri
+
+encapsulates a multi-dimensional description of the device’s re-sources across three primary categories: computation, memory, and network. Each category is further divided into k specific re-source attributes, enabling detailed profiling of heterogeneous devices within the network. To evaluate the overall suitability of a device for task allocation, we propose a multi-dimensional performance scoring mechanism. The performance score of a device di is calculated as: 
+
+S (di) =
+
+> kr
+
+X
+
+> j=1
+
+ω jϕ j(Ri, j) (3) Where k is the number of resource dimensions considered in the evaluation. The values of the weights are determined through an optimization-based method that employs sensitiv-ity analysis to evaluate the impact of each objective function on the overall performance. This approach allows the model to dynamically adjust the weight values based on real-time sys-tem conditions, reducing manual tuning e ff orts while ensuring optimal trade-o ff s between accuracy, resource e ffi ciency, and latency. Each represents the evaluation function for the j-th resource dimension, which quantifies the contribution of a spe-cific feature (e.g., CPU, RAM, network latency) to the device’s performance. The term "dimension" is used here to indicate orthogonal and measurable aspects of a device’s resource pro-file. It does not refer to individual resource instances, but rather to the feature axes used in multi-criteria evaluation. The cor-responding value is extracted from the resource profile tensor, and reflects the actual capacity or usage level of that dimension. This scoring mechanism integrates multiple resource dimen-sions into a unified metric, enabling a comprehensive evalua-tion of device performance. The weights introduce flexibility, allowing the model to prioritize specific resource dimensions based on the needs of the application. For instance, computa-tional capabilities might be weighted more heavily in compute-intensive tasks, whereas network characteristics might domi-nate in latency-sensitive applications. Where k represents con-sidered resource dimensions during evaluation. The weights are calculated based on an optimization-based approach utiliz-ing sensitivity analysis to determine each objective function’s influence on overall performance. The approach allows modu-lation of weight values dynamically based on real-time system state, minimizing e ff ort by tuning while keeping optimal trade-off s between accuracy, resource e ffi ciency, and latency. Each refers to each evaluation function of the j-th resource dimen-sion, expressing a single feature’s (e.g., CPU, RAM, network latency) contribution to device performance. Here, dimension refers to orthogonal, measureable aspects of a device’s resource profile, not distinct instances, but to employed feature dimen-sions during multi-criteria evaluation. The parallel value is a derived value from the resource profile tensor, expressing ac-tual capacity or utilization level of said dimension. The scor-ing system compresses multiple dimensions into a single score, allowing holistic device performance assessment. Assigning weights o ff ers variability, allowing the model to prioritize var-ious resource dimensions based on application domain needs. 5Computational power, for instance, may be prioritized more in compute-bound applications, while network properties may be prioritized in latency-critical applications. 
+
+Table 1: Symbol description                                                          
+
+> Symbol Description
+> NThe set of IoT devices and their communication links.
+> DThe set of IoT devices participating in federated learning.
+> EThe set of communication links among IoT devices.
+> HdHigh-end devices equipped with advanced hardware, such as GPUs with at least 8 GB of RAM.
+> MdMid-range devices with moderate computational resources, typically with 2–4 GB of RAM.
+> LdLow-end devices with constrained computational and memory re-sources.
+> diA specific IoT device from the set D.
+> RiThe resource profile tensor of device di, encompassing computational, memory, and network characteristics.
+> CiThe computational capability vector of device di, including CPU cores, processing speed, and GPU capabilities.
+> MiThe memory resource vector of device di, describing available RAM and storage capacity.
+> NiThe network characteristics vector of device di, capturing bandwidth, latency, and reliability.
+> ΦjThe evaluation function for the j-th resource dimension, quantifying its impact on overall performance.
+> wjThe weight assigned to the j-th resource dimension, reflecting its im-portance in the evaluation process.
+> krThe number of resource dimensions considered in device evaluation.
+> Cap (di)The maximum computational capacity allowed for device di.
+> Tmax The total number of training iterations in the federated learning process.
+> ηtThe learning rate at iteration t, dynamically adjusted during training.
+> LThe Lipschitz constant, representing the smoothness of the objective function.
+> PmThe number of parameters in the federated learning model.
+> EcThe number of epochs used for local training on each device.
+> mThe mini-batch size used in training.
+> KThe number of clusters formed during the clustering process (e.g., high, medium, and low-performance devices).
+> tThe number of iterations required by the clustering algorithm (e.g., K-Means).
+> σ2The variance of stochastic gradients during training.
+> δThe error bound for global model convergence.
+> OThe notation representing the time and space complexity of the pro-posed framework.
+> BThe bandwidth available for communication between devices in the fed-erated learning system.
+> diDevice iin IoT Network.
+> xi,jBinary decision variable indicating assignment of task jto device i.
+> ui,jResource utilization variable for task jon device i.
+> nmin Minimum number of devices per cluster.
+> τmax Maximum allowable delay.
+> Ci,Mi,NiComputational, memory, and network capability vectors for device.
+
+3.2.2. Problem formulation 
+
+In Table 1 symbol of problem formulation is description. The FL problem is formulated as a multi-objective optimization: 
+
+min θ, C,wL (θ, C, W) = α1Ltask + α2Lresource + α3Lcomm (4) In our proposed multi-objective optimization framework, the weighting coe ffi cients α1, α2,and α3 indicate the relative im-portance assigned to each objective, i.e., task e ffi ciency, re-source utilization, and communication overhead, respectively. These coe ffi cients are determined dynamically using sensitivity analysis. Specifically, sensitivity analysis evaluates the impact of varying each α on overall performance (accuracy, latency, and resource utilization) under di ff erent real-time IoT condi-tions. Thus, these weights are adaptively tuned to meet chang-ing priorities and constraints, ensuring an optimal balance be-tween accuracy, resource consumption, and communication ef-ficiency throughout the FL process. Note that these weighting coe ffi cients satisfy the condition: Under our designed multi-objective optimization approach, weighting factors, , represent relative priorities placed on each objective, i.e., task e ffi ciency, utilization, and communication overhead, respectively. These are dynamically computed through sensitivity analysis. In de-tail, sensitivity analysis quantifies how changing each would change overall performance in terms of accuracy, latency, and resource usage across various real-time IoT scenarios. There-fore, these weights are dynamically set to address shifting pri-orities and constraints, allowing optimal balancing of accuracy, resource usage, and communication e ffi ciency during the entire FL process. As a reminder, these weighting factors obey the condition: 
+
+α1 + α2 + α3 = 1, α1, α 2, α 3 ≥ 0 (5) This ensures that the optimization objective represents a valid convex combination of individual objectives, clearly indicating their relative importance in the decision-making process. 
+
+C1 : ∀di ∈ D,
+
+> m
+
+X
+
+> j=1
+
+C jui j xi j ≤ Cap( di) (6) Where xi j is a binary decision variable defined as: 
+
+xi j =
+
+
+
+1 if task j is allocated to device i
+
+0 otherwise (7) and Cap (di) denotes the maximum computational capacity of device i. Ensures the total resource utilization across tasks as-signed to each device does not exceed its maximum processing capacity. 
+
+C2 : ∀ck ∈ C, | { di | cluster( di) = k} ≥ nmin (8) Ensures each cluster has a su ffi cient number of devices to achieve e ff ective participation and maintain performance sta-bility. 
+
+C3 : E[Delay( di)] ≤ τmax (9) where τ represents the maximum allowable delay for local model training and transmission, ensuring timely and e ffi cient model convergence. 
+
+C4 : Var[Load( Ck)] ≤ σ2max (10) where σ2 
+
+> max
+
+represents the highest allowable variance in com-putational workload across devices in each cluster, ensuring eq-uitable utilization of resources. Optimization is subject to a set of constraints aimed at making sure that the model suggested here is both feasible, scalable, and usable in real distributed heterogeneous environments. Constraint C1 enforces that the 6cumulative resource consumption across all tasks assigned to a device does not exceed its processing capacity, denoted as 
+
+Cap (di). To model this, a binary decision variable xi j in {0, 1}
+
+is used to indicate whether task j is allocated to device i , while a continuous variable ui j in [0 , 1] captures the relative utiliza-tion of task j on device i. The product C jui j xi j , where C j is the nominal resource requirement of task j , quantifies the e ff ective resource usage. This constraint ensures that task allocation respects device capabilities while enabling flexible modeling of task complex-ity and device heterogeneity. While Constraint C2 explicitly de-fines a lower bound nmin on the number of devices per cluster, an upper bound nmax can also be established in practical scenarios. The upper bound is imposed to prevent overloading the clus-ter heads and control communication overhead, computational complexity, and system latency. Although in this formulation we primarily emphasize ensuring the minimum participation threshold for robustness, integrating an upper bound constraint is straightforward and can be considered based on empirical system capacity analysis or performance requirements. This requirement guarantees clusters are well-populated enough to ensure computational e ffi ciency as well as robust training. The choice of nmin is empirically determined by analyzing device distributions statistically and local model stability during up-dating. By enforcing this restriction, we avoid having highly sparse clusters, something that would otherwise undermine ef-fective FL operation, as well as limit diversity in learned repre-sentations. Constraint C3 restricts the expected delay associated with task execution and communication for each device. The pa-rameter τmax defines the maximum number of local training epochs a device may perform before communicating its model update. Choosing τmax involves a trade-o ff between commu-nication e ffi ciency and global convergence speed: higher val-ues reduce communication frequency but may delay conver-gence and increase the risk of local overfitting, whereas lower values promote faster synchronization at the cost of increased communication overhead. Hence, τmax is adaptively selected based on device performance and network conditions to ensure a balanced convergence behavior. Constraint C4 addresses the balance of computational load across devices within each clus-ter. Specifically, it ensures that the variance of workload dis-tribution, denoted as Var [Load (Ck)] , remains below a defined threshold σ2
+
+> max
+
+.The workload Load (Ck) of cluster k is calculated as a joint function of number of allocated tasks, model size, and cumu-lative device capacity in a cluster. The above limit fosters fair task allocation, avoiding device overload, as well as idle states, and encouraging enhanced energy e ffi ciency and thermal equi-librium among edge devices indirectly. As a whole, this multi-objective optimization technique o ff ers a rigorous and dynamic framework to manage resource allocation, task scheduling, and communication in complex edge computing and IoT domains. By being able to model system heterogeneity, along with im-portant operation constraints, the suggested model guarantees scalability, fairness, as well as responsiveness - crucial proper-ties in real-world deployment in mission-critical applications. Clearly, decision variables like xi j directly impact task alloca-tion (task e ffi ciency), resource utilization (balancing resource load), and communication overhead (by optimal clustering), thus explicitly linking decision-making to each optimization goal.The optimization problem formulated in this paper is in-herently a Mixed Integer Non-Linear Programming (MINLP) problem, due to the presence of product terms involving binary decision variables (e.g., xi j ) and continuous resource utilization variables (e.g., ui j ). Such product terms introduce nonlinear-ity, distinguishing this problem from purely linear optimization models and thus requiring specialized solution techniques or approximation methods for e ffi cient solving. 
+
+3.2.3. Computational Complexity 
+
+To analyze the computational scalability and e ffi ciency of the algorithms used in the proposed theoretical framework, their complexity is compared on three dimensions of time complex-ity, space complexity, and communication complexity. This theoretical analysis helps to establish a basis for understand-ing the computational and resource needs of the framework in real-world applications. 1. Time complexity: The time complexity of the proposed framework is analyzed in three main phases: benchmark-ing, clustering, and training. 
+
+• Benchmarking phase: The computational and re-source capacities of IoT devices are assessed in a structured way during the benchmarking phase. The main aim of this assessment is gathering quantitative performance data from all devices, allowing e ff ec-tive clustering during future phases. Benchmarking specifically entails measuring the power of CPUs, available memory, as well as network parameters to profile individual devices precisely for adaptive clus-tering. The overall complexity of this phase is: 
+
+Tbench (N) = O(N log N) +
+
+> N
+
+X
+
+> i=1
+
+O(s3 
+
+> i
+
+) (11) Where N stands for the number of devices in the network, S i is the reference size of device i, gener-ally given by its tensor of resources. The first term 
+
+O(Nlog (N)), considers sorting, along with aggregat-ing, devices by their performance metrics, while the second term considers the cumulative cost of bench-marking single devices. The cubic complexity term 
+
+O(S 3 
+
+> i
+
+) originates from computationally intensive op-erations such as matrix inversion or decomposition performed during local statistical analyses or model training at each IoT device. Given that each device 
+
+i individually performs these calculations on its fea-ture vector of size S i. The complexity per device be-comes cubic. Consequently, when S i is su ffi ciently large, this term dominates the benchmarking com-plexity, resulting in an overall polynomial-time com-plexity for the benchmarking phase. 7• Clustering phase: In this phase, devices are grouped into K clusters based on their resource profiles. The complexity of this step is: 
+
+Tclust (N, K) = O(NK rt) (12) Where, K = 3 is the fixed number of clusters (e.g., high-end, mid-range, low-end devices) and t is the number of iterations required by the clustering algo-rithm, such as k-means. This complexity grows lin-early with the number of devices N and clusters K,making it e ffi cient for large-scale networks. 
+
+• Training phase: The training phase involves itera-tive updates of the global model based on local gra-dients from participating devices. Its complexity is expressed as: 
+
+Ttrain (N, E) = O(NE C mp m) + O(N log N) (13) Where E is the number of epochs, m is the mini-batch size, and p is the number of model parameters. The first term represents the computational cost of training on N devices over E epochs, while the sec-ond term accounts for sorting or aggregating devices during the global model update. 2. Space complexity Space complexity is analyzed at both the device level and the global level, focusing on memory usage for storing model parameters and gradients. 
+
+• Device level: The memory requirement for an indi-vidual device is expressed as: 
+
+S device (p) = O(p) + O( √p) (14) Where, p represents the total number of model pa-rameters. The first term, O(p) , denotes the mem-ory required to store the model parameters explic-itly (weights and biases). The second term, O( √(p)), corresponds to the memory used for storing interme-diate variables generated through dimensionality re-duction or random sampling techniques applied dur-ing computations such as gradient approximations and temporary matrix operations. These techniques eff ectively reduce the memory requirements from linear to sub-linear scaling with respect to the num-ber of parameters p.
+
+• Global level: At the global aggregation level (central server), the memory requirement is expressed as: 
+
+S global (N, p) = O(N p ) + O(K √p) (15) 
+
+NP is the memory needed for storing model pa-rameters collected from all N devices. K √p de-notes the additional memory requirement associ-ated with intermediate computations during cluster-ing and model aggregation, reflecting a sub-linear dependency on the parameter count due to the clus-tering procedure. This formulation clearly illustrates how the global memory complexity depends on the number of devices ( N), the number of clusters ( K), and the model size ( p), highlighting both linear and sub-linear scaling in memory usage. 3. Communication complexity: The communication com-plexity measures the total data exchanged between devices and the server during model updates. It is expressed as: 
+
+C(N, E, p) = O
+
+ NE p B
+
+
+
+(16) Where N represents the number of devices, E represents the number of rounds of communication (epochs), p rep-resents model parameter size, and B represents available bandwidth. Such a complexity emphasizes communica-tion cost dependency on model size, number of devices, and bandwidth. Communication overhead can be allevi-ated by applying model compression or gradient methods. The main findings are: Time complexity: The framework achieves e ffi cient scaling with N, ensuring feasibility for large-scale IoT networks. 
+
+• Space complexity: Both device-level and global-level storage requirements are linear in the number of model parameters, making the approach memory-effi cient. 
+
+• Communication complexity: The linear dependency on N, E, and p underscores the importance of op-timizing bandwidth usage to minimize communica-tion overhead. By balancing these complexities, the proposed framework ensures scalability, e ffi ciency, and adaptability for real-world IoT applications. 
+
+3.3. Design and Implementation Details 
+
+Eff ective management of resources is a key factor to main-taining high accuracy, as well as e ffi ciency, in FL systems, espe-cially in heterogeneous IoT environments. The chapter explains the upgraded mechanisms employed by ASA, i.e., dynamic re-source allocation, model distribution, adaptive clustering, and training coordination. By utilizing real-time profiling, optimal clustering schemes, and adaptive synchronization, ASA over-comes the shortcomings of static, uniform methods, enabling effi cient utilization of resources along with strong model accu-racy. The design decisions behind the framework are justified by theory as well as by significant experimentation, showcasing immense accuracy, e ffi ciency, as well as scalability improve-ments 
+
+3.3.1. System Design and Components 
+
+The ASA framework adopts a hierarchical structure extend-ing from conventional three-layer designs using an intelligent agent layer. The extra layer acts as an intermediary between edge devices and cloud, solving issues found in recent works where cloud-edge communication directly led to substantial 8performance loss in heterogeneous settings [9]. Our design utilizes sophisticated profiling mechanisms to identify device capabilities using a multi-dimensional evaluation framework. The device profile tensor Pi consists of computational capabil-ities (Ci), memory capacity (Mi), and network properties (Ni) to facilitate fine-grained management of resources. The pro-filing mechanisms were found to have higher adaptability than conventional binary classification, especially in highly hetero-geneous environments [18]. For a formal description of ASA, Algorithm 1 depicts a structured outline of FL steps. The ASA framework first assesses computational capabilities of IoT de-vices in terms of CPU power, memory, as well as GPU avail-ability. Through K-Means clustering, these devices are seg-regated into clusters of low-capability, mid-range, as well as high-end based on performance. Each cluster is then allocated a model of a resource-suitable level of complexity to avoid using more than available resources, without overloading lower-end devices. During training, devices independently update locally while keeping track of resource usage at all instances. When re-source utilization grows over a set limit, model complexity dur-ing allocated assignment is dynamically scaled down to avoid overloading. When, on the contrary, resource usage remains stable across multiple epochs, model complexity is increased to improve performance. The aggregation of updates by devices takes place through a hierarchical approach in two stages: intra-cluster aggregation, then a higher-level aggregation to realize a converged model. An early stopping criterion enables e ffi cient training by stopping update when a predefined rate of conver-gence reaches its threshold level. Algorithm 1 describes this adaptation, presenting a cyclic approach to ASA adaptation in FL. 
+
+3.3.2. Resource Management and Optimization 
+
+The resource management mechanism in ASA employs an adaptive allocation strategy that dynamically adjusts to varying device capabil-ities and network conditions. Recent studies highlight that static re-source allocation in heterogeneous IoT environments can significantly underutilize computational resources [10]. To overcome this issue, our framework incorporates a three-phase resource management approach: 
+
+Phase 1 - Device profiling: this phase profiles devices based on their capabilities, leveraging a benchmark score calculation defined as: 
+
+Bscore =
+
+X
+
+> j
+
+wj · ϕj(Pi) (17) where Wj denotes the weighting coe ffi cient corresponding to the j-th resource dimension, reflecting its relative significance in the benchmarking process, and ϕj represents a resource-specific transformation or normalization function applied to the respec-tive metric of device i.
+
+Phase 2 - Adaptive resource allocation: dynamically allocate re-sources by solving the following optimization problem: min 
+
+X
+
+> k
+
+X
+
+> i∈Ck
+
+∥Pi − μk∥2 (18) subject to practical communication and resource constraints. Here, devices are grouped into clusters Ck, with μk representing cluster centroids. This adaptive clustering approach significantly enhances computational e ffi ciency and reduces communication overhead. 
+
+Phase 3 - Iterative optimization and aggregation: The algorithm progressively adjusts device clusters as well as resources itera-tively, maximizing e ffi ciency while minimizing communication overhead, resulting in up to 31% communication savings without compromising accuracy [19]. The organized, adaptive approach provides e ffi cient utilization of computational power as well as robustness in dynamic, heterogeneous IoT environments. 
+
+3.3.3. Adaptive Model Distribution 
+
+The model distribution strategy of ASA adopts a new hierarchi-cal strategy where optimal utilization of resources is achieved while model accuracy is preserved. It has been revealed from recent re-search that one-size-fits-all model distribution strategies may lead to a 45% performance loss in heterogeneous settings [5]. Our approach counteracts this by incorporating a model selection mechanism that provides device-capability-specific model complexities through our adopted utility function: 
+
+U(m, Pi) = α · accuracy( m) + β · effi ciency( m, Pi) (19) where α and β are dynamically controlled in response to system needs and device properties. It has shown a 29% improvement in sys-tem e ffi ciency overall coupled with model accuracy of 1% when com-pared to centralized training methods [5]. 
+
+3.3.4. Training Coordination and Synchronization 
+
+The training coordination mechanism in ASA implements a sophis-ticated protocol that ensures both e ffi ciency and convergence. Our ap-proach extends recent work in asynchronous FL [13] by introducing adaptive synchronization intervals based on device capabilities and network conditions. The local update mechanism follows our estab-lished convergence bounds: 
+
+E ∇L(Wtg) 2 ≤ O 1
+
+√T
+
+!
+
+(20) while implementing practical considerations for device heterogeneity. This approach has shown remarkable improvements in training e ffi -ciency, achieving an 11.47% reduction in execution time while main-taining model convergence [14]. 
+
+4. Evaluation and Discussion 
+
+The experimental process in the paper was performed in a computer system featuring an NVIDIA RTX 3080 Ti GPU with 8GB of RAM. The system operates on an Intel Core i9-7800X processor from 3.50 GHz to an ultimate speed of 4.00 GHz, in addition to 128 GB of DDR4 RAM. Real-world deployment issues in heterogeneous IoT environ-ments are taken into account in the practical implementation of ASA. The modern software stack of PyTorch for training the model, gRPC for lightweight communication, and in-house telemetry systems for re-source observation is used in the given framework. It has been proven in recent research that the correct software stack could improve the sys-tem’s speed by as much as 35% in heterogeneous environments [16]. Deployment architecture adopts container-based virtualization based on Docker backed by the orchestration of Kubernetes, to achieve e ffi -cient resource utilization and scaling. This has proven to provide con-siderable improvement in the system’s reliability and maintainability, with deployment overhead minimized by 28% compared to conven-tional techniques [17]. 
+
+9Input: IoT devices: D = {d1, d2, . . . , dn},Configurations: CONFIG ,Resource thresholds: θ = {θcpu , θ memory , θ network }
+
+Output: Optimized federated model M∗
+
+Initialize clusters C ← ∅ and models M ← ∅ ;
+
+foreach d ∈ D do 
+
+cpu i ← EvaluateC pu (di); 
+
+memory i ← EvaluateMemory (di); 
+
+gpu i ← EvaluateGpu (di) ; // Binary value 
+
+score i ← WeightedS core (cpu i, memory i, gpu i) ; // Compute device score 
+
+end 
+
+C ← K MeansClustering (score i, k = 3) ; // Clustering devices based on capability 
+
+foreach c ∈ C do foreach d j ∈ c do if c is Low-capability then 
+
+M j ← S impleModel (CONFIG ); 
+
+else if c is Mid-range then 
+
+M j ← MediumModel (CONFIG ); 
+
+else 
+
+M j ← ComplexModel (CONFIG ); 
+
+end end end end for epoch ← 1 to E g do foreach c ∈ C do foreach d j ∈ c in parallel do for local_epoch ← 1 to E l do 
+
+loss , metric ← LocalT raining (d j, M j, CONFIG ); 
+
+resource ← MonitorResources (d j); 
+
+if resource .cpu > θ cpu or resource .memory > θ memory then 
+
+Ad justModelComplexity (d j, M j, DOWN ); 
+
+else if stable resources for ≥ 3 epochs then Ad justModelComplexity (d j, M j, UP ); ;
+
+end end end 
+
+Wc ← AggregateU pdate (c) ; // Inter-cluster aggregation 
+
+end 
+
+M ← Aggregation (Wc); 
+
+convergence _rate ← CheckConvergence (M, CONFIG ); 
+
+if convergence_rate ≤ CONFIG .main_convergence then break ; // Early stop if converged 
+
+;
+
+end return M∗
+
+Algorithm 1: ASA Framework Algorithm 
+
+4.1. Configurations and parameters 
+
+The ASA framework proposed utilizes a CNN-based model for per-formance evaluation across clusters of IoT devices. The CNN used in ASA comprises 6 convolutional layers, each of size s × 3, kernel strides 1, and 1 of padding. This is followed by 6 pooling layers of size 2 × 2, strides of 1, and 1 of padding, and two fully connected lay-ers. SoftMax activation in the final layer of each of the models depends on the computational resources of the clients. Model training utilizes the Adam optimizer with loss as entropy. Batch normalization of size 128 is used. The learning rate used at the start is 0.01, and the clients’ learning rate is adaptively adjusted based on the data distribution at the clients, training optimization, and the usage of resources to e ffi ciently tackle non-IID data. In the paper, there exist three clusters defined about computational ability, namely high-performance, mid-tier, and 
+
+10 low-capacity devices. Each of them has a customized CNN model ac-cording to the resource limitations of each. More to the point, each of them has assigned a CNN model complexity level (simple, medium, or complex) based on its computational ability to enable e ffi cient exe-cution of the model and the best possible utilization of resources. The described CNN structure corresponds to the most complex version of the models designed for high-performance clients. Medium and sim-ple version di ff erences lie in the number of convolutional channels and fully connected layers, adjusted based on the resource limitations of each device. Experiments were run 5 times to ensure statistical accu-racy. Table 1 presents a detailed overview of the parameter values and configurations used in the ASA framework. The adaptive parameters 
+
+α and β play key roles in the ability to dynamically adapt the train-ing process to the fluctuating computational capabilities and network conditions of the IoT devices. 
+
+> Table 2: A detailed overview of the parameter values and configurations.
+
+Parameter Value 
+
+Batch normalization 128 Learning Rate 0.01 Activation function SoftMax Number of convolutional layers 6Kernel size 3 × 3Pooling layers 6Pooling kernel size 2 × 2Number of fully connected layers 2Adaptive threshold ( α) 0.9 Resource variance ( β) 0.6 Number of clusters 3 (High, Mid, Low) Number of clients 10 Number of epochs 250 Number of repeated experiments 5
+
+4.2. Dataset 
+
+The CIFAR-10 and MNIST datasets are benchmarks in machine learning and have been extensively used in FL research. CIFAR-10 comprises 60,000 colored images of 32 ×32 pixels, classified into 10 or 100 classes (CIFAR-10), depicting di ff erent real-world objects. On the other hand, MNIST comprises 70,000 gray-scale handwritten digits (0–9) of 28 × 28 pixels and is used in image classification tasks. Such datasets are useful in FL experiments as they allow the evaluation of the models in various non-IID data patterns, mimicking decentralized learning scenarios of the real world in which the data is distributed heterogeneously across di ff erent clients. 
+
+4.3. Results 
+
+The Adaptive Smart Agent (ASA) framework has been proposed to manage the inherent pitfalls of heterogeneous FL in the case of the IoT. With the addition of high-level mechanisms such as resource profil-ing, dynamic device grouping, and domain-specific model allocation, ASA maximizes resource utilization and o ff ers inclusivity over hetero-geneous computational capabilities of devices. Extensive experiments with real-world data demonstrated the supremacy of ASA in reducing the communication costs, maximizing resource usage, and maintain-ing the accuracy of models over alternative solutions. An exhaustive examination of the communication costs of the training process of var-ious FL platforms in implementation, with the use of the CIFAR-10 dataset as the reference data, is illustrated in Figure 3. Figure 3(a) illustrates the total communication cost over 40 training cycles, and Figure 3(b) illustrates the average communication cost per training cycle. In Figure 3(a), ASA exhibits noticeably lower total commu-nication costs compared to alternative solutions such as FedAvg, Hi-erFL, and FedProx. ASA reduces the data exchanged between devices and the central server by dynamically grouping devices and allocat-ing domain-specific models. For instance, at 40 training cycles, ASA registers a drop of approximately 43% in the communication cost com-pared to FedAvg, the one recording the highest total cost.Figure 3(b) illustrates the average communication cost per round for all the meth-ods. ASA possesses the lowest average communication cost of ap-proximately 12 GB per round, while FedAvg possesses the highest of more than 30 GB per round. This considerable improvement reflects the capability of ASA in controlling the communication overhead, a major concern in heterogeneous IoT environments where bandwidth limitations dominate. HierFL and FedProx also demonstrate superior performance compared to FedAvg but get surpassed by ASA due to its advanced techniques in resource management. 
+
+> Figure 3: (a) Cumulative and (b) average communication costs, showing ASA’s superior e ffi ciency compared to FedAvg, HierFL, and FedProx on the CIFAR-10 dataset.
+
+Figure 4 presents a comparative analysis of the ASA approach with the baseline methods of FedAvg, HierFL, and FedProx, over the CIFAR-10 dataset. The comparison includes the models’ convergence, communication overhead, and ultimate performance over several com-munication rounds. Figure 4 (a) shows the comparison of the conver-gence of the models using confidence intervals. ASA yields a better result by reaching higher accuracy within a lower number of commu-
+
+11 nication rounds. The framework converges to approximately 96.5% accuracy at 60 rounds, and the baselines converge slowly and never acquire such high accuracy levels. The narrow range of the confi-dence intervals in ASA also indicates the robustness and stability of its performance across di ff erent runs. Figure 4 (b) compares the total communication expense over communication rounds. ASA’s commu-nication overhead is quite lower compared to the baselines. For in-stance, within 8 communication rounds, ASA’s total communication equals about 50% lower compared to FedAvg. This follows from the ASA’s resources-aware device grouping and adaptive sharing of mod-els, reducing data exchange between the devices and the master server. Figure 4(c) compares the speed of the di ff erent techniques. ASA converges to 90% accuracy within 40 communication rounds, while FedAvg and HierFL take over 60 communication rounds to achieve the same level of accuracy. The high speed of convergence indicates ASA’s capability to accurately maximize communication rounds and resources, and make it e ffi cient and scalable in the heterogeneous en-vironments of the IoT. Figure 5 quantifies the scalability of the ASA framework at dif-ferent metrics with the number of devices, employing the CIFAR-10 dataset. We analyze scalability for normalized accuracy, communica-tion expense, training time, and memory consumption and observe the behavior of ASA at di ff erent scales of deployment. With the number of devices scaling from 200 to 1000, the normalized accuracy marginally decreases. This is as expected when the system includes more diverse and resource-limited devices, a ff ecting the total accuracy marginally. Yet, ASA preserves high accuracy above 97% despite the scale of op-erations. The communication expense shows a linear increment with the scale of deployment. More devices require more data exchange be-tween the devices and the master server, hence greater communication overhead. Despite the increment in expense, the expense remains toler-able owing to the e ffi cient ASA strategies in clustering and allocating the models. The training time also increases linearly with the num-ber of devices. The increase arises from the added overhead of device diversity management and update synchronization. Although the train-ing time increases, the framework ensures the increase in training time remains linear, indicating the scalability of the framework. Memory consumption follows the same pattern and increases with the scaling of the system. This arises from the increase in device profiles and the number of clusters to be assigned. Yet, the e ffi cient resource profil-ing strategies in ASA reduce the consumption of excessive amounts of memory, preserving the scalability of the system with little bottleneck. The results collectively illustrate ASA’s scalability over massive net-works of IoT devices, maintaining accuracy, communication without resource wastage, and adequate resource management. Figure 6 compares the performance of the ASA framework against baseline techniques (FedAvg, HierFL, and FedProx) as the system scales from 200 to 1000 devices. The evaluation is represented in two panels: Figure 6 (a) represents accuracy scaling with system size, and Figure 6 (b) represents training time scaling. In Figure 6(a), ASA ex-hibits higher accuracy retention with increasing devices. While base-line techniques, in particular FedAvg and FedProx, are subjected to severe accuracy degradation in the face of larger system sizes, ASA maintains high accuracy throughout, reaching over 92% with 1000 de-vices. This emphasizes ASA’s capability in coping with device het-erogeneity via customized model assignment and resource-aware op-timizations. In Figure 6 (b), normalized training time is represented as the number of devices increases. ASA boasts the minimum train-ing time at all scales, demonstrating its scaling capability. By contrast, FedAvg and FedProx bear the peak in training time due to ine ffi ciency in scaling to large-scale systems. ASA’s adaptive synchronization and clustering capabilities make the training time increase close to linear, 
+
+> Figure 4: Comparative analysis of ASA and baseline methods on CIFAR-10: (a) Convergence accuracy, (b) Communication cost, (c) Convergence speed.
+
+and hence it becomes highly scalable in the case of large-scale IoT applications. Figure.7 captures the comparative time composition of the training time components of ASA and baseline techniques in the utilization of the CIFAR-10 dataset. The composition includes the computational, communication, synchronization, and overhead components to reveal the total training time divided in such components. ASA records a con-siderably lower total training time compared to baseline techniques. Contrary to the previous supposition, ASA has a higher communica-tion overhead due to the utilization of adaptive grouping and the mod-els’ assignment. Contrarily to the uniform assignment of the models 
+
+12 Figure 5: Scalability analysis of ASA across di ff erent metrics ((a) accuracy, (b) communication cost, (c) training time, and (d) memory usage) with varying numbers of devices on the CIFAR-10 dataset. 
+
+in conventional FL techniques, ASA dynamically varies the models’ complexity according to the device capabilities, incurring more com-munication between the nodes. This extra communication overhead is a viable trade-o ff to attain faster convergent results, better personaliza-tion of the models, and improved resource usage in heterogeneous en-vironments. Instead, ASA reduces synchronization delay and compu-tational overhead, the major limitations in techniques such as FedAvg and HierFL, by a significant margin. The adaptive allocation approach also prevents wastage of processing in the lower-resource devices, and the training continues to be e ffi cient while the communication grows. The better learning quality also justifies the higher communication ex-pense, and ASA is a more e ffi cient and scalable solution in practical applications in the context of the IoT.FedAvg, HierFL, and FedProx come with greater synchronization and computational overhead, and hence slower training time. FedAvg, in fact, has high delay in syn-chronization owing to its deterministic aggregation procedure, while HierFL and FedProx invest major resources in the computing task and hence lack adaptability in heterogeneous environments. ASA, how-ever, maintains the balance between training e ffi ciency and resource usage strategically by transferring some of the computational work-load to communication exchanges, minimizing the time for synchro-nization, and intelligently allocating resources. This trade-o ff makes ASA a viable and scalable solution to FL in heterogeneous environ-ments, where adaptability comes first. Figure 8 presents the Receiver Operating Characteristic (ROC) curves of the ASA framework and the baselines (FedAvg, HierFL, and FedProx) over the data set of CIFAR-10. The ROC curve indicates the trade-o ff between the false positive rate (FPR) and the true positive rate (TPR) at di ff erent threshold points and gives a global evaluation of the classification ability of the models. ASA yields the best Area Under the Curve (AUC) of 0.856, reflecting improved classification capability over the baselines. HierFL follows, with AUC of 0.835, while AUC of FedProx and FedAvg is 0.825 and 0.812, respectively. The higher AUC of ASA reflects its ability to bal-ance the false positives with the true positive rate better and its better ability to distinguish between classes. ASA’s ROC curve consistently remains distinguished from the baselines, and quite strongly at higher TPRs, reflecting its better sensitivity and specificity. This results from ASA’s device-level training allocation strategies adapted to each de-vice, and they enhance the global model performance. Figure 9 shows the F1-scores of the ASA and baseline methods (Fe-dAvg, HierFL, and FedProx) for di ff ering classes of the CIFAR-10 dataset, detailing classification accuracy per class. The F1-score is the harmonic average of precision and recall and thus represents a use-ful metric for the balance between false positives and false negatives. ASA consistently produces higher F1-scores across all classes com-pared to the baselines. For Class A, ASA has an F1-score of 0.856, while FedAvg, HierFL, and FedProx have 0.812, 0.835, and 0.825, respectively. This holds across the rest of the classes (B, C, and D), where ASA has a continued superiority. The narrowest of the gaps in performances occurs in Class D, but ASA again surpasses the base-lines and shows its robustness in all the di ff erent scenarios. The high and uniform F1-scores of ASA in all classes demonstrate its capac-ity to yield balanced classification accuracy per class. This has been brought about due to the customized model assignment and useful de-vice resource utilization of ASA, factors that cumulatively contribute to improved global model quality. To better compare, Figure 9 illustrates a comparison of the classifi-cation accuracy of ASA and baseline techniques (FedAvg, HierFL, and 
+
+13 Figure 6: Comparison of ASA and baseline methods: (a) Accuracy scaling with system size and (b) Training time scaling with increasing number of devices. 
+
+FedProx) on four datasets, including MNIST, CIFAR-10, F-MNIST, and Adult. This comparison illustrates ASA’s capability to general-ize accurately across heterogeneous datasets of various characteristics and complexities. On the MNIST dataset, ASA has the best accuracy, reaching a rate of 99%, and it beats all the baseline techniques. On the same lines, on CIFAR-10 and F-MNIST as well, ASA has consistently better accuracy compared to the others, indicating high-performance capability in more complex image datasets. On the Adult dataset, which comprises tabular data, ASA performs marginally better than the baselines, indicating versatility to non-image data as well. The high-performance capability of ASA across all the datasets lies in its effi cient resource allocation, dynamic grouping, and customized model assignment strategies. These capabilities allow ASA to optimize learn-ing in heterogeneous and resource-limited environments as well and to make consistent improvements over FedAvg, HierFL, and FedProx. 
+
+4.4. Comparison proposed method with other related works 
+
+In this section, the e ff ectiveness of the proposed ASA scheme is compared to the best existing FL techniques, including FedGSM [20], FedAvg [21], FedProx [22], FeSEM [23], Sca ff old [24], Adaptive-FedAvg [25], FedASL [26], and FedMA [27]]. Like in previous re-search, all the models were subjected to training over non-IID data distributions using the datasets MNIST and CIFAR-10. Based on the results in rank order in Figure 10, ASA obtains 98.89% accu-racy for the MNIST dataset and 85.30% accuracy over the dataset of CIFAR-10, indicating comparable performance in comparison to the existing FL techniques. For MNIST, the maximum accuracy by 
+
+> Figure 7: Comparison of training time components (computation, communica-tion, synchronization, and overhead) across ASA and baseline methods using the CIFAR-10 dataset.
+> Figure 8: ROC curve comparison on CIFAR-10 for ASA, FedAvg, HierFL, and FedProx, showing ASA’s superior classification performance with the highest AUC of 0.856.
+
+FedGSM (98.85%) follows that of Sca ff old (98.45%), of which ASA surpasses the two methods to achieve the highest accuracy of all the approaches compared. For the dataset of CIFAR-10, 83.74% accuracy by FedGSM is surpassed by ASA with 85.30%, representing better adaptability of the model to complicated, non-IID data. FedGSM, like most previous techniques, seeks to minimize the gap between the local and global models by compensating for the e ff ect of the non-IID data drift. Nonetheless, most of these traditional methods, such as FedAvg and FedProx, fail to balance the computational di ff erences across de-vices, resulting in decreased accuracy in heterogeneous IoT settings. Adaptive-FedAvg attains 92.10% on MNIST and 64.16% on CIFAR-10, indicating a considerable gap in improvement over ASA, enhanc-ing accuracy by 6.79% on MNIST and 21.14% on CIFAR-10 com-pared to this technique (Figure 11). The Sca ff old approach, designed to tackle drift minimization, attains 98.45% on MNIST and 82.96% on CIFAR-10. Compared to this technique, ASA enhances the accu-racy of CIFAR-10 by 2.34% while retaining better results on MNIST. Analogously, FedShare [28] adopts a data-sharing approach to boost-ing generalization to attain accuracy of 81.66% on CIFAR-10, 3.64% 
+
+14 Figure 9: F1-score comparison for CIFAR-10 classification across di ff erent classes, demonstrating ASA’s consistently higher performance over baseline methods. 
+
+lower compared to the results of ASA. The outcomes portray the major benefit of ASA over preceding FL techniques in that it automatically adapts the complexity of the models and device grouping according to the capability of the devices to curtail drift while ensuring active partic-ipation of all devices while sustaining high accuracy. Contrarily, static FL strategies that employ the same model for all devices by ASA allo-cate models perfectly suited to the constraints of the device to achieve better resource usage and scaling. Generally, ASA attains the best-reported accuracy on MNIST and outperforms FedGSM on CIFAR-10 and hence represents a contender for real-world applications in the IoT and edge computing arena. 
+
+> Figure 10: Performance comparison of ASA and baseline methods (FedAvg, HierFL, FedProx) across four datasets (MNIST, CIFAR-10, F-MNIST, and Adult), demonstrating ASA’s superior accuracy and generalization ability.
+
+5. Conclusion 
+
+The Adaptive Smart Agent (ASA) approach in the paper success-fully overcomes the challenges of heterogeneity in FL for IoT envi-ronments. With the addition of a layer of intelligent agents, ASA dy-namically profiles devices, clusters them according to computational capabilities, and transfers optimized models to achieve e ffi cient and equitable contribution to the training process. Compared with conven-tional FL methods that generally overlook low-resource devices, ASA enforces equitable contribution from all the devices, achieving better 
+
+> Figure 11: Performance comparison of FL methods on MNIST and CIFAR-10.
+
+scalability, e ffi ciency, and accuracy. Comprehensive experiments on two benchmark datasets MNIST and CIFAR-10 establish the benefits of ASA over conventional FL methodologies. The results demonstrate the e ff ectiveness of ASA in reducing the communication complexity by 43% to 50%, the resource usage by 43%, and achieving final ac-curacy of 96.5% in MNIST and 85.3% in CIFAR-10. The results re-flect the capability of ASA in optimizing the e ffi ciency of learning without losing any accuracy, and it has the potential to be applied in real-world applications in the domains of IoT. Although such results promise much, there are limitations of the presented work. The exist-ing work used the experimental setup in controlled scenarios, and the results might not reflect the real-world complexity of massive-scale networks of IoT. Future work must explore the applicability of ASA to real-world environments of dynamic network conditions, sporadic de-vice connectivity, and non-stationarity of the data distribution. Further research in the optimization of the computational overhead of the agent and decentralized methods of clustering could also enhance the scala-bility of ASA. Integration of models like homomorphic encryption and di ff erential privacy could be another avenue to enhance the security of FL applications. To conclude, ASA represents a revolutionary break-through in FL in heterogeneous IoT environments with a promise of tradeo ff between computational e ff ectiveness, inclusiveness, and scal-ability. Future research will work towards exercising its adaptability and security aspects in generalizing to a wide range of applications in healthcare, smart cities, and industrial-scale IoT. 
+
+Appendix A. Convergence Analysis 
+
+In this appendix, we provide a brief convergence analysis for our adaptive FL approach, highlighting the standard assumptions that un-derpin the derived bounds. Our argument follows well-established re-sults in stochastic optimization and FL (e.g.,[1, 2]). 
+
+Appendix A.1. Key Assumptions 
+
+1. L-Smoothness. The global objective function F(w) is assumed to be L-smooth, i.e., 
+
+∥∇ F(w) − ∇ F(w′)∥ ≤ L ∥w − w′∥ ∀w, w′ (A.1) This implies that the gradient of F does not change abruptly. 2. 2. Bounded Variance. Each device i maintains its local objec-tive Fi(w). We assume a bounded variance of local stochastic gradients: 
+
+15 E [∥∇ Fi(w) − ∇ F(w)∥] ≤ σ2, ∀i. (A.2) where ∇F(w) = 1
+
+> N
+
+PNi=1 ∇Fi(w). This ensures that local updates do not deviate excessively from the global gradient. 3. Unbiased Gradient Estimator. Let denote the aggregated gradient at global iteration t. We assume 
+
+E[gt] = ∇F(wt) (A.3) indicating that gt is an unbiased estimator of the true gradient 
+
+∇F(wt) . 4. Learning Rate Schedule. We consider a learning rate η that can be constant or scheduled to decrease with t. Typically, η ∝ 1√t
+
+or η ∝ 1 
+
+> t
+
+are employed in stochastic optimization to achieve im-proved convergence. 
+
+Appendix A.2. Update Rule 
+
+At each global round t, the central server receives local model up-dates from a subset (or all) of the devices and computes the aggregated gradient gt. The global model is then updated via: 
+
+wt+1 = wt − ηgt (A.4) Here, η is the global learning rate. In the ASA framework, di ff er-ent clusters might have partially heterogeneous local models, but after being projected to a common parameter space (or aggregated at the agent /fog layer), we treat the resulting gradient as an unbiased estima-tor of ∇F(wt). 
+
+Appendix A.3. Proof Sketch 
+
+1. One-step Descent Lemma: By the L-smoothness of F, we have 
+
+F(wt+1) ≤ F(wt) + ⟨∇ F(wt), wt+1 − wt⟩ + L
+
+2 ∥wt+1 − wt∥2 (A.5) Substituting, wt+1 − wt = ηgt we get 
+
+F(wt+1) ≤ F(wt) − η⟨∇ F(wt), gt⟩ + Lη2
+
+2 ∥gt∥2 (A.6) 2. Taking Expectation: Under the unbiased gradient assumption, 
+
+E ⟨∇ F(wt), gt⟩ = ∥∇ F(wt)∥2 (A.7) and we typically have E h∥gt∥2i ≤ ∥∇ F(wt)∥2 + σ2. Thus, 
+
+E[F(wt+1) − F(wt)] ≤ − ηE[∥∇ F(wt)∥2] + η2
+
+2 E[∥∇ F(wt)∥2 + σ2].
+
+(A.8) 3. Summation over t: Summing from t = 0 to Tmax −1 and applying a telescoping argument leads to 1
+
+Tmax 
+
+> Tmax −1
+
+X
+
+> t=0
+
+E[∥∇ F(wt)∥2] ≤ 2( F(w0) − F(w∗)) 
+
+ηTmax 
+
+| {z }
+
+> (A)
+
++ Lησ 2
+
+2|{z} 
+
+> (B)
+
+(A.9) where w∗ is a global minimizer (or a first-order stationary point). 4. Choice of η: If η is chosen as α√(Tmax ) , term ( A) scales like 1√(Tmax )
+
+while term ( B) also scales like 1√(Tmax ) . Hence, 
+
+E[∥∇ F(wTmax )∥2] = O 1
+
+√Tmax 
+
+!
+
+(A.10) If η is chosen as α√(Tmax ) , we get a di ff erent balance that may yield 
+
+O  1√(Tmax )
+
+ convergence under stronger conditions. As a simplified presentation, we often write: 
+
+E[∥∇ F(wTmax )∥2] ≤ CTmax 
+
++ Dσ2
+
+√Tmax 
+
+. (A.11) where C and D are constants dependent on L, α, and the initial gap F(w0) − F(w∗). 
+
+Appendix A.4. Implications for ASA 
+
+In the ASA framework, the above standard analysis applies per clus-ter under mild modifications. Each cluster performs local updates po-tentially with di ff erent model sizes, yet upon aggregation, the global (or cluster-level) gradient is treated as an unbiased estimate of ∇F.As long as each cluster’s local objectives Fi satisfy similar bounded variance assumptions, and the agent layer performs proper averaging, the overall analysis remains valid. Therefore, our approach inherits the standard O  1√Tmax 
+
+ or O  1
+
+> Tmax
+
+ convergence rate in expectation, subject to the smoothness and variance-bounded assumptions. 
+
+Appendix A.5. Theoretical Guarantees and Performance Anal-ysis 
+
+The ASA framework provides comprehensive theoretical guaran-tees that bridge the gap between theoretical bounds and practical im-plementation. Our analysis extends recent work in convergence analy-sis for heterogeneous FL [15] by incorporating device-specific charac-teristics and resource constraints. The framework ensures: 1. Resource Utilization E ffi ciency: 
+
+η = Rutilized 
+
+Rtotal 
+
+, such that 0 < η resource ≤ 1, η resource ≥ 1 − ε (A.12) Here, Rutilized is the actual computational resources used e ff ec-tively, and Rtotal represents the total available computational re-sources. The parameter ε quantifies allowable ine ffi ciency in resource utilization. To ensure e ff ective utilization of compu-tational resources, we define the resource utilization e ffi ciency 
+
+ηresource as the ratio between the utilized and total available re-sources. By having a lower bound 1 − ε, where ε ∈ (0 , 1) stands for the tolerable ine ffi ciency level, we ensure that at a minimum (1 − ε) × 100% of total resources are actually being used. We make sure that the system never falls below that while also ac-knowledging that optimal utilization ( ηresource = 1) might not be attainable in a real environment. 2. Model Convergence: 
+
+∥wt+1 − wt∥ ≤ δ∥wt − wt−1∥ + ε (A.13) This bound ensures stability and convergence of model parame-ters, indicating that successive updates of the model parameters become progressively smaller, controlled by parameters δ and ϵ.3. Communication E ffi ciency: 
+
+Ceffi ciency = Beff ective 
+
+Btheoretical 
+
+(A.14) 
+
+Be f f ective denotes the e ff ective communication bandwidth uti-lized, while Btheoretical represents the theoretical maximum band-width. This measure quantifies how e ffi ciently the available com-munication resources are used. These theoretical guarantees have been rigorously derived and experimentally validated, demon-strating consistent and measurable performance improvements across diverse and heterogeneous IoT deployments. 
+
+Appendix A.6. Theoretical Bounds and Guarantees 
+
+The proposed framework provides rigorous theoretical guarantees across three key dimensions: accuracy, resource e ffi ciency, and stabil-ity. These guarantees ensure the reliability and robustness of the model under diverse scenarios. 
+
+16 1. Accuracy bound: The accuracy of the local model ACC (Mi) for any device i is bounded as follows: Acc( Mi) ≥ Acc( Mglobal ) − `oi (A.15) where ` oi ∝ √Var( S (di)) represents the variability in the resource profile score for device i. This bound ensures that the local model accuracy remains close to the global model accuracy, with the deviation primarily influenced by the heterogeneity of device re-sources. 2. Resource E ffi ciency: The resource utilization e ffi ciency achieved by the framework is quantitatively defined as follows: 
+
+ηresource ≥ 1 − exp 
+
+− 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+S (di)
+
+ (A.16) Here, ηresource represents the accuracy of estimating available re-sources in IoT devices. Higher values of ηresource imply a more accurate prediction of resource capabilities, directly enabling the system to make better-informed decisions regarding resource al-location. Consequently, higher accuracy translates to enhanced resource utilization e ffi ciency, optimizing the overall system per-formance. 3. Stability Guarantee: Our proposed method provides a rigorous stability guarantee by ensuring ` o-stability, meaning the model parameters remain within an ` o-neighborhood around the optimal solution W∗ with high probability. Mathematically, which for-malized this stability property as follows: 
+
+P {∥ wt − w∗∥ ≤ `o} ≥ 1 − δ f or t ≥ T0( ` o, δ ) (A.17) Where, ` O stands for the stability accuracy, δ refers to the permis-sible instability probability, and T0 means the minimum number of iterations past which stability is assured. This probabilistic stability assurance specifically defines the chance of model pa-rameters being close enough to optimal parameters, indicative of a robust performance in the face of stochasticity during gradient updates as well as heterogeneity and dynamics in IoT environ-ments. Therefore, this analysis o ff ers theoretical assurance of our FL model being robust and reliable when implemented in real-world, heterogeneous, and dynamic environments. 
+
+Appendix A.7. Optimality Analysis 
+
+The proposed ASA framework achieves an approximation guaran-tee for the optimal resource allocation 1 − 1
+
+> e
+
+ problem. This result relies on three key properties: 
+
+• Sub modularity: The resource allocation exhibits submodular be-havior, where the marginal utility diminishes as more resources are allocated. 
+
+• Clustering smoothness: The clustering mechanism satisfies β-smoothness, ensuring e ffi cient and balanced device grouping. 
+
+• Communication delays: Communication delays follow a sub-exponential distribution, enabling robust resource allocation de-spite network variability. Approximation guarantees are established by proving sub modular-ity of resource allocation scores, using a greedy allocation approach, and utilizing smoothness conditions to provide near-optimum perfor-mance. Experimentally, we verify real-world improvements, corrobo-rating our theoretical guarantees. 
+
+Appendix A.8. Convergence Analysis 
+
+In this section, we analyze the convergence of the proposed global model under the Adaptive Smart Agent (ASA) framework with dy-namic learning rates. The convergence rate is expressed as: 
+
+E h∥∇ F(wt)∥2i ≤ CTMax 
+
++ Dσ2
+
+√TMax 
+
+(A.18) where: C and D are constants that depend on the problem character-istics and the model, TMax is the total number of iterations, and σ2 rep-resents the variance of stochastic gradients. In this section, we present a theoretical analysis of the model’s convergence behavior. The analy-sis follows a analytical approach, including local updates , Lyapunov analysis , and global convergence . The Lyapunov Analysis is specifi-cally employed to assess the stability of the model throughout the train-ing process. By leveraging this analysis, the aim is established theo-retical guarantees on the conditions under which the model parameters converge over time. 
+
+Step 1: Local updates: In this step, the local update process for each participating IoT device in the FL framework is analyzed. The global objective function, denoted as F(w), is defined as a weighted sum of local objective functions Fi(w): 
+
+F(w) =
+
+> n
+
+X
+
+> i=1
+
+pi Fi(w) (A.19) where Fi(w) is the local loss function for device i, and pi repre-sents the weighting factor, typically proportional to the dataset size of device i. Each device updates its local model wi based on the gradients computed from its local dataset. 
+
+w(t+1)  
+
+> i
+
+= w(t) 
+
+> i
+
+− ηt∇Fi(w(t) 
+
+> i
+
+) (A.20) Where, ηt is the learning rate at iteration t, and ∇Fi(w(t) 
+
+> i
+
+) is the gradient of the local loss function. To establish convergence, that the loss function F(w) is assumed L-smooth, meaning that its gradient is Lipschitz continuous with a constant L. This property implies the following inequality: 
+
+F(w′) − F(w) ≤ ∇ F(w)T (w′ − w) + L
+
+2 ∥w′ − w∥2 (A.21) This boundedness guarantees that the function does not fluctuate too fast and regulates the introduced error through local updates. The notation represents an upper bound on the amount by which the function can change when we move from w to w′. If we ap-ply this property to our equation for the update, we get an upper bound on the expected objective function improvement at each local iteration. This bound turns out to be central in establishing the rate of provable convergence globally in steps to come. 
+
+Step 2: Lyapunov analysis: To analyze further the convergence properties, we introduce Lyapunov analysis, a popular approach to analyze stability in optimization problems. Lyapunov analy-sis, in our case, assists in measuring how the distance between the current model w and optimal model w∗ changes over time. The Lyapunov function, in turn, is defined as: 
+
+Vt = ∥w(t) − w∗∥2 (A.22) Its purpose is to compute the Euclidean distance between the op-timal model and the current model, but its square, enabling anal-ysis of variations in Vt across iterations that lead to conditions where the model converges and stabilizes. Overall, the local up-date stage defines the model parameters’ iterated improvement, 
+
+17 but in its next stage, the Lyapunov analysis guarantees that op-timization to a stable and converging process results from the updates. 
+
+Step 3: Global convergence: To rigorously establish the global con-vergence of our model, which integrated the insights obtained from local update analyses and Lyapunov stability analysis. This approach provides explicit theoretical guarantees regarding the expected convergence behavior of the FL framework proposed in this study. We consider the global loss function F(w), assuming it satisfies the following standard optimization assumptions: 
+
+L-smoothness: For all w′, the gradient of F(w) satisfies: 
+
+F(w′) ≤ F(w) + ∇F(w)T (w′ − w) + L
+
+2 ∥w′ − w∥2 (A.23) 
+
+Strong convexity: The global loss function F(w) is strongly convex with constant μ meaning that for all w′ :
+
+F(w′) ≥ F(w) + ∇F(w)T (w′ − w) + μ
+
+2 ∥w′ − w∥2 (A.24) 
+
+Bounded variance of stochastic gradients: The stochastic gradients computed at local devices have bounded variance: 
+
+E h∥∇ Fi(wt) − ∇ F(wt)∥2i ≤ σ2 (A.25) Under these assumptions, we perform the following convergence analysis: 
+
+• Local update analysis: Each IoT device updates its local model parameters using stochastic gradient descent (SGD). For device i and local parameters wt , we have: 
+
+E[F(wt+1) − F(wt)] ≤ − ηtE h∥∇ F(wt)∥2i + Lη2 
+
+> t
+
+σ2
+
+2 (A.26) where ηt is the learning rate at iteration t.
+
+• Lyapunov stability analysis: We define a Lyapunov func-tion measuring the stability as: 
+
+Vt = ∥w0 − w∗∥2 (A.27) Subsequently, the following bound for the expected pro-gression of this Lyapunov function is obtained: 
+
+E[Vt+1] ≤ (1 − 2μη t)E[Vt] + η2 
+
+> t
+
+σ2 (A.28) 
+
+• Global convergence bound: Recursively applying the above inequality and using a diminishing learning rate 
+
+η = 1 
+
+> μt′
+
+, which derived the final convergence result: 
+
+E[F(wT ) − F(w∗)] ≤ LD 2 log TMax 
+
+2TMax 
+
++ σ2
+
+2 √TMax 
+
+(A.29) Here D = ∥w0 − w∗∥ corresponds to initial parameter de-viation, and TMax to total training iterations. This detailed mathematical derivation clearly illustrates the convergence properties under typical theoretical assumptions and ex-hibits unambiguously the e ff ects of initial conditions, gra-dient variance, and smoothness and convexity characteris-tics of the objective function. This convergence analysis is developed originally in this work to specifically address the convergence challenges encountered in heterogeneous FL scenarios involving IoT environments. 
+
+References 
+
+[1] S. S. AlSaleh, M. E. B. Menai, S. A. Al-Ahmadi, Aheterogeneity-aware semi-decentralized model to lightweight ids for iot networks based on federated learning and bilstm, 2024 (2024). [2] W. Yang, Y. Yang, W. Xiang, L. Yuan, K. Yu, A. Alonso, J. Urena, Z. Pang, Adaptive optimization federated learning en-abled digital twins in industrial iot, Journal of Industrial Infor-mation Integration 41 (2024) 100645. [3] A. Kumar, S. N. Srirama, Fedstrag: Straggler-aware federated learning for low resource devices, Digital Communications and Networks (2024). [4] J. W. Jang, B. J. Choi, Fedseq: Personalized federated learning via sequential layer expansion in representation learning, Ap-plied Sciences 14 (24) (2024) 12024. [5] M. Li, X. He, J. Chen, Federated collaborative learning with sparse gradients for heterogeneous data on resource-constrained devices, Entropy 26 (12) (2024) 1099. [6] Z. Meng, Z. Li, X. Hou, M. Xu, Y. Xia, Z. Zhang, S. Song, Enhancing federated learning performance on heterogeneous iot devices using generative artificial intelligence with resource scheduling, IEEE Internet of Things Journal (2024). [7] E. Yu, S. Liu, Q. Li, H. Chen, H. V. Poor, S. Shamai, Graph-based joint client clustering and resource allocation for wireless distributed learning: a new hierarchical federated learning frame-work with non-iid data, IEEE Transactions on Mobile Comput-ing (2024). [8] M. Tao, L. Liao, R. Xie, Y. Zhang, G. Min, Y. Zhang, Saei-dt: Semi-asynchronous edge intelligence for industrial digital twin networks in 6g, IEEE Network (2024). [9] S. Liu, L. Zhu, W. Zhang, Y. Miao, T. Leng, K. K. R. Choo, Accuracy-improved privacy-preserving asynchronous federated learning in iot, IEEE Internet of Things Journal (2024). [10] H. Zhang, C. Li, W. Dai, J. Zou, H. Xiong, Federated learning based on model discrepancy and variance reduction, IEEE Trans-actions on Neural Networks and Learning Systems (2025). [11] H. Song, J. Wang, J. Zhou, L. Wang, Tackling modality-heterogeneous client drift holistically for heterogeneous multi-modal federated learning, IEEE Transactions on Medical Imag-ing (2024). [12] S. Yue, X. Hua, Y. Deng, L. Chen, J. Ren, Y. Zhang, Momentum-based contextual federated reinforcement learning, IEEE /ACM Transactions on Networking (2024). [13] S. Ismael, D. Waref, M. A. M. Salem, Federated learning for robust people detection in decentralized surveillance systems, in: 2024 International Conference on Microelectronics (ICM), IEEE, 2024, pp. 1–6. [14] J. Chen, P. Zhang, J. Chen, T. S. C. Lau, Heterogeneity-aware clustering and intra-cluster uniform data sampling for federated learning, IEEE Transactions on Emerging Topics in Computa-tional Intelligence (2024). 
+
+18 [15] B. Jiang, Z. Liu, G. Yue, X. Cui, Y. Liu, H. H. Wang, Privacy safeguarding for human-computer interaction based on adaptive federated learning with actor-critic selection, IEEE Transactions on Consumer Electronics (2025). [16] A. Aljuhani, A. Alamri, A. Jolfaei, Federated edge intelligence to secure consumer electronics in healthcare systems, IEEE Con-sumer Electronics Magazine (2025). [17] R. Zhao, L. T. Yang, D. Liu, X. Yang, M. Wang, Tensor-empowered lightweight representations for personalized feder-ated learning in heterogeneous 6g networks, IEEE Network (2024). [18] E. Marmol Campos, Intrusion detection based on federated learn-ing for internet of things scenarios, Ph.D. thesis, Universidad de Murcia (2024). [19] D. Qiao, X. Ao, Y. Liu, X. Chen, F. Song, Z. Qin, W. Jin, Tri-afllm: Resource-e ffi cient adaptive asynchronous accelerated federated llms, IEEE Transactions on Circuits and Systems for Video Technology (2024). [20] S. Izadi, M. Ahmadi, New fusion loss function based on knowl-edge generation using gumbel-softmax for federated learning, The Journal of Supercomputing 81 (1) (2025) 1–25. [21] H. B. McMahan, E. Moore, D. Ramage, B. Agüera y Arcas, Fed-erated learning of deep networks using model averaging, arXiv preprint arXiv:1602.05629 2 (2016). [22] T. Li, et al., Federated optimization in heterogeneous networks, Proceedings of Machine Learning and Systems (2020) 429–450. [23] M. Xie, G. Long, T. Shen, T. Zhou, X. Wang, J. Jiang, C. Zhang, Multi-center federated learning, arXiv preprint arXiv:2005.01026 (2020). [24] S. P. Karimireddy, S. Kale, M. Mohri, S. Reddi, S. Stich, A. T. Suresh, Sca ff old: Stochastic controlled averaging for feder-ated learning, in: International conference on machine learning, PMLR, 2020, pp. 5132–5143. [25] G. Canonaco, A. Bergamasco, A. Mongelluzzo, M. Roveri, Adaptive federated learning in presence of concept drift, in: 2021 International Joint Conference on Neural Networks (IJCNN), IEEE, 2021, pp. 1–7. [26] W. Zhang, T. Zhou, Q. Lu, Y. Yuan, A. Tolba, W. Said, Fedsl: A communication e ffi cient federated learning with split layer ag-gregation, IEEE Internet of Things Journal (2024). [27] H. Wang, M. Yurochkin, Y. Sun, D. Papailiopoulos, Y. Khaza-eni, Federated learning with matched averaging, arXiv preprint arXiv:2002.06440 (2020). [28] H. Fazli Khojir, D. Alhadidi, S. Rouhani, N. Mohammed, Fed-share: Secure aggregation based on additive secret sharing in federated learning, in: Proceedings of the 27th International Database Engineered Applications Symposium, 2023, pp. 25– 33. 
+
+19

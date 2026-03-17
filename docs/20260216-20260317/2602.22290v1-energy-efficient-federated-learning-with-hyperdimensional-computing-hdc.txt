@@ -1,0 +1,716 @@
+Title: Energy Efficient Federated Learning with Hyperdimensional Computing (HDC)
+
+URL Source: https://arxiv.org/pdf/2602.22290v1
+
+Published Time: Fri, 27 Feb 2026 01:03:04 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Energy Efficient Federated Learning with Hyperdimensional Computing (HDC) 
+
+Yahao Ding ∗, Yinchao Yang ∗, Jiaxiang Wang ∗, Zhonghao Liu ∗,Zhaohui Yang †, Mingzhe Chen ‡, Mohammad Shikh-Bahaei ∗∗King’s College London, † Zhejiang University, ‡ University of Miami, Email: ∗{yahao.ding, yinchao.yang, jiaxiang.wang, zhonghao.liu, m.sbahaei}@kcl.ac.uk, 
+
+> †
+
+yang_zhaohui@zju.edu.cn, ‡mingzhe.chen@miami.edu 
+
+Abstract—This paper investigates the problem of minimiz-ing total energy consumption for secure federated learning (FL) in wireless edge networks, a key paradigm for decentralized big data analytics. To tackle the high computational cost and privacy challenges of processing large-scale distributed data with conventional neural networks, we propose an FL with hy-perdimensional computing and differential privacy (FL-HDC-DP) framework. Each edge device employs hyperdimensional computing (HDC) for lightweight local training and applies differential privacy (DP) noise to protect transmitted model updates. The total energy consumption is minimized through a joint optimization of the HDC dimension, transmit power, and CPU frequency. An efficient hybrid algorithm is developed, combining an outer enumeration search for HDC dimensions with an inner one-dimensional search for resource allocation. Simulation results show that the proposed framework achieves up to 83.3% energy reduction compared with baseline schemes, while maintaining high accuracy and faster convergence. Index Terms—Federated learning, hyperdimensional com-puting, differential privacy, resource allocation, energy effi-ciency. 
+
+I. Introduction The contemporary shift towards a data-driven digital economy is fueled by big data, which offers immense value in understanding complex systems. An explosive growth in data generation from Internet of Things (IoT) devices, smartphones, and wearable technologies is cre-ating massive data volumes at the network edge. This decentralized data deluge presents new challenges and opportunities, demanding advanced architectures for big data processing that move beyond traditional centralized models. Federated Learning (FL) has emerged as a key paradigm integrating big data with artificial intelligence (AI), supporting collaborative machine learning directly on edge devices. By training models locally and sharing only model updates, FL obviates the need to transfer raw data, representing a transformative approach to privacy protection in big data environments. Despite its promise, the large-scale deployment of FL for edge-based big data analytics faces two fundamental obstacles. First, the efficient transmission and processing of massive data are constrained by a fundamental energy bottleneck. Edge devices are typically battery-powered, yet the FL process is inherently energy-intensive. This consumption stems from both local computation, espe-cially for complex models like neural networks (NN), and wireless communication required to transmit model updates over communication networks. Second, security and trust remain core concerns. Standard FL updates are vulnerable to inference attacks that can reveal sensitive information about local data, which underscores the need for robust privacy guarantees. To address the challenge of high computational en-ergy, hyperdimensional computing (HDC) provides acompelling solution as an emerging, brain-inspired data analytic model. Unlike NNs model, HDC represents in-formation in a high-dimensional vector space and relies on computationally lightweight vector operations such as bundling, binding, and permutation. This makes it suit-able for resource-constrained edge devices. Concurrently, to resolve privacy leakage risks, differential privacy (DP) has been established as the standard method for providing rigorous, provable privacy guarantees through the addition of controlled noise. Existing research has explored these challenges from various perspectives. In the domain of resource efficiency, efforts have focused on minimizing energy consumption in traditional FL frameworks. For instance, the work in [1] proposed a comprehensive joint optimization prob-lem, collaboratively adjusting transmission time, power, bandwidth, and computation frequency. The authors in [2] similarly focused on minimizing total energy by jointly optimizing weight quantization and wireless re-source allocation. Other works have targeted reducing communication overhead and latency. For example, [3] and [4] demonstrated improved communication efficiency through bipolarized hypervectors and the novel HyperFeel framework, respectively. The work in [5] further combined federated split learning with HDC, designing an algorithm to minimize the maximum user transmission time. Research in privacy and security is equally critical. To defend against gradient leakage attacks, the work in [6] has focused on optimizing DP noise and layer selection. HDC introduces its own security considerations, and recent work [7] has designed frameworks to achieve efficient and secure private learning. More advanced system designs are also emerging. The FedHDPrivacy framework [8] was designed to balance privacy and accuracy, while other studies have 
+
+> arXiv:2602.22290v1 [cs.DC] 25 Feb 2026
+
+focused on robustness in noisy FL scenarios [9] and the hardware-level energy efficiency of HDC processors [10]. Recent studies have also conducted systematic analyses of aggregation strategies in HDC-FL [11] and explored the fusion of large AI models with HDC in future 6G networks [12]. A clear research gap thus remains. Although previous works have separately addressed energy, privacy, or HDC, there is a lack of a unified big data framework capable of jointly modeling and co-optimizing the computational efficiency of HDC, the privacy guarantees of DP, and the system-level computation and communication resources. Such a framework is essential for fundamentally resolving the total energy consumption issue in secure, decentralized big data analytics on wireless edge environments. To fill this critical gap, this paper proposes a novel framework: FL with HDC and DP (FL-HDC-DP). This framework is specifically designed for energy-constrained wireless edge networks. It enables users to leverage the computational efficiency of HDC for local model training while obtaining robust privacy protection through the mathematical rigor of DP. Our central objective is to minimize the total energy consumption of all participating users via a comprehensive joint optimization strategy. This work aims to make AI-driven big data analysis fea-sible on large-scale edge devices. The main contributions of this paper are summarized as follows:  
+
+> •
+
+We propose an FL-HDC-DP framework designed for energy-constrained wireless edge networks. This framework leverages the computational efficiency of HDC for local model training and the mathematical rigor of DP for robust privacy protection.  
+
+> •
+
+We formulate a joint optimization problem aimed at minimizing the total energy consumption, encompass-ing both local computation and wireless communica-tion. This problem is the first to uniformly model and co-optimize the HDC model dimension alongside system resources such as transmission power and CPU frequency.  
+
+> •
+
+We design and validate an efficient, low-complexity hybrid algorithm to solve the non-convex problem. The algorithm utilizes an outer enumeration search to explore HDC dimensions and an inner one-dimensional search to efficiently find the optimal resource allocation for each decoupled subproblem. Simulation results demonstrate that this joint op-timization approach achieves up to 83.3% in total energy savings compared to baseline schemes. II. System Model We consider a single-cell network with one base sta-tion (BS) serving U users, as shown in Fig. 1. They cooperatively train a FL model over wireless networks for classification inference. To reduce the computational burden on resource-constrained edge devices and to pro-tect user privacy against an honest-but-curious server and User U User 2 User 1              
+
+> Dataset
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Global AM
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Local AM
+> Class HV Label
+> Class HV
+> Class HV
+> Label
+> Local AM
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Local AM
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Local AM
+> Label
+> BS
+> Class HVs aggregation and update
+> Eavesdropper
+
+Figure 1: The FL-HDC-DP model over wireless commu-nication networks. Algorithm 1 FL-HDC-DP Algorithm Input:User set U; class set N ; user dataset Si, round 
+
+J, learning rate η.Output: Final global AM AJg .
+
+1: for j = 0 to J − 1 do 
+
+2: BS broadcasts global AM A0 
+
+> g
+
+and bipolar HV benchmarks to all users. 
+
+3: for user i ∈ U in parallel do 
+
+4: if j = 0 then 
+
+5: Encode local data to obtain Hi,l and clip them. 
+
+6: Aggregate all HVs to obtain local AM Ai,n 
+
+7: else 
+
+8: Perform retraining guided by Ajg to update the local AM according to Eq.(5), yielding Aj+1  
+
+> i
+
+.
+
+9: end if 
+
+10: Add DP noise to Ai: Aj+1  
+
+> i
+
+← Aj+1  
+
+> i
+
++ nj+1  
+
+> i
+
+.
+
+11: Transmit Aj+1  
+
+> i
+
+to the BS. 
+
+12: end for Server-side Aggregation: 
+
+13: Receive {Aj+1  
+
+> i
+
+}Ui=1 from all users. 
+
+14: Conduct element-wise average to update the global AM: Aj+1  
+
+> g
+
+← 1
+
+> U
+
+∑Ui=1 Aj+1  
+
+> i
+
+.
+
+15: Broadcast Aj+1  
+
+> g
+
+to all users for the next round. 
+
+16: end for external eavesdroppers, we adopt a secure FL framework that combines HDC with DP, named FL-HDC-DP. Let 
+
+U = {1, 2, . . . , U } denote the user set. User i ∈ U holds a private dataset Si = {(xiℓ , y iℓ )}Si 
+
+> ℓ=1
+
+with inputs xiℓ ∈ Rm
+
+and labels yiℓ ∈ { 1, . . . , N }.A. HDC Model HDC is an emerging, brain-inspired computing paradigm that operates by representing and manipulat-ing information in a vector space with thousands of dimensions. The fundamental element of HDC is the hypervector (HV), denoted as H. A d-dimensional HV can be expressed as H = ⟨h1, h 2, . . . , h d⟩, where hi
+
+represents the value in the i-th dimension. Unlike NN, which are predicated on floating-point arithmetic and backpropagation, HDC relies on a set of computationally lightweight vector operations, primarily bundling, binding, and permutation. 1) Encoding: The encoding process transforms input samples into HVs. We use record-based encoding. First, Item Memories (IMs) provide HVs for feature positions (Hp) and feature values ( Hv ). For a sample ℓ, its position HV and value HV are bound and then bundled with all other features to generate the sample HV Hℓ. Using the MNIST dataset (784 pixels) as an example, the encoding process is: 
+
+Hℓ =
+
+> 783
+
+∑
+
+> k=0
+
+Hℓ,p (k) ⊙ Hℓ,v (pixel (k)) . (1) where k is the index of the pixel position. Hℓ,p (k) and 
+
+Hℓ,v (pixel (k)) represent the position HV corresponding to the k-th pixel and the value HV corresponding to the value of the k-th pixel, respectively, for the ℓ-th sample. ⊙ is the element-wise product. 2) Training: Training involves adding all encoded sam-ple HVs of the same class n to obtain the class HVs An,which can be obtained by 
+
+An =
+
+> Mn
+
+∑
+
+> m=1
+
+Hnm , (2) where Mn is the number of samples in class n and Hnm 
+
+represents the HV corresponding to the m-th sample of class n. Aggregating all the class HVs to form the associative memory (AM) A = {A1, A2, . . . , AN }. HDC can achieve reasonable accuracy with just a single training pass. 3) Inference: During inference, an input is encoded into a query HV, denoted as Hq , using the same encoding process. This Hq is then compared to every class HV An
+
+using a similarity measure. We use cosine similarity: 
+
+ξcosine (Hq , An) = Hq ·An  
+
+> ∥Hq∥×∥ An∥
+
+, (3) the predicted class is the one with the highest similarity score. 4) Retraining: To further improve the accuracy of the HDC model, retraining can be applied to the AM over several additional iterations on the training set. During retraining, each sample HV is classified. If the prediction is correct, no adjustment is necessary. If the predicted label does not match the true label, the corresponding query HV Hq is subtracted from the misclassified class 
+
+Amiss and simultaneously added to the real class Areal .The process is as follows: 
+
+Amiss = Amiss − ηHq ,
+
+Areal = Areal + ηHq , (4) where η is the learning rate. B. The Framework of FL-HDC-DP Our proposed FL-HDC-DP framework combines the computational efficiency of HDC with the privacy pro-tection of DP. To protect data privacy during local model transmission, we adopt the zero-concentrated differential privacy (zCDP) mechanism. zCDP is particularly well-suited for the iterative nature of FL as it provides a tighter privacy-utility trade-off than standard (ϵ, δ )-DP. In our framework, this guarantee is achieved by adding calibrated Gaussian noise N (0 , σ 2) to each device’s model update before uploading. The whole training process, as shown in Algorithm 1, is summarized as follows: Step 1: Server-side initialization. The BS generates bipo-lar HV benchmarks to ensure consistency in the position HVs and value HVs across all clients. It also initializes a global AM and broadcasts it to all users, together with the training hyperparameters such as learning rate, DP clipping bound, and the number of local passes per round. Step 2: Client-side local training with DP. In the first round, each user encodes all local raw data into sample HVs using (1), clips them and then aggregates them to built its local AM Ai. In subsequent rounds, users receive the global AM Ajg and perform HDC retraining using local data, updating their local AM to Aj+1  
+
+> i
+
+according to (4), as shown below: 
+
+Aj+1 ,miss  
+
+> i
+
+= Aj, miss  
+
+> i
+
+− ηHi,q 
+
+Aj+1 ,real  
+
+> i
+
+= Aj, real  
+
+> i
+
++ ηHi,q 
+
+(5) where Hi,q is the misclassified query HV of user i. After encoding or retraining, and before uploading, the user adds Gaussian noise nj+1  
+
+> i
+
+to their local AM Aj+1  
+
+> i
+
+to ensure privacy. 
+
+Aj+1  
+
+> i
+
+= Aj+1  
+
+> i
+
++ nj+1  
+
+> i
+
+. (6) Finally, local AMs are transmitted to the BS. Step 3: Server aggregation and broadcast. Upon receiv-ing the DP-protected local AMs from all users in U, the BS aggregates them by calculating the element-wise average of the class HV to obtain the updated global AM, as given by: 
+
+Aj+1  
+
+> g
+
+=
+
+∑Ui=1 Aj+1 
+
+> i
+
+U (7) The updated global AM Aj+1  
+
+> g
+
+is then broadcast to all users. Process 2-3 continues until the global loss function converges or achieves the desired accuracy. C. Transmission Model After local computing, users upload their DP-added AMs to the BS for aggregation. We adopt frequency division multiple access (FDMA). The achievable uplink transmission rate between user i and the server with the allocated bandwidth is 
+
+ri = bi log 2
+
+(
+
+1 + pigi
+
+N0bi
+
+)
+
+, (8) where N0 denotes the noise power spectral density; bi is the bandwidth allocated to user i; pi is the user’s transmit power; and gi is the end-to-end channel power gain. The per-round bandwidth allocations satisfy ∑ 
+
+> i∈U
+
+bi ≤ B, b i ≥
+
+0, with B is the total system bandwidth. Let Qi be the payload size (bits) of the AMs update for user i, which is proportional to the HV dimension. The corresponding transmission time is given by: 
+
+ti = Qi
+
+ri
+
+. (9) D. Energy Consumption Model In our network, we focus on the energy consumption of each user during the FL training phase, which can be divided into two primary components: a) local com-putation, including encoding the dataset and HDC model retraining by using its local dataset and the received global AM from server, and b) wireless communication, which involves transmitting the updated local AM. 1) Energy Consumption of Computation Model: Dur-ing the FL training process, in the first round, each user encodes the entire local dataset into HVs and aggregates HVs of the same class to construct the local AM. In the subsequent rounds, the user retrains the HDC model using the encoded HVs together with the global AM received from the server. Let Cenc , Cagg , Csim , and Cup denote the CPU cycles per dimension required for encoding, first‑round aggregation, similarity comparison, and error‑driven update, respec-tively. Denote by Di is the total number of data sample for user i, d is HV dimension, fi is CPU frequency, γ is the switched‑capacitance coefficient, ei = Oi 
+
+> Di
+
+is inference error rate, and Oi is the number of misclassifications per round.  
+
+> •
+
+Round 1 (Encoding and Aggregation): Define the per‑dimension initialization CPU cycles: C(init ) 
+
+> i
+
+=
+
+Cenc + Cagg , so that the latency and energy are given by 
+
+τ 1 
+
+> i
+
+= Di d C (init )
+
+> i
+
+fi
+
+, ∀i ∈ U , (10) 
+
+E1 
+
+> i
+
+= γ D i d C (init ) 
+
+> i
+
+f 2 
+
+> i
+
+. (11) where Di d C (init ) 
+
+> i
+
+is the total CPU cycles.  
+
+> •
+
+Rounds J ≥ 2 (Retraining): Define the per‑dimension retraining CPU cycles: C(ret ) 
+
+> i
+
+= Csim + ei Cup . Then, the time and energy consumption at user i for re-training the HDC model can be expressed as follows: 
+
+τ (ret ) 
+
+> i
+
+= Di d C (ret )
+
+> i
+
+fi
+
+, ∀i ∈ U , (12) 
+
+E(ret ) 
+
+> i
+
+= γ D i d C (ret ) 
+
+> i
+
+f 2 
+
+> i
+
+. (13) Eq.(13) captures the cost of similarity checks plus inference error‑driven updates, with inference error-rate ei.2) Energy Consumption of Transmission Model: After local computation, users transmit their local AM to the server for aggregation via FDMA. Based on Equations (8) and (9), the energy consumption for data transmission can be expressed as 
+
+E(trans ) 
+
+> i
+
+= ti pi. (14) 3) Total Energy Consumption: The total energy con-sumption of all users participating in FL is given as 
+
+E =
+
+> U
+
+∑
+
+> i=1
+
+(
+
+E1 
+
+> i
+
++ E(trans )
+
+> i
+
+)︸ ︷︷ ︸
+
+> First round energy consumption
+
++ ( J − 1) 
+
+> U
+
+∑
+
+> i=1
+
+(
+
+E(ret ) 
+
+> i
+
++ E(trans )
+
+> i
+
+)︸ ︷︷ ︸
+
+> J-1 rounds energy consumption
+
+,
+
+=
+
+> U
+
+∑
+
+> i=1
+
+(
+
+γ D i d C (init ) 
+
+> i
+
+f 2 
+
+> i
+
++ ( J − 1) γ D i d C (ret ) 
+
+> i
+
+f 2 
+
+> i
+
++ Jt i pi
+
+)
+
+,
+
+(15) Hereinafter, the total time needed for completing the execution of the FL algorithm is called the completion time. The completion time of each user includes the local computation time and transmission time, based on (10) and (12), the completion time of user i will be 
+
+Ti = τ 1 
+
+> i
+
++ ti
+
+︸ ︷︷ ︸ 
+
+> First round time cost
+
++ ( J − 1) 
+
+(
+
+τ (ret ) 
+
+> i
+
++ ti
+
+)︸ ︷︷ ︸
+
+> J-1 rounds time cost
+
+,
+
+=
+
+Did
+
+(
+
+C(init ) 
+
+> i
+
++ ( J − 1) C(ret )
+
+> i
+
+)
+
+fi
+
++ J Qi
+
+ri
+
+. (16) III. Problem Formulation In this section, we formulate the total energy consump-tion minimization problem of all users for secure FL-HDC, which jointly considers HDC dimension, power, and computing frequency. The optimization problem is given by: 
+
+min 
+
+> d, p,f
+> U
+
+∑
+
+> i=1
+
+(γA if 2 
+
+> i
+
++ Jd ti pi
+
+) (17) s.t. Ai
+
+fi
+
++ Jd ti ≤ T, ∀i ∈ U , (17a) 
+
+dmin ≤ d ≤ dmax , (17b) 
+
+0 ≤ pi ≤ P max  
+
+> i
+
+, ∀i ∈ U , (17c) 
+
+0 ≤ fi ≤ f max  
+
+> i
+
+, ∀i ∈ U , (17d) where p = [p1, . . . , p U ]T , f = [f1, . . . , f U ]T . The per-round compute load is denoted by Ai = DidC i with 
+
+Ci = C(init)  
+
+> i
+
++ ( Jd − 1) C(ret)  
+
+> i
+
+. Transmission time is ti = 
+
+> Qi
+> bilog 2
+
+( 
+
+> 1+ pigiN0bi
+
+) . Jd represents the number of communi-cation rounds required for a secure HDC-FL model of dimension d to achieve the desired accuracy. Constraint (17a) ensures that the combined local execution time and transmission time for each user does not exceed the maxi-mum completion time T for the whole FL algorithm. Since the FL algorithm is performed in parallel and the server updates the global AM only after receiving the uploaded local AMs from all users, this constraint synchronizes the parallel process. The range of the HV dimension is given by (17b). Constraints (17c) and (17d) limit the transmission power of each user and the maximum local computation frequency, respectively. IV. Algorithm Design In this section, we develop a low-complexity algorithm that combines enumeration and optimization to solve problem (17). The relationship between Jd and d is first characterized via Monte Carlo simulation. Then, d is enumerated over a finite candidate set D, and for each d,the variables (f , p) are decoupled by enforcing the time constraint in equality form, resulting in a per-user problem with only one variable fi. The optimal dimension d∗
+
+and corresponding resource allocation (f ⋆, p⋆) are finally obtained by minimizing E across all candidates. A. Decoupling of fi and pi
+
+For each enumerated HDC dimension d, the per-user subproblem involves two continuous variables (fi, p i).By tightening the time constraint (17a) in equality form, the transmit power pi can be expressed as a function of fi:
+
+pi = N0bi
+
+gi
+
+(
+
+2
+
+> JdQibi
+
+(T − Aifi ) − 1
+
+)
+
+, (18) where T − Ai 
+
+> fi
+
+> 0 must hold to ensure feasibility. Substituting (18) into energy expression yields a single-variable optimization problem with respect to fi:
+
+Ei = γA if 2 
+
+> i
+
++
+
+(
+
+T − Ai
+
+fi
+
+) N0bi
+
+gi
+
+(
+
+2
+
+> JdQibi
+
+(T − Aifi ) − 1
+
+)
+
+, (19) and the problem (17) can be rewritten as: 
+
+min 
+
+> f
+> U
+
+∑
+
+> i=1
+
+Ei (20) s.t. f Li ≤ fi ≤ f max  
+
+> i
+
+, ∀i ∈ U . (20a) Where the f Li is determined by the P max  
+
+> i
+
+given by 
+
+f L 
+
+> i
+
+= Ai
+
+T − JdQi   
+
+> bilog 2
+> (
+> 1+ giPmax
+> iN0bi
+> )
+
+. (21) Since Ai, bi, gi, and Qi are constants for a given d, prob-lem (20) is separable across users, and each subproblem Ei
+
+is one-dimensional. The objective Ei consists of two convex terms: a quadratic local-computation term γA if 2 
+
+> i
+
+and a monotonically increasing convex transmission-energy term induced by the exponential function 2 JdQibi(T −Ai/f i) . Both are convex on the feasible interval [f Li , f max  
+
+> i
+
+], and hence Ei is strictly convex and admits a unique minimizer. Therefore, the optimal fi for under dimension d is obtained via a bounded one-dimensional search such as Brent’s method: 
+
+f ⋆i (d) = arg min    
+
+> fLi≤fi≤fmax
+> i
+
+Ei, (22) which guarantees convergence to the global optimum. Then, the corresponding transmit power is recovered by substituting (22) into (18) as p⋆i (d) = pi
+
+(f ⋆i (d)). The total energy for a given dimension d is 
+
+E(d) = 
+
+> U
+
+∑
+
+> i=1
+
+Ei
+
+(f ⋆i (d)). (23) B. Outer Enumeration over HDC Dimension The overall optimization is accomplished by enumerat-ing all candidate HDC dimensions in the finite set D and selecting the one that minimizes the total energy in (23): 
+
+d⋆ = arg min  
+
+> d∈D
+
+E(d), (24) and the corresponding resource allocation {f ⋆i (d⋆), p ⋆i (d⋆)}
+
+is adopted as the final solution. C. Complexity Analysis Let D = |D| denote the number of candidate HDC dimensions. For each d ∈ D , the optimization in (22) is performed independently for all users through a one-dimensional search. If the search requires at most L
+
+function evaluations to reach convergence, the overall computational complexity is O(DU L ). Since D and 
+
+L are small constants, the proposed enumeration-and-optimization framework scales linearly with the number of users and is well suited for FL deployment at resource-constrained edge devices. V. Simulation Results and Analysis We consider a secure FL-HDC system in which K = 50 
+
+users are independently and uniformly distributed over a circular area of radius 500 m, with the BS located at the center. Experiments are conducted on the MNIST dataset. All system and computation parameters are summarized in Table I. Since it is challenging to mathematically express the relationship between privacy, dimension, and convergence rounds required to achieve the same accu-racy, we employ Monte Carlo simulations to obtain the relationship between dimension and convergence rounds for an accuracy of 88% under (ε, δ ) = (25 , 10 −5), as shown in Table II. Fig. 2 illustrates the total energy consumption with respect to the HDC dimension when the total time is fixed at T = 30 s. The results indicate that the total energy does not vary monotonically with d; instead, the curve reaches its minimum at a moderate dimension ( d = 4000 ). According to Table II, when d increases from 3000 to 4000, the number of global rounds required to achieve the target accuracy decreases by 19. Although each round incurs higher local computation and transmission costs due to the additional 1000 dimensions, this extra overhead is offset by the cumulative energy savings from skipping 19 rounds, resulting in lower total energy consumption. When the dimension further increases to 5000, the number of required rounds decreases by only about two more, Table I: Simulation parameters                                            
+
+> Parameters Value
+> U: number of users 50
+> Cenc : encoding cycles per dimension 28 ∗28 ∗2
+> Cagg : 1st-round aggregation cycles per dimension 28 ∗28 ∗2
+> Csim : similarity evaluation cycles per dimension 10 ∗10
+> Cup : error-driven update cycles per dimension 8
+> ei: inference error ratio for user i0.4
+> d: HV dimension range 3000:1000:10000
+> Qi: upload size of user i10* dSi: number of local data for user i1200
+> α: learning rate of HDC model 1
+> fmax
+> i: maximum CPU frequency of user i2.3GHz
+> γ: switched-capacitance coefficient 1×10 −28
+> B: total bandwidth 1MHz
+> Pmax : maximum transmit power 0.1−1W
+> n0: noise power spectral density −174 dBm/Hz
+
+Table II: Iterations to Converge under Accuracy = 88% 
+
+and Privacy Threshold ϵ = 25                   
+
+> Dimension d3000 4000 5000 6000 7000 8000 9000 10000 Iterations Jd39 20 18 17 16 16 14 14
+
+but the per-round energy increase outweighs the savings from fewer rounds, leading to a rise in total energy. Compared with the two baseline schemes, the proposed method achieves the lowest overall energy across all dimension settings, reducing total energy consumption by approximately 83.3% and 31.5% relative to the fixed-frequency and fixed-power schemes, respectively. Fig. 3 compares the total energy consumption of the proposed scheme with three baseline schemes under dif-ferent total time constraints. As T increases, the total energy consumption of all schemes decreases, since alonger execution time allows lower transmit power and CPU frequency while still satisfying the time constraint. When T is small, communication becomes the dominant bottleneck, forcing users to transmit at high power and operate with large CPU frequencies fi, which leads to high total energy consumption. As T relaxes, more time is allocated for local computation, allowing fi to decrease and thus reducing the total energy. In addition, the proposed method consistently achieves the lowest total energy across all time settings, reducing total energy consumption by approximately 54.9%, 50.0%, and 31.5% compared with the d = 3000 , d = 5000 , and fixed-power baselines, respectively. The results also reveal that the impact of the HDC dimension is substantial. The optimal dimension is d = 4000 , and it is clearly observed that the total energy at d = 3000 and d = 5000 is much higher than that at d = 4000 , which is consistent with the conclusion drawn from Fig. 2. VI. Conclusion In this paper, we proposed a secure FL framework based on HDC and DP for resource-constrained edge devices in wireless networks. We formulated a joint optimization problem of the HDC dimension, transmit power, and CPU frequency to minimize total energy consumption, 3000 4000 5000 6000 7000 8000 9000 10000 
+
+> 0500 1000 1500
+
+Figure 2: Total energy versus HDC dimension with T =30 s.20 25 30 35 40 45 50 55 60 
+
+> 0100 200 300 400 500 600
+
+Figure 3: Total energy consumption versus total time. which is the first study to consider the impact of the HDC dimension on energy optimization. To efficiently solve this problem, we designed a two-stage enumeration and optimization framework that first characterizes the relationship between HDC dimension and convergence behavior, and then optimizes resource allocation under latency constraints. Simulation results illustrate that the proposed scheme significantly reduces total energy com-pared with baseline methods, with dimension selection playing the most critical role among all optimization variables. Acknowledgment This work was supported in part by the U.S. National Science Foundation under Grant SaTC-2350076. References   
+
+> [1] Z. Yang, M. Chen, W. Saad, C. S. Hong, and M. Shikh-Bahaei, “Energy efficient federated learning over wireless communica-tion networks,” IEEE Transactions on Wireless Communica-tions, vol. 20, no. 3, pp. 1935–1949, 2021. [2] R. Chen, L. Li, K. Xue, C. Zhang, M. Pan, and Y. Fang, “Energy efficient federated learning over heterogeneous mobile devices via joint design of weight quantization and wireless transmis-sion,” IEEE Transactions on Mobile Computing, vol. 22, no. 12, pp. 7451–7465, 2023.
+
+[3] C.-Y. Hsieh, Y.-C. Chuang, and A.-Y. A. Wu, “Fl-hdc: Hyper-dimensional computing design for the application of federated learning,” in Proc. IEEE Int. Conf. Artif. Intell. Circuits Syst. (AICAS). IEEE, 2021, pp. 1–5. [4] H. Li, F. Liu, Y. Chen, and L. Jiang, “HyperFeel: An efficient federated learning framework using hyperdimensional comput-ing,” in Proc. Asia South Pacific Des. Autom. Conf. (ASP-DAC), 2024, pp. 716–721. [5] Y. Ding, W. Shang, M. Xu, Z. Yang, Y. Hu, D. Niyato, and M. Shikh-Bahaei, “Hyperdimensional computing empowered federated foundation model over wireless networks for meta-verse,” in 2024 IEEE Smart World Congress (SWC), 2024, pp. 2187–2194. [6] Y. Ding, W. Shang, Y. Yang, W. Ding, and M. Shikh-Bahaei, “Joint layer selection and differential privacy design for feder-ated learning over wireless networks,” IEEE Internet of Things Journal, vol. 11, no. 24, pp. 39 767–39 779, 2024. [7] B. Khaleghi, X. Yu, J. Kang, X. Wang, and T. Rosing, “Private and efficient learning with hyperdimensional computing,” IEEE Transactions on Circuits and Systems for Artificial Intelligence, 2024. [8] F. J. Piran, Z. Chen, M. Imani, and F. Imani, “Privacy-preserving federated learning with differentially private hyperdi-mensional computing,” Computers and Electrical Engineering, vol. 123, p. 110261, 2025. [9] J. Morris, K. Ergun, B. Khaleghi, M. Imani, B. Aksanli, and T. Simunic, “Hydrea: Utilizing hyperdimensional computing for a more robust and efficient machine learning system,” ACM Trans. Embed. Comput. Syst., vol. 21, no. 6, pp. 1–25, 2022. [10] A. Menon, D. Sun, S. Sabouri, K. Lee, M. Aristio, H. Liew, and J. M. Rabaey, “A highly energy-efficient hyperdimensional computing processor for biosignal classification,” IEEE Trans-actions on Biomedical Circuits and Systems, vol. 16, no. 4, pp. 524–534, 2022. [11] S. Zhang, D. Ma, S. Bian, L. Yang, and X. Jiao, “On hyperdi-mensional computing-based federated learning: A case study,” in Proc. Int. Joint Conf. Neural Netw.(IJCNN). IEEE, 2023, pp. 1–8. [12] W. Xu, Z. Yang, D. W. K. Ng, R. Schober, H. V. Poor, Z. Zhang, and X. You, “A new pathway to integrated learning and commu-nication (ilac): Large ai model and hyperdimensional computing for communication,” arXiv preprint arXiv:2506.18432, 2025.

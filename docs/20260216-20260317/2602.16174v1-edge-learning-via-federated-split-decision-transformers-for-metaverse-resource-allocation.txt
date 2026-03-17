@@ -1,0 +1,610 @@
+Title: Edge Learning via Federated Split Decision Transformers for Metaverse Resource Allocation
+
+URL Source: https://arxiv.org/pdf/2602.16174v1
+
+Published Time: Thu, 19 Feb 2026 01:28:53 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Edge Learning via Federated Split Decision Transformers for Metaverse Resource Allocation 
+
+Fatih Temiz, Shavbo Salehi, and Melike Erol-Kantarci, Fellow, IEEE 
+
+School of Electrical Engineering and Computer Science, University of Ottawa, Ottawa, Canada 
+
+Emails: {ftemi033, ssale038, melike.erolkantarci }@uottawa.ca 
+
+Abstract —Mobile edge computing (MEC) based wireless meta-verse services offer an untethered, immersive experience to users, where the superior quality of experience (QoE) needs to be achieved under stringent latency constraints and visual quality demands. To achieve this, MEC-based intelligent resource allocation for virtual reality users needs to be supported by coordination across MEC servers to harness distributed data. Federated learning (FL) is a promising solution, and can be combined with reinforcement learning (RL) to develop gener-alized policies across MEC-servers. However, conventional FL incurs transmitting the full model parameters across the MEC-servers and the cloud, and suffer performance degradation due to naive global aggregation, especially in heterogeneous multi-radio access technology environments. To address these challenges, this paper proposes Federated Split Decision Transformer (FSDT), an offline RL framework where the transformer model is partitioned between MEC servers and the cloud. Agent-specific components (e.g., MEC-based embedding and prediction layers) enable local adaptability, while shared global layers in the cloud facilitate cooperative training across MEC servers. Experimental results demonstrate that FSDT enhances QoE for up to 10% in hetero-geneous environments compared to baselines, while offloading nearly 98% of the transformer model parameters to the cloud, thereby reducing the computational burden on MEC servers. 
+
+Index Terms —Decision Transformers (DT), Edge-AI, Feder-ated Split Learning (FSL), Metaverse. 
+
+I. INTRODUCTION The rapid evolution of the metaverse has ushered in a new era of immersive experiences that extend far beyond entertainment, reaching into education, healthcare, culture, and global social interactions. It offers immersive services via wireless virtual reality (VR), where the service is tailored to improve the quality of experience (QoE) of its users and overcomes barriers stemming from physical constraints of wired experiences. However, latency becomes a significant issue when high-resolution field-of-view (FoV) rendering tasks are performed solely on head-mounted displays (HMDs) with limited hardware capabilities [1]. Therefore, mobile edge com-puting (MEC) has garnered significant attention for offloading computationally intensive tasks to the edge network [1] or at least collaborating with HMDs [2], aiming for lower latency and higher visual qualities to avoid motion sickness. Further-more, human vision is known to be inherently hierarchical, comprising central, paracentral, and peripheral regions that perceive visual information with varying levels of detail and sensitivity [3]. Gaze-aware streaming systems can exploit this hierarchical property to allocate MEC resources more effectively, using head and eye tracking to deliver high-fidelity rendering to the regions of the FoV where users focus most. Reinforcement learning (RL) has demonstrated strong po-tential for complex, dynamic and time-sensitive environments, providing adaptive resource allocation and scheduling in VR streaming [1]. Nevertheless, online RL algorithms such as deep deterministic policy gradient (DDPG) can struggle to converge to the optimal policy when exploration is insufficient [4]. Digital twin (DTW) technologies have been proposed to enhance online RL frameworks by enabling safer emulation and training in the digital space while mitigating desynchro-nization through real-time updates to the RL policy with continual learning [5]. Although DTW can support RL, its development and maintenance are costly due to the need for extensive data collection and storage of historical data in a buffer. Constructing a high-fidelity DTW that replicates both static and dynamic contexts in real time would inevitably incur significant overhead. To address the shortcomings of online RL, offline RL approaches, such as decision trans-formers (DTs), have emerged as promising alternatives by using historical trajectories to achieve more stable and sample-efficient learning [6], and it is an emerging paradigm for wireless network optimization, especially for intent-driven network management [7] and resource allocation problems [8]. Beyond the online–offline distinction, federated learning (FL) can be combined with reinforcement learning (federated reinforcement learning, FRL) by enabling distributed training of generalized policies on distributed nodes or MEC servers, while addressing data scarcity on individual MEC servers without requiring raw data sharing [9]. Recent studies have explored the application of FL and FRL within MEC-enabled metaverse scenarios, incorporating FoV rendering–based QoE models [4], [10]. In [10], authors design a network slicing framework in an open radio access network environment and train the FRL model on multiple agents to optimize power control and physical resource block allocation. Their FoV rendering-based QoE-driven approach demonstrates significant improvements in delay reduction and user experience compared to benchmark algorithms. Also, the authors in [4], present FedPromptDT, a federated offline RL algorithm based on prompt-guided DT and a custom QoE model, and show that it outperforms both online algorithms and centralized DT training using the eye tracking dataset. Besides incorporating FL into the mobile edge using dis-tributed MEC resources, split learning has a crucial role in the 
+
+> arXiv:2602.16174v1 [cs.NI] 18 Feb 2026
+
+6G era of edge artifical intelligence (AI). By hierarchically partitioning the model, split learning enables more efficient use of dispersed computing resources across the network edge, ultimately improving overall resource utilization [11]. In [12], the authors propose a personalized FRL framework for heterogeneous edge content caching networks. Their ap-proach combines a multi-head deep Q-network with layer-wise personalized federated training, where the model is split to bal-ance global knowledge sharing with local personalization. This design mitigates the limitations of naive global aggregation in FL, which often leads to homogenized caching strategies and degraded performance across diverse MEC servers. However, the above system still do not benefit from offline RL paradigms that rely on advanced transformer architectures. Recently, federated split training of transformer-based ar-chitectures was explored in [13], particularly for vision trans-formers and later for DTs [14]. These architectures are used mainly for task-agnostic training and show strong performance in heterogeneous environments, allowing different agents to specialize while still benefiting from shared global represen-tations. For example, in vision applications, one agent may handle classification through its local embedding and predic-tion layers, while another focuses on segmentation, yet both continue to draw benefits from the shared global transformer decoder. This setup enables making better use of distributed data and, at the same time, gives each agent the flexibility to adapt to its own task or environment without sacrificing the advantages of cooperative learning. Building on this line of work, this paper proposes aFederated Split Decision Transformer (FSDT)-based resource allocation framework for metaverse applications, addressing challenges in MEC data scarcity, online RL instability, naive global aggregation, and inefficient full-model exchanges in FL. The FSDT approach combines FL and split learning for training the DT algorithm, where the model is split between the MEC-server and the cloud during training. This design maintains local adaptability through agent-type-specific embedding and prediction layers and benefits from global coordination via the shared transformer in the cloud. The key contributions of this paper are as follows: 1) We propose a cooperative edge AI framework via model partitioning, where the computationally intensive global transformer decoder is deployed in the cloud, while dis-tributed MEC servers host the embedding and prediction layers, enabling domain-specific customization. 2) We formulate the problem of FSDT-based resource allocation for metaverse in heterogeneous multi-RAT networks, and make use of a public VR eye-tracking dataset. 3) We conduct extensive experiments to evaluate multiple trade-offs, including online versus offline RL algorithms and FRL under both training modes, thereby providing a comprehensive benchmark of the proposed FSDT framework across diverse settings. II. SYSTEM MODEL AND PROBLEM FORMULATION 
+
+A. System Model 
+
+In this work, we consider a heterogeneous multi-RAT MEC system that renders and serves immersive 360 ◦ video streams according to requests from wireless VR users with HMDs as can be seen in Fig. 1. The system consists of collocated base stations (BSs), each connected to an MEC server, that allocate resources including GPU rendering cycles, CPU en-coding cycles, bandwidth (BW), and resolution ratios to ensure the timely delivery of high-quality video to VR users. BSs are grouped into K different agent types according to the employed access technologies: Upper-mid band (UMB) , Sub-6 GHz , and Wi-Fi . Within each agent type (i.e., domain), BSs operate under different clutter environments such as Urban-Micro (UMi) and Indoor-Hotspot (InH), reflecting di-verse propagation conditions. Additionally, to support adaptive streaming, we follow the approach in [5] where each 360 ◦
+
+video is projected onto a 2D plane and divided into tiles (e.g., 
+
+4 × 4) as illustrated in Fig. 1. For user k at time slot t, only the tiles in FoV Fk(t) are delivered at high quality, while peripheral tiles use reduced resolution. Three quality levels 
+
+q ∈ { 1, 2, 3} corresponding to standard definition (SD), high definition (HD), and ultra high definition (UHD) are used for hierarchical vision. The tiles are encoded per group of picture (GoP) of F frames, and in each time slot, one GoP is transmitted. Then, for each user k, the data size at the quality level q is 
+
+dk,q (t) = Mk,q (t) βk,q (t) F, (1) where Mk,q (t) denotes the number of tiles in quality q for user 
+
+k (with P 
+
+> q
+
+Mk,q (t) = Mk(t); e.g., 3 + 9 + 4 = 16 in Fig. 1), 
+
+βk,q (t) is the per-tile bitrate at quality level q, and the total data size is Dk(t) = P 
+
+> q
+
+dk,q (t) (bits). In addition, we model 
+
+βk,q (t) = Bq, max rk,q (t), where rk,q (t) is the resolution ratio assigned to user k at the quality level q. This GoP tiling design prioritizes FoV resolution while reducing overall transmission and computation costs. 
+
+1) Communication Model: The large-scale channel gain is modeled using the close-in (CI) path loss model with log-normal shadowing [15]. The path loss at distance d (in meters) and carrier frequency fc (in Hz) is given as: 
+
+P L (d, f ) [ dB ] = 20 log 10 
+
+ 4πf d 0
+
+c
+
+
+
++ 10 α log 10 
+
+ dd0
+
+
+
++ Xσ ,
+
+(2) where d0 = 1 m is the reference distance, α is the path loss exponent (PLE), Xσ ∼ N (0 , σ 2) models log-normal shadowing, and c is the speed of light. The achievable downlink (DL) data rate of user k associated with BS i is modeled as: 
+
+Rk = Bk log 2
+
+
+
+1 + Pkg2
+
+> k
+
+hk
+
+N0Bk · NF 
+
+
+
+, (3) where Bk is the allocated BW, Pk is the transmit power, gk
+
+is the small-scale Rayleigh fading coefficient, hk PL in linear scale , N0 is the thermal noise power spectral density, and NF Fig. 1: System Model is the receiver noise figure (in linear scale). Accordingly, the transmission latency is given by: 
+
+T comm  
+
+> k
+
+(t) = Dk(t)
+
+Cr Rk
+
+, (4) where Rk is the achievable DL data rate, Cr is the compression factor, and Dk(t) denotes the total data size of task from user 
+
+k at time slot t.
+
+2) Computation Model: At the MEC server, the processing of each GoP for user k at time slot t consists of GPU-based rendering and CPU-based encoding computational tasks [2].  
+
+> •
+
+GPU-based Rendering: Let γgpu denote the GPU cost in pixel/tile at quality level q, and f gpu  
+
+> k
+
+the GPU capacity (pixels/s) allocated to the user k. Each pixel consists 3 channels (i.e., RGB) totaling 24 bits per pixel. Then the total number of pixels is 
+
+Pk(t) = F X
+
+> q
+
+Mk,q (t) pk,q , (5) where pk,q is the number of pixels per tile at quality q,the rendering latency is 
+
+T rend  
+
+> k
+
+(t) = γgpu Pk(t)
+
+f gpu 
+
+> k
+
+. (6)  
+
+> •
+
+CPU-based Encoding: Let γcpu denote the CPU cost in cycles/bit, and f cpu  
+
+> k
+
+the CPU capacity (cycles/s). Given the total encoded data size Dk(t) in bits, the encoding latency is 
+
+T enc  
+
+> k
+
+(t) = γcpu Dk(t)
+
+f cpu 
+
+> k
+
+. (7) Therefore, the end-to-end latency for user k is 
+
+T tot  
+
+> k
+
+(t) = T rend  
+
+> k
+
+(t) + T enc  
+
+> k
+
+(t) + T comm  
+
+> k
+
+(t). (8) 
+
+3) Quality of Experience: In VR streaming, QoE is affected by several factors such as tiling, stall, latency, and resolution switching. We incorporate three major components to measure QoE precisely, namely latency, tiling based video quality, and resolution switch. Given these considerations, the QoE for user 
+
+k in time slot t, could be formulated as follows: QoE k =
+
+
+
+1 − T tot 
+
+> k
+> Tth
+
+
+
+Sk − λR amp ,k , (9) 
+
+Sk = X  
+
+> qwqMq
+> Mtotal
+
+· log 
+
+
+
+1 + βq
+
+> βth ,q
+
+
+
+, (9a) 
+
+Ramp ,k = X
+
+> q
+
+r(t) 
+
+> q
+
+− r(t−1)  
+
+> q
+
+, (9b) where latency in eq. (9) reflects network conditions, video quality component in eq. (9a) captures perceptual aspects beyond traditional QoS metrics [5] through the weight factor 
+
+wq ∈ { low : 1 , medium : 2 , high : 3 }, and Ramp ,k in eq. (9b) is the resolution switching amplitude which is a crucial metric in wireless VR for user experience as validated in [16] with mean opinion score correlation. 
+
+B. Problem Formulation and RL Framework 1) Problem Statement: In this subsection, the formulation for QoE maximization across all users explained. The MEC resource allocation problem can be formulated as follows: 
+
+max      
+
+> {fsk,b sk,g sk,r k,q }
+
+X
+
+> k
+
+QoE k, (10) s.t. X
+
+> k
+
+f sh k ≤ 1, X
+
+> k
+
+bsh k ≤ 1, X
+
+> k
+
+gsh k ≤ 1, ∀t
+
+(10a) 
+
+0.125 < r low < 0.25 < r med < 0.5, 0.75 < r high < 1,
+
+(10b) 
+
+QoE k,t ≥ QoE k, min , ∀k, t (10c) 
+
+0 ≤ f sh k , b sh k , g sh k , r k,q ≤ 1, (10d) where in eq. (10a), f sh  
+
+> k
+
+, bsh  
+
+> k
+
+, and gsh  
+
+> k
+
+denote the CPU, BW, and GPU fractions respectively, and eq. (10d) ensures valid CPU, GPU, and BW allocations by restricting all allocation and rate variables to the unit interval. Also, eq. (10b) establishes quality limits [5], and eq. (10c) penalizes per-user QoE violations. 
+
+2) MDP Formulation: The RL agent’s Markov Decision Process (MDP) is defined as follows: a) State Space: At time t over K users, the system state captures per-user DL data rates, delay components, tile distributions, and QoE: 
+
+st = Rk, T c 
+
+> k
+
+, T e 
+
+> k
+
+, T r
+
+> k
+
+, T tot  
+
+> k
+
+, {Mk,q }q∈{ high ,med ,low }, QoE k
+
+Kk=1 ,
+
+(11) where Rk is the DL transmission rate according to eq. (3), 
+
+T (·) 
+
+> k
+
+are the DL communication, encoding, rendering, and total delays, respectively, and Mk,q denotes the number of tiles assigned to the quality level q.
+
+b) Action Space: At time t, the system chooses an action that jointly determines the allocation of computational (f sh k , g sh k ) and communication ( bsh k ) resources, as well as the resolution ratios ( rk,q ) for all K users: 
+
+at = f sh  
+
+> k
+
+, b sh  
+
+> k
+
+, g sh  
+
+> k
+
+, {rk,q }q∈{ high ,med ,low }
+
+Kk=1 , (12) For instance, with 4 users, the action space and state space dimensions are 24 and 36, respectively. 
+
+c) Reward Function: The reward function balances user QoE with fairness and constraint violations: 
+
+rt =
+
+> K
+
+X
+
+> k=1
+
+QoE k,t − ωfair Ft − ωviol Vt, (13) where Ft = σ({fk,t }Kk=1 ) + σ({bk,t }Kk=1 ) + σ({gk,t }Kk=1 )
+
+represents the fairness penalty based on resource allocation variance across users, Vt denotes QoE threshold violations at time t, and wf air and wviol represents the system degree of sensitivity towards fairness and violations. III. FSDT-BASED METAVERSE RESOURCE ALLOCATION 
+
+A. FSDT 
+
+The architecture of FSDT is built upon the DT paradigm , reformulated to operate in a federated environment [14]. DT formulates RL as a sequence modeling problem where decision-making is learned through autoregressive modeling rather than an explicit value-function or policy optimization task and can be expressed as follows. For user k, contextual MDP is defined as (Sk, Ak, Pk, Rk) with states skt ∈ S k,actions akt ∈ A k, rewards rkt = Rk(skt , a kt ), and P(s′|s, a ) is the transition dynamics. The model uses undiscounted RTG, i.e., the sum of future rewards, ˆRkt = PTt′=t rkt′ to enable autoregressive trajectory modeling. This yields the following trajectory representation, which can be effectively used for autoregressive training and sequence generation: 
+
+τ k =
+
+> T
+
+[
+
+> t=1
+
+ ˆRkt , s kt , a kt
+
+
+
+, (14) where T denotes the trajectory length. Please note that the goal of offline RL is to learn a policy that maximizes the expected return E
+
+hPTt=1 rt
+
+i
+
+in the MDP. Then, embedding layer maps these RTGs, states, and actions into hidden space, enriched with temporal embeddings (i.e., positional embedding) π(t):
+
+ukn 
+
+> x,t
+
+:= π(t) ⊕ φx(xkn 
+
+> t
+
+), x ∈ { r, s, a }. (15) These embeddings passed through stacked masked causal self-attention blocks as illustrated in Fig. 1, in which the decoder architecture closely follows the GPT architecture [6]. The decoder on the cloud produces contextualized token outputs: 
+
+(vkn 
+
+> r,t
+
+, v kn 
+
+> s,t
+
+, v kn
+
+> a,t
+
+) = G {ukn 
+
+> r,τ
+
+, u kn 
+
+> s,τ
+
+, u kn 
+
+> a,τ
+
+}tτ =t−L
+
+ . (16) where L is the context length (i.e., number of RTG-state-action tuples to predict the next action). The prediction module 
+
+Pkn maps the contextualized representation to the next action using sigmoid activation. Then, the output ˆakn 
+
+> t
+
+is scaled to the valid action range. Building upon this DT formulation, FSDT extends the approach to a federated environment. 
+
+B. Training Procedure 
+
+FL and split learning paradigms are among the most common distributed learning paradigms in communication systems. In these approaches, each client (e.g., MEC-server) develops a local model using their own datasets. Clients send only model updates (e.g., gradients or embeddings) to a central aggregator (e.g., cloud), which merges them into a global model and shares back with the clients for further refinement. 
+
+Algorithm 1 VR-FSDT Training 
+
+Input: Domain-global models {gk 
+
+> 0
+
+}Kk=1 , server model v0,client-local models wk,n  
+
+> 0
+
+, communication rounds R.
+
+Output: Final Domain-global {GkR}Kk=1 , server model 
+
+vR 
+
+> 1:
+
+for r = 1 to R do  
+
+> 2:
+
+/* Phase 1: update embedding-prediction only */  
+
+> 3:
+
+for k = 1 to K do  
+
+> 4:
+
+for n = 1 to Nk do  
+
+> 5:
+
+Initialize wk,n r ← gkr−1 
+
+> 6:
+
+wk,n r ← UpdateLocal (wk,n r , v r−1) 
+
+> 7:
+
+end for  
+
+> 8:
+
+¯wkr ← FedAvg (wk, 1 
+
+> r
+
+, . . . , w k,N k 
+
+> r
+
+) 
+
+> 9:
+
+Gkr ← DomainUpdate ( ¯ wkr , v r−1) 
+
+> 10:
+
+end for  
+
+> 11:
+
+vr ← vr−1 
+
+> 12:
+
+/* Phase 2: update server transformer only */  
+
+> 13:
+
+for k = 1 to K do  
+
+> 14:
+
+for n = 1 to Nk do  
+
+> 15:
+
+vr ← TrainServer (Gkr , v r ) 
+
+> 16:
+
+end for  
+
+> 17:
+
+end for  
+
+> 18:
+
+end for 
+
+The training of FSDT proceeds in two alternating stages across R communication rounds (see Alg. 1) and follows the principles of FL and split learning. At each round, clients first adapt their local modules to personalize to their own data, while keeping the server transformer decoder fixed (lines 2-10). Then, the server trains the shared transformer decoder using all local data (lines 11-18). The objective is to minimize the mean squared error (MSE) between predicted actions and ground-truth actions from the DDPG trajectory dataset. This design balances local adaptability (Phase 1) and global coordination (Phase 2). 
+
+Phase 1: At round t, the server sends the latest domain-global parameters to all clients of type k. Each client n ∈{1, . . . , N k} updates its local embedding and prediction mod-ules (ek,n t , p k,n t ) while keeping the server transformer Gt fixed: 
+
+min   
+
+> {ek,n t, p k,n t}
+> K
+
+X
+
+> k=1
+> Nk
+
+X
+
+> n=1
+
+MSE 
+
+
+
+yk,n t , p k,n t
+
+ Gt(ek,n t (xk,n t )) 
+
+.
+
+(17) Then, client updates are aggregated, i.e., federated averaging (FedAvg), within each agent type (e.g., across clutters of UMB domain): 
+
+ekt = 1
+
+NkNkX
+
+> n=1
+
+ek,n t , pkt = 1
+
+NkNkX
+
+> n=1
+
+pk,n t . (18) 
+
+Phase 2: With (ekt , p kt ) frozen, the server updates its trans-former Gt using embeddings from all client types and mini-mizes the same objective as in Eq. 17 but with respect to Gt
+
+only. A single cloud-shared decoder is trained jointly across MECs, while embedding and prediction layers remain domain-specific. The decoder is replicated post-training and combined with the domain-specific layers, resulting in UMB, Sub-6 GHz, and WiFi models. IV. SIMULATION SCENARIOS AND RESULTS 
+
+A. Experimental Settings and Baselines: 
+
+In our simulations, we have considered five heterogenous MEC environments with multi-RAT setting, each serving four users, whose positions are randomly distributed within a square region, where the side length corresponds to the maximum distance specified in Table I. The table also reports the key clutter parameters, including BW, carrier frequency 
+
+fc, PLE ( α), shadowing variance σ, and P under non-line of sight conditions [17]. Moreover, the dataset is obtained from [18] that contains 200+ YouTube videos (4K, 25fps, 20-60s). The dataset is temporally split into 80% and 20% for training and test, respectively. Per-frame 2D eye coordinates determine tile quality levels using Chebyshev distance (Fig. 1). All the results in the following subsections presented as the average over 3 seeds TABLE I: multi-RAT Parameters                                          
+
+> RAT/Clutter BW fcPLE σDist. P
+> [MHz] [GHz] α[dB] [m] [dBm]
+> UMB/UMi 200 6.75 2.56 6.53 230 33 UMB/InH 200 6.75 2.72 9.21 65 33 Sub6GHz/UMi 100 2.90 2.90 2.90 230 30 Sub6GHz/InH 100 2.90 3.10 6.50 65 30 Wi-Fi/InH 160 2.40 2.52 5.75 65 24
+
+1) Baselines: We evaluated five algorithms, including four baselines and FSDT as shown in Table II, where, the prefixes C- and F- denote centralized and federated, respectively. Offline approaches (i.e., C-DT, F-DT and FSDT) leverage pre-collected trajectories generated using C-DDPG. FSDT is trained for 20 rounds, where each round consists of 100 client gradient timesteps (Phase 1) followed by 100 server gradient timesteps (Phase 2). During testing, all of the methods are tested over 100 episodes over the same test dataset. TABLE II: Comparison of baselines and the proposed FSDT.                   
+
+> Algorithm Train. Mode Aggregation Exchanged Info.
+> C-DDPG [5] Centralized N/A N/A F-DDPG Federated All layers Critic Params C-DT [6] Centralized N/A N/A F-DT Federated All layers Full Params FSDT Fed.-Split Local layers Embeddings
+
+TABLE III: FSDT and MEC parameters.                                          
+
+> FSDT parameter Value MEC parameter Value
+> n_heads 4γcpu
+> q(q=1,2,3) 200, 190, 180
+> n_blocks 6F,M16, 16
+> context_length 50 Tth (ms), QoE min 200, 4
+> optimizer AdamW Cr,N F (dB) 300, 7
+> learning_rate 10 −4fCPU (cyc/s), fGPU (px/s) 15 ×10 9
+> weight_decay 10 −4wf air ,wviol 2, 2
+> hidden_dim 256 βmax,q (Mbits) 12.4, 1.4, 0.5
+
+B. Results 
+
+In terms of the reward, Fig. 2 presents the moving average reward of FSDT compared with the baselines, showing training results for the online RL algorithms and test results for all algorithms. The results demonstrate that FSDT consistently outperforms its baselines with up to 10% higher rewards by integrating offline RL, FL, and split learning. These paradigms complement one another to provide key advantages, particu-larly improved learning through strategic sampling, mitigating the scarcity of local MEC data, and overcoming the limitations of naive global aggregation by model partition, respectively. F-DDPG and C-DDPG perform quite similarly during both training and testing. FSDT and C-DT show less variance across seeds compared to F-DT and show nearly 10% and 5% greater performance. Figs. 3 and 4 show the distributions of user QoE and latency across all MECs and users. The boxplots indicate the median, interquartile range, overall spread, and mean (diamond). In terms of QoE, Fig. 3 depicts that most schemes achieve a median QoE between 5.2 and 5.5. The proposed FSDT method attains the highest performance, with a median QoE of about 5.6 and an upper whisker reaching 6.07, clearly outperforming all baselines. By contrast, F-DT has the lowest median QoE (e.g., 5.1) and exhibits wider variability, indicating less stable performance. Moreover, the comparison between C-DDPG and F-DDPG suggests that conventional FL does not enhance online RL in heterogeneous settings, as updating shallow critic networks provides limited benefit for collaborative learning. Also, the same trend can be seen in comparison between C-DT and F-DT where traditional FL (e.g., FedAvg) does not improve QoE. In contrast, FSDT improves C-DT since each MEC learn from the intra-domain MECs by FedAvg of embedding and prediction layers and also from the inter-domain MECs by shared transformer decoder. Fig. 2: Average reward versus episode for baselines and FSDT C-DDPG C-DT F-DDPG F-DT FSDT 
+
+> 4.75
+> 5.00
+> 5.25
+> 5.50
+> 5.75
+> 6.00
+> QoE
+
+Fig. 3: QoE Comparison C-DDPG C-DT F-DDPG F-DT FSDT  
+
+> 15
+> 20
+> 25
+> 30
+> 35
+> Latency (ms)
+
+Fig. 4: Latency Comparison In terms of latency, Fig. 4 shows latency where all schemes lie in the range of 20–30 ms on average. C-DT and FSDT achieve the lowest median latencies, around 22–23 ms, with FSDT showing a tighter spread, indicating more consistent performance. C-DDPG and F-DDPG show higher medians around 26 ms and wider whiskers. 
+
+C. Complexity Analysis 
+
+Table IV summarizes FSDT model subnetworks. The trans-former decoder dominates with 98.79% of parameters, keeps computation in the cloud and does not need to be frequently exchanged across MECs. This design reduces MEC server load, training time, and enhances privacy by sharing only latent representations of actions, states, and RTGs. The training communication cost of conventional FL and FSDT can be expressed as 
+
+TF L = 2 RP tot , TF SDT = 2 BR (F + G) + 2 R(Pe + Pp), (19) where Ptot , Pe, and Pp denote the number of total, embedding, and prediction parameters, respectively, B is the batch size (e.g., 64), and F and G represent the transmitted features and gradients at the split point [13]. Depending on model hyperpa-rameters, this architecture can reduce overall communication across MECs. TABLE IV: FSDT Split Details 
+
+Metric Decoder (Cloud) Embed (Edge) Pred (Edge) 
+
+# of Params 4,738,560 42,496 15,677 Size (MB) 18.076 0.162 0.060 Memory (%) 98.79 0.89 0.33 
+
+V. CONCLUSION In conclusion, the resource allocation framework based on FSDT for edge-cloud collaborative learning in heterogeneous multi-RAT environments demonstrates superior performance by combining the offline RL, FL and split learning. Compared to baseline, where the model is not split, it shows more consistent results benefiting both local layers and shared global transformer decoder. FSDT not only achieves higher QoE with lower latencies up to 10%, but also improves the training efficiency by keeping computational burden on clouds and enhances privacy. Future work may explore edge-device collaboration or task-agnostic model development. ACKNOWLEDGEMENT This work has been supported by the NSERC Canada Research Chairs Program. We gratefully acknowledge late Dr. Han Zhang, a recent alumna of our research lab, for helping us access the dataset used in this study. We dedicate our paper to her loving memory. REFERENCES [1] X. Liu and Y. Deng, “Learning-based prediction, rendering and associa-tion optimization for mec-enabled wireless virtual reality (vr) networks,” 
+
+IEEE TWC , vol. 20, no. 10, pp. 6356–6370, 2021. [2] N. Liu, T. H. Luan, Y. Wang, Y. Liu, and Z. Su, “Qoe-oriented cooperative vr rendering and dynamic resource leasing in metaverse,” 
+
+IEEE TMC , pp. 1–16, 2025. [3] S. Yang, Y. He, and X. Zheng, “Fovr: Attention-based vr streaming through bandwidth-limited wireless networks,” in 2019 16th Annual IEEE SECON , 2019, pp. 1–9. [4] T. Zhou et al. , “Federated prompt-based decision transformer for re-source allocation of customized vr streaming in mobile edge computing,” 
+
+IEEE TWC , pp. 1–1, 2025. [5] J. Yu, A. Y. Alhilal, T. Zhou, P. Hui, and D. H. K. Tsang, “Attention-based qoe-aware digital twin empowered edge computing for immersive virtual reality,” IEEE TWC , vol. 23, no. 9, pp. 11 276–11 290, 2024. [6] L. Chen et al. , “Decision transformer: Reinforcement learning via sequence modeling,” in NeurIPS , 2021. [7] M. A. Habib, P. E. Iturria-Rivera, Y. Ozcan, M. Elsayed, M. Bavand, R. Gaigalas, and M. Erol-Kantarci, “Harnessing the power of llms, informers and decision transformers for intent-driven ran management in 6g,” IEEE TNSE , pp. 1–20, 2025. [8] J. Zhang, J. Li, Z. Wang, L. Shi, S. Jin, W. Chen, and H. V. Poor, “Decision transformers for wireless communications: A new paradigm of resource management,” IEEE Wirel. Commun. , vol. 32, no. 2, pp. 180–186, 2025. [9] H. Zhang, H. Zhou, M. Elsayed, M. Bavand, R. Gaigalas, Y. Ozcan, and M. Erol-Kantarci, “Distributed attacks over federated reinforcement learning-enabled cell sleep control,” in 2023 IEEE Globecom Workshops ,2023, pp. 485–490. [10] R. Mudi and H. Elbiaze, “Federated reinforcement learning-based re-source allocation in o-ran slicing for metaverse,” in IEEE ICC 2025 ,2025, pp. 01–07. [11] Z. Lin, G. Qu, X. Chen, and K. Huang, “Split learning in 6g edge networks,” IEEE Wirel. Comm. , vol. 31, no. 4, pp. 170–176, 2024. [12] Z. Li, T. Li, H. Liu, and T.-T. Chan, “Personalized federated deep rein-forcement learning for heterogeneous edge content caching networks,” in 2024 22nd WiOpt , 2024, pp. 313–320. [13] S. Park, G. Kim, J. Kim, B. Kim, and J. C. Ye, “Federated split task-agnostic vision transformer for covid-19 cxr diagnosis,” in NeurIPS ,vol. 34, 2021, pp. 24 617–24 630. [14] Z. Wang, B. Chen, X. Qu, Z. Hong, J. Xiao, and J. Wang, “Task-agnostic decision transformer for multi-type agent control with federated split training,” in 2024 IJCNN , 2024, pp. 1–7. [15] S. Sun et al. , “Investigation of prediction accuracy, sensitivity, and parameter stability of large-scale propagation path loss models for 5g wireless communications,” IEEE TVT , vol. 65, no. 5, pp. 2843–2860, 2016. [16] J. Li, R. Feng, Z. Liu, W. Sun, and Q. Li, “Modeling qoe of virtual reality video transmission over wireless networks,” in 2018 IEEE GLOBECOM ,2018, pp. 1–7. [17] A. Bazzi, R. Bomfin, M. Mezzavilla, S. Rangan, T. S. Rappaport, and M. Chafii, “Upper mid-band spectrum for 6g: Vision, opportunity and challenges,” IEEE Comm. Mag. , 2025. [18] Y. Xu et al. , “Gaze prediction in dynamic 360° immersive videos,” in 
+
+2018 IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , 2018, pp. 5333– 5342.

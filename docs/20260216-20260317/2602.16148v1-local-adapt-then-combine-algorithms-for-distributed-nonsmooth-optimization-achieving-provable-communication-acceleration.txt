@@ -1,0 +1,1414 @@
+Title: Local adapt-then-combine algorithms for distributed nonsmooth optimization: Achieving provable communication acceleration
+
+URL Source: https://arxiv.org/pdf/2602.16148v1
+
+Published Time: Thu, 19 Feb 2026 01:21:24 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Local Adapt-Then-Combine Algorithms for Distributed Nonsmooth Optimization: Achieving Provable Communication Acceleration ⋆
+
+# Luyao Guo a,b, Xinli Shi c, Wenying Xu b, Jinde Cao b,⋆⋆ 
+
+> a
+
+School of Computer Science and Engineering, Suzhou University of Technology, Suzhou 215500, China 
+
+> b
+
+School of Mathematics, Southeast University, Nanjing 210096, China 
+
+> c
+
+School of Cyber Science and Engineering, Southeast University, Nanjing 210096, China 
+
+Abstract 
+
+This paper is concerned with the distributed composite optimization problem over networks, where agents aim to minimize a sum of local smooth components and a common nonsmooth term. Leveraging the probabilistic local updates mechanism, we propose a communication-efficient Adapt-Then-Combine (ATC) framework, FlexATC, unifying numerous ATC-based distributed algorithms. Under stepsizes independent of the network topology and the number of local updates, we establish sublinear and linear convergence rates for FlexATC in convex and strongly convex settings, respectively. Remarkably, in the strong convex setting, the linear rate is decoupled from the objective functions and network topology, and FlexATC permits communication to be skipped in most iterations without any deterioration of the linear rate. In addition, the proposed unified theory demonstrates for the first time that local updates provably lead to communication acceleration for ATC-based distributed algorithms. Numerical experiments further validate the efficacy of the proposed framework and corroborate the theoretical results. 
+
+Key words: Distributed optimization, composite optimization, local updates, communication-efficient algorithm. 
+
+1 Introduction 
+
+Consider the following composite distributed optimization problem involving a set of agents [n] ≜ {1, 2, . . . , n }, where each agents has a private loss function fi : Rd → R (L-smooth) and public loss function r : Rd → R ∪ {∞} (not required to be smooth) 
+
+min 
+
+> x∈Rd
+
+(
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+h
+
+fi(x) + r(x)
+
+i)
+
+. (1) In this context, a network of agents collaborates to minimize the average of the global objective. In recent years, there has been growing interest in addressing the optimization problem through distributed approaches. The main driving force behind these methods is the potential of decentralization to remove the necessity for data sharing and centralized synchronization, thereby reducing the high latency typically associated with cen-tralized computing architectures (Nedi´ c 2015, Nedi´ c, Olshevsky & Rabbat 2018). A direct approach to tackle distributed optimization problems is to utilize the gradient descent method in combination with the underlying network structure (Nedi´ c & Ozdaglar 2009, Yuan, Ling & Yin 2016). However, in the presence of heterogeneous 
+
+⋆ This work was supported in part by the National Key R&D Project of China under Grant Nos. 2020YFA0714300, and the National Nat-ural Science Foundation of China under Grant Nos. 62576098 and 62473098. 
+
+⋆⋆ Corresponding author: Jinde Cao. 
+
+Email addresses: lyguo@szut.edu.cn (Luyao Guo), 
+
+xinli shi@seu.edu.cn (Xinli Shi), wyxu@seu.edu.cn 
+
+(Wenying Xu), jdcao@seu.edu.cn (Jinde Cao). 
+
+data, these primal algorithms are vulnerable to the phenomenon known as “client-drift.” This occurs because the differing local functions at each node cause each client to converge to the min-ima of its respective function fi(x) + r(x), which may be sig-nificantly different from the solution of (1). On the other hand, recent advancements in the primal-dual framework have intro-duced alternative techniques to address the challenges posed by heterogeneous data in distributed optimization, as demonstrated in (Shi & Yang 2018, Liang, Wang & Yin 2019, Shi, Ling, Wu & Yin 2015a, Shi, Ling, Wu & Yin 2015b, Qu & Li 2017, Nedic, Olshevsky & Shi 2017, Guo, Shi, Cao & Wang 2023, Guo, Shi, Yang & Cao 2024, Li, Shi & Yan 2019, Yuan, Ying, Zhao & Sayed 2018, Tang, Lian, Yan, Zhang & Liu 2018, Yuan, Al-ghunaim & Huang 2023, Xu, Zhu, Soh & Xie 2015, Nedi´ c, Olshevsky, Shi & Uribe 2017, Sun, Scutari & Daneshmand 2022, Alghunaim, Ryu, Yuan & Sayed 2020, Xu, Tian, Sun & Scutari 2021, Song, Shi, Pu & Yan 2024). Despite these ad-vances, distributed optimization algorithms still encounter chal-lenges related to communication bottlenecks. To reduce communication costs, there has been a growing in-terest in local updates methods, where multiple iterations of lo-cal computations are performed between communication steps (Alghunaim 2024, Nguyen, Alghunaim, Yuan & Uribe 2023, Liu, Lin, Koloskova & Stich 2024, Mishchenko, Malinovsky, Stich & Richt´ arik 2022, Guo, Wang, Shi & Cao 2024). These approaches aim to strike a balance between computation and communication, allowing agents to make progress on their local objectives without frequent exchanges of information, thus al-leviating the communication bottleneck. In (Alghunaim 2024), leveraging the ED (Yuan et al. 2018, Yuan et al. 2023) (or NIDS (Li et al. 2019) or D2 (Tang et al. 2018)) algorithm and employ-ing deterministic periodic local updates, the local-ED (LED) 
+
+Accepted by Automatica 14 February 2026 
+
+> arXiv:2602.16148v1 [math.OC] 18 Feb 2026
+
+Table 1 Comparison with existing ATC-based algorithm frameworks. LU = Local Updates, Comm. = Communication, Acc. = Acceleration. Algorithm # of Comm.: p = 1 LU? Comm. Acc.? # of Comm.: p ∈ (0 , 1] LU? Comm. Acc.? literature (Xu et al. 2021, Alghunaim et al. 2020) this paper this paper this paper                                                                 
+
+> (Prox-)NIDS/ED/D2 O
+> κ
+> 1−ρlog ϵ−1
+> 
+> %%O
+> κ
+> 1−ρlog ϵ−1
+> p=1√κ(1 −ρ)
+> −−−−−−−−→
+> improved O
+> q κ
+> 1−ρlog ϵ−1
+> 
+> !!
+> (Prox-)MG-ED O
+> κ√1−ρlog ϵ−1
+> 
+> %%O
+> κ√1−ρlog ϵ−1
+> p=1√κ
+> −−−−−→
+> improved O
+> q κ
+> 1−ρlog ϵ−1
+> 
+> !!
+> (Prox-)ATC-GT O
+> κ
+> (1 −ρ)2log ϵ−1
+> 
+> %%O
+> κ
+> (1 −ρ)2log ϵ−1
+> p=1√κ(1 −ρ)2
+> −−−−−−−−−→
+> improved O
+> √κ
+> 1−ρlog ϵ−1
+> 
+> !!
+> MG-SONATA O
+> κ√1−ρlog ϵ−1
+> 
+> %%O
+> κ√1−ρlog ϵ−1
+> p=1√κ
+> −−−−−→
+> improved O
+> q κ
+> 1−ρlog ϵ−1
+> 
+> !!
+
+algorithm was introduced. Similarly, in (Nguyen et al. 2023) and (Liu et al. 2024), by enabling communication-efficient lo-cal updates in gradient tracking (GT), two local-GT algorithms were proposed. Although LED and local-GT have been shown to accelerate communication through local stochastic gradient steps, it has yet to be demonstrated that these local determin-istic gradient steps can also reduce communication complexity. In addition, the stepsize selection in both LED and local-GT is inversely related to the number of local gradient steps. It implies that an increase in the number of local updates results in smaller permissible stepsizes, which in turn leads to slower conver-gence. To accelerate communication in deterministic settings, based on ED/NIDS/D2, ProxSkip (Mishchenko et al. 2022, Con-dat & Richt´ arik 2023) has been introduced, which incorporates probabilistic local updates, meaning that communication occurs with a certain probability. This advancement is achieved with-out relying on traditional acceleration techniques, and the step-size for ProxSkip is of the order O (1/L), which is independent of the number of local updates. However, this approach is ef-fective only for smooth loss function and the network exhibits sufficient connectivity. However, this approach is effective only when the network has sufficient connectivity and the loss func-tion is smooth. To address this limitation, in (Guo, Wang, Shi & Cao 2024), the combination of communication skipping meth-ods and multiple-round gossip communication has led to the development of MG-Skip. In this paper, using the probabilistic local updates method, we provide a Flexible Adapt-Then-Combine (ATC)-based dis-tributed algorithm (FlexATC) for the composite distributed op-timization problem (1). Table 1 shows the comparison with ex-isting ATC-based algorithm frameworks. The key contributions are summarized as follows. 
+
+• We introduce a novel unified distributed optimization algo-rithm framework, FlexATC, with network-independent and local update count-independent stepsizes, which is advan-tageous for practical implementation. FlexATC integrates numerous existing ATC-based distributed algorithms, en-compassing both classical algorithms (Li et al. 2019, Yuan et al. 2018, Yuan et al. 2023, Xu et al. 2015, Nedi´ c, Olshevsky, Shi & Uribe 2017, Sun et al. 2022) and locally updated al-gorithms (Alghunaim 2024, Nguyen et al. 2023, Mishchenko et al. 2022, Guo, Wang, Shi & Cao 2024). To the best of our knowledge, FlexATC is the first unified ATC-based algorithm framework to incorporate probabilistic local updates. 
+
+• In the convex setting, we establish the O (1/K) convergence rate of FlexATC. In the strongly convex setting, we estab-lish the linear convergence rate of FlexATC. Importantly, we show that the derived rate is decoupled from the local loss function and network topology, matching the linear rate of the centralized proximal. Furthermore, we demonstrate that FlexATC can skip communications with a probability p dur-ing execution without affecting the linear convergence rate. 
+
+• Previous researches (Mishchenko et al. 2022, Condat & Richt´ arik 2023, Guo, Wang, Shi & Cao 2024) have exclu-sively showcased the benefits of probabilistic local updates for ED/NIDS/D2. However, whether other algorithms can also benefit from this mechanism remains an open question. In this paper, we provide the first evidence that probabilistic local updates provably accelerate communication for ATC-based distributed algorithms. The rest of the paper is organized as follows. Section 2 presents FlexATC and explores its connections to existing ap-proaches. Section 3 provides the convergence and complexity analysis, and demonstrate that probabilistic local updates ef-fectively accelerate communication in ATC-based algorithms. Section 4 includes several numerical simulations to corroborate the theoretical results. Section 5 concludes the paper. 
+
+Notations: Let Rn denote the n-dimensional vector space equipped with the inner product ⟨· , ·⟩ . The norms considered in this paper are the ℓ1-norm and ℓ2-norm, denoted as ∥ · ∥ 1
+
+and ∥ · ∥ , respectively. The zero matrix and identity matrix of appropriate dimensions are represented 0 and I, respectively. The vector with all components equal to one is represented as 
+
+1. For a matrix H ∈ Rp×n, we define the operator norm as 
+
+∥H∥ ≜ max ∥s∥=1 ∥Hs ∥, and σm(H) refers to the minimum nonzero singular value of H. The notation H ⪰ 0 indicates that 
+
+H is positive semi-definite, null( ·) and span( ·) represent the null space and the range space of a vector or matrix, respec-tively. The probability of event s occurring is given by Prob( s).We use col {a1, . . . , a n} to represent the column vector formed by stacking a1, . . . , a n vertically, i.e., [aT 
+
+> 1
+
+, . . . , a T
+
+> n
+
+]T, and ⌊·⌋ 
+
+denotes rounding toward −∞ . Finally, the Kronecker product is denoted by ⊗.
+
+2 Framework: FlexATC 
+
+2.1 Problem and network settings 
+
+Assumption 1 fi is μ-strongly convex with μ ≥ 0; fi is L-smooth with L > 0, i.e, ∥∇ fi(x(1) ) − ∇ fi(x(2) )∥ ≤ L∥x(1) −
+
+x(2) ∥, for any x(1) , x (2) ∈ Rd. r proper, closed, and convex; r
+
+is proximable, i.e., for α > 0, its proximal mapping is defined as prox αr (x) ≜ argmin s∈Rd {r(s) + 1/2α∥s − x∥2}, and has an analytical solution or can be calculated efficiently. 
+
+Consider a network represented by an undirected and con-nected graph G(N , E), where N ≜ {1, 2, · · · , n } is the set of vertices, and E ⊆ N × N is the set of edges. An edge be-tween agents i and j exists if and only if (i, j ) ∈ E , meaning there is a communication link between these two agents. De-fine Ni ≜ {j ∈ N : ( i, j ) ∈ E} . Let the global mixing matrix 
+
+W = [ Wij ]ni,j =1 ∈ Rn×n and impose the following assump-tion. 2Assumption 2 W T = W , Wij = Wji = 0 if (i, j ) /∈ E , and 
+
+Wij = Wji > 0 if (i, j ) ∈ E ; W 1 = 1.
+
+Under Assumption 2, if the eigenvalues of W are denoted as 
+
+λ1 ≥ λ2 ≥ λ3 ≥ · · · ≥ λn, then the following relation-ships hold: 1 = λ1 > λ 2 ≥ · · · ≥ λn > −1. The spec-tral gap is defined as ρ ≜ max {| λ2|, |λn|} ∈ (0 , 1) . Consider 
+
+W ≜ W ⊗Id ∈ Rnd ×nd . Let v ≜ col {v1, . . . , v n}, where each 
+
+vi ∈ Rd represents the local information of agent i. The i-th block of the vector W v is expressed as col {P 
+
+> j∈N i
+
+Wij vj }, and this can be computed by agent i via localized communication with its neighbors. This operation corresponds to one commu-nication round. Consequently, W N v, where N > 1 represents 
+
+N consecutive rounds of communication. 
+
+2.2 Algorithm description 
+
+Let xk ≜ col {xk 
+
+> 1
+
+, x k 
+
+> 2
+
+, . . . , x kn} represent the global state at the k-th iteration, where xki ∈ Rd denotes the local state of node i at the k-th iteration. To describe the algorithm, we also define the following network quantities: F (x) ≜ Pni=1 fi(xi),
+
+R(x) ≜ Pni=1 r(xi). We further introduce matrices A = A ⊗
+
+Id, B = B ⊗ Id which are polynomial functions of W .
+
+Assumption 3 AT = A and A1 = 1, B ⪰ 0 and satisfies 
+
+null( B) = span( 1), and I − A2 − B ⪰ 0.
+
+In addition, let Ak ≜ θkA + (1 − θk)I and Bk ≜ θkB, where 
+
+θk ∈ { 0, 1} and Prob( θk = 1) = p. With these preparations, we develop FlexATC as the following form: 
+
+wk = xk − α∇F (xk), (2a) 
+
+xk+1 = prox αR 
+
+ Ak
+
+ wk + yk , (2b) 
+
+yk+1 = yk − pBk
+
+ wk + yk , (2c) where α > 0 is the stepsize. In the implementation of Flex-ATC, step (2a) is the adaptation step, and steps (2b) and (2c) are combination steps. It can be observed from FlexATC (2) that the communication is not required in every iteration and is instead triggered with a certain probability p. Thus, the num-ber of local gradient steps of FlexATC is random, and from the perspective of expectation, the communication occurs every 1/p
+
+iterations. Different from deterministic periodic local updates, where the frequency of local gradient steps is fixed within a de-termined period, we adopt a probabilistic local update mecha-nism to reduce communication frequency. This approach offers more flexibility in the frequency of local updates. Specifically, before the algorithm begins, the communication rounds can be randomly determined using a coin-flip method. This process can be executed on any single node and then broadcast to the other nodes, requiring only one round of communication. Since 
+
+θk is encoded in {0, 1}, the additional communication over-head is negligible. Moreover, this process does not result in any leakage of privacy information. Algorithm 1 elaborates on the distributed implementation of FlexATC. 
+
+2.3 Relation to existing ATC algorithms 
+
+In this subsection, we delve into the associations between FlexATC and existing ATC-based distributed algorithms (refer to Table 2). We demonstrate that by making specific selections for A and B, several ATC-based distributed algorithms can be derived from the proposed FlexATC (2). We initiate a discussion on the correlation between FlexATC, with p = 1 and r = 0 as special scenario, and ED/NIDS/D2 (Yuan et al. 2018, Li et al. 2019, Tang et al. 2018), MG-ED (Yuan et al. 2023), and ATC-GT (encompassing AugDGM (Xu et al. 2015), ATC-DIGing (Nedi´ c, Olshevsky, Shi & 
+
+Algorithm 1 FlexATC 
+
+Input: stepsize α ∈ (0 , 2/L); probability p ∈ (0 , 1] ; matrices 
+
+A = [ Aij ]ni,j =1 , B = [ Bij ]ni,j =1 ; sequence of independent coin flips {θ0, θ1, . . . θ K−1} with Prob( θk = 1) = p;initial x0 
+
+> i
+
+∈ Rd and y0 
+
+> i
+
+= 0 ∈ Rd, i = 1 , . . . , n  
+
+> 1:
+
+for k = 0 , 1, 2, . . . , K − 1 do  
+
+> 2:
+
+Adaptation: wki = xki − α∇fi(xki ) 
+
+> 3:
+
+if θk = 1 then  
+
+> 4:
+
+Combination: 
+
+ aki = P 
+
+> j∈N i
+
+Aij (wkj + ykj )
+
+bki = P 
+
+> j∈N i
+
+Bij (wkj + ykj ) 
+
+> 5:
+
+Correction: xk+1  
+
+> i
+
+= prox αr (aki ), yk+1  
+
+> i
+
+= yki − pb ki 
+
+> 6:
+
+else  
+
+> 7:
+
+Skip Communication:  
+
+> 8:
+
+xk+1  
+
+> i
+
+= prox αr (wki + yki ), yk+1  
+
+> i
+
+= yki 
+
+> 9:
+
+end if  
+
+> 10:
+
+end for Output: xK .Uribe 2017), and SONATA (Sun et al. 2022)). To this case, let-ting zk ≜ wk + yk and △F (xk) ≜ ∇F (xk) − ∇ F (xk−1), it follows from (2a) and (2c) that 
+
+zk = zk−1 − xk−1 − Bz k−1 + xk − α△F (xk).
+
+Since A and B are polynomial functions of W , we have AB =
+
+BA . Thus, it holds that 
+
+Az k = A(zk−1 − xk−1 − Bz k−1) + A(xk − α△F (xk)) .
+
+Combining with xk+1 = Az k, FlexATC ( p = 1 and r = 0 )becomes the following scheme 
+
+xk+1 = xk − Ax k−1 − Bx k + A(xk − α△F (xk)) . (3) 
+
+1) ED/NIDS/D2 and MG-ED: Letting A + B = I, the update of FlexATC will become 
+
+xk+1 = A(xk − xk−1) + A(xk − α△F (xk)) .
+
+Therefore, by selecting (A, B) = ( I − c(I − W ), c (I − W )) ,where c ∈ (0 , 1/2], NIDS and D2 can be derived from Flex-ATC ( p = 1 and r = 0 ). Similarly, by choosing (A, B) = (1/2(I + W ), 1/2(I − W )) , ED can be derived from Flex-ATC. Furthermore, under the conditions of W ⪰ 0, choosing 
+
+(A, B) = ( W N , I − W N ), where N > 1, MG-ED can be also derived from FlexATC. 
+
+2) ATC-GT: Recall the update of ATC-GT 
+
+xk+1 = W  xk − αyk , yk+1 = W  yk + △F (xk+1 ) .
+
+From the first step, we have xk+1 − W x k = −αW y k. By multiplying both sides of the second step by −αW , we have 
+
+−αW y k+1 = −αW 2yk − αW 2△F (xk+1 ).
+
+It implies that 
+
+xk+2 − W x k+1 = W x k+1 − W 2xk − αW 2△F (xk+1 ).
+
+Then, the update of ATC-GT is equivalent to 
+
+xk+1 = 2 W x k − W 2  xk−1 − α△F (xk) ,
+
+3Table 2 The relation of FlexATC to existing ATC-based distributed algorithms for specific choices of A and B.Algorithm r̸ = 0 A B # of Comm. (Prox-)ED/NIDS/D2 ! I − c(I − W ) c(I − W ) 1                                                           
+
+> (Prox-)MG-ED !1/2(I+WN)1/2(I−WN)N
+> (Prox-)ATC-GT !W2(I−W)22
+> MG-SONATA !(WN)2(I−WN)22N
+> LED -WI−Wp(periodic) local-GT -W2(I−W)22p(periodic) ProxSkip -I−c(I−W)c(I−W)p(random)
+
+which is an instance of the general scheme FlexATC ( p = 1 
+
+and r = 0 ) (3), with W ⪰ 0 and (A, B) = ( W 2, (I − W )2).Moreover, with W ⪰ 0 and (A, B) = ( W 2N , (I − W N )2),FlexATC (3) is equivalent to MG-SONATA. Then, we consider the case where r̸ = 0 and p = 1 , it follows from (2a) and (2c) that FlexATC becomes 
+
+zk = zk−1 − xk−1 − Bz k−1 + xk − α△F (xk),
+
+xk+1 = prox αR (Az k).
+
+By comparison, one can see that it is equivalent to ATC-PUDA (Alghunaim et al. 2020). Let sk = Az k. Since AB = BA ,FlexATC ( p = 1 and r = 0 ) can also be written as 
+
+sk = ( I − B)sk−1 − Ax k−1 + A(xk − α△F (xk)) ,
+
+xk+1 = prox αR (sk),
+
+which is equivalent to ATC-ABC (Xu et al. 2021). Finally, we consider the case where p ∈ (0 , 1] . By compari-son, it is easy to verify that ProxSkip (Mishchenko et al. 2022) is a instance of FlexATC with (A, B) = ( I − c(I − W ), c (I −
+
+W )) . In addition, to show the connection with periodic local updates based algorithms, from the perspective of expectations, we rewrite FlexATC (2) as 
+
+ψrt+1 = ψrt − α∇F (ψrt ) + yr , for t = 1 , · · · , M, (4a) 
+
+yr+1 = yr − 1/M Bψ rM +1 , (4b) 
+
+xr+1 = prox αR 
+
+ Aψ rM +1 
+
+ , (4c) where r denotes the communication round, M = ⌊1/p⌋ denotes the number of local updates, and ψr 
+
+> 1
+
+= xr . When iterating through ψrt+1 = ψrt − α∇F (ψrt ) + yr , for t = 1 , . . . , M , it holds that ψrM +1 = xr − α PMt=1 ∇F (ψrt ) + M yr . Then, by eliminating yr , (4) takes the following form 
+
+ψrM +1 = ( I − B)ψr−1  
+
+> M+1
+
++ ( xr − xr−1) − α
+
+> M
+
+X
+
+> t=1
+
+△F (ψrt ),
+
+xr+1 = prox αR 
+
+ Aψ rM +1 
+
+ ,
+
+with ψr 
+
+> 0
+
+= xr . When r = 0 , one has xr+1 = Aψ rM +1 and 
+
+xr+1 = xr − Ax r−1 − Bx r + A(xr − α
+
+> M
+
+X
+
+> t=1
+
+△F (ψrt )) .
+
+Therefore, LED (Alghunaim 2024) is an instance of FlexATC with W ⪰ 0 and (A, B) = ( W , I − W ). Recall local-GT (Nguyen et al. 2023). Similar as (Liu et al. 2024, Proposition 3.1), local-GT can be rewritten as follows. 
+
+xr+1 = W (xr − αyr ) ,
+
+yr+1 = W
+
+
+
+yr +
+
+> M
+
+X
+
+> t=1
+
+(∇F (ψr+1  
+
+> t
+
+) − ∇ F (ψrt )) 
+
+
+
+.
+
+Thus, with W ⪰ 0 and (A, B) = ( W 2, (I − W )2), local-GT is an instance of FlexATC. 
+
+3 Main theoretical results 
+
+This section first establishes the sublinear convergence rate for FlexATC (2) in the convex setting, and then derives the linear convergence rate in the strongly convex setting. Finally, it proceeds to analyze the complexity of FlexATC. We commence by introducing the ensuing lemma. 
+
+Lemma 1 Under Assumptions 1, 2, and 3, if the point 
+
+(x⋆, w⋆, u⋆) satisfies that 
+
+w⋆ = x⋆ − α∇F (x⋆), (5a) 
+
+x⋆ = prox αR (A(w⋆ − √Bu ⋆)) , (5b) 
+
+0 = √B(w⋆ − √Bu ⋆), (5c) 
+
+then x⋆ = 1n ⊗ x⋆ with x⋆ ∈ Rd solving problem (1) .Proof : With Assumption 3, it holds that null( B) =span( 1n ⊗ Id). Then, from 0 = B(w⋆ − √Bu ⋆), we have that the block elements of w⋆ − √Bu ⋆ are equal to each other. Since A1 = 1, we have that there exists z⋆ ∈ Rd such that 
+
+A(w⋆ − √Bu ⋆) = 1n ⊗ z⋆. From (5b) and the definition of the prox αR (·), we have x⋆ = argmin x∈Rnd {R(x) + 1/2α∥x −
+
+A(w⋆ − √Bu ⋆)∥2}. It deduces that 
+
+x⋆i = argmin x∈Rd {r(x) + 1/2α∥x − z⋆∥2}, i ∈ [n]. (6) Thus, it holds that x⋆ 
+
+> 1
+
+= · · · = x⋆n ≜ x⋆. Then, we prove x⋆
+
+solves problem (1). It follows from (6) that 
+
+> 1
+
+/α(z⋆ − x⋆) ∈ ∂r (x⋆). (7) From null( √B) = span( 1), it holds that (1n ⊗ Id)T(w⋆ −√Bu ⋆) = nz ⋆. In addition, from (5a), one has (1n⊗Id)T(w⋆−√Bu ⋆) = ( 1n ⊗ Id)T(x⋆ − α∇F (x⋆) − √Bu ⋆) = nx ⋆ −
+
+α Pni=1 fi(x⋆). Therefore, 1/α(x⋆ −z⋆)−1/n
+
+Pni=1 ∇fi(x⋆) = 0. Together with (7), we have 0 ∈ 1/n
+
+Pni=1 [∇fi(x⋆)+ ∂r (x⋆)] .Thus, x⋆ solves problem (1). □
+
+Let uk satisfy yk = −√Bu k and u0 = 0. Since y0 =
+
+u0 = 0, the update (2) can be equivalently written as follows, since they generate an identical sequence {xk}k=0 .
+
+wk = xk − α∇F (xk), (8a) 
+
+xk+1 = prox αR (Ak(wk − √Bu k)) , (8b) 
+
+uk+1 = uk + ppBk(wk − √Bu k), (8c) where √Bk = θk
+
+√B. Let the point (x⋆, w⋆, u⋆b ) satisfies the optimal condition (5) and u⋆b ∈ span( √B). We then present the following lemma, which plays a crucial role in analyzing the convergence behavior of the FlexATC. 4Lemma 2 Under Assumptions 1, 2, and 3, if α > 0 and p ∈
+
+(0 , 1] , the sequence {xk, } generated by (8) satisfies that 
+
+E
+
+h 
+
+xk+1 − x⋆ 2 + 1/p2 uk+1 − u⋆b
+
+> 2
+
+
+
+|θk
+
+i
+
+≤ wk − w⋆ 2 +  1 − p2σm(B) 1/p2 uk − u⋆b 
+
+> 2
+
+. (9) 
+
+Proof : Define wko ≜ wk − w⋆, xko ≜ xk − x⋆, uko ≜ uk −
+
+u⋆b , where (x⋆, w⋆, u⋆b ) satisfies the optimal condition (5) and 
+
+u⋆b ∈ span( √B). Letting zk ≜ wk − √Bu k, z⋆ ≜ w⋆ −√Bu ⋆b , zko ≜ zk − z⋆, with Assumption 3, it gives that Bz ⋆ =
+
+0 ⇐⇒ √Bz ⋆ = 0. Thus, by (5) and (8), we can reach the error recursions: 
+
+zko = wko − √Bu ko , (10a) 
+
+xk+1  
+
+> o
+
+= prox αR (Akzk) − prox αR (Az ⋆), (10b) 
+
+uk+1  
+
+> o
+
+= uko + ppBkzk − √Bz ⋆. (10c) Note that Ak = θkA+(1 −θk)I, where θk ∈ { 0, 1}, Prob( θk =1) = p, and Prob( θk = 0) = 1 − p. Taking the expectation over θk, it gives that 
+
+E
+
+h
+
+xk+1  
+
+> o
+> 2
+
+|θk
+
+i
+
+= p prox αR (Az k) − prox αR (Az ⋆) 2
+
++ (1 − p) prox αR (zk) − prox αR (Az ⋆) 2 .
+
+Since Bz ⋆ = 0 and A1 = 1, we have Az ⋆ = z⋆. By the nonexpansivity of prox αR (·), it gives that 
+
+E
+
+h
+
+xk+1  
+
+> o
+> 2
+
+|θk
+
+i
+
+≤ p Az ko 
+
+> 2
+
++ (1 − p) zko
+
+> 2
+
+= zko 
+
+> 2
+> pA2+(1 −p)I
+
+≤ zko 
+
+> 2
+> I−pB
+
+. (11) The last inequality holds as A2 ⪯ I − B. Next, from (10a), and expanding the squared norm of ∥zko ∥2 
+
+> I−pB
+
+and collecting the terms, we can obtain that 
+
+zko 
+
+> 2
+> I−pB
+
+= zko 
+
+> 2
+
+− zko
+
+> 2
+> pB
+
+= wko − √Bu ko
+
+> 2
+
+− zko
+
+> 2
+> pB
+
+= wko 
+
+> 2
+
++ uko 
+
+> 2
+> B
+
+− 2
+
+D
+
+wko , √Bu ko
+
+E
+
+− zko 
+
+> 2
+> pB
+
+.
+
+Therefore, combining with (11), it holds that 
+
+E
+
+h
+
+xk+1  
+
+> o
+> 2
+
+|θk
+
+i
+
+≤ wko 
+
+> 2
+
++ uko 
+
+> 2
+> B
+
+− 2
+
+D
+
+wko , √Bu ko
+
+E
+
+− zko 
+
+> 2
+> pB
+
+. (12) Note that √Bk = θk
+
+√B, where θk ∈ { 0, 1}, Prob( θk = 1) = 
+
+p. Taking the expectation over θk, it gives that 
+
+E
+
+h
+
+uk+1  
+
+> o
+> 2
+
+|θk
+
+i
+
+= p uko + p√Bz ko
+
+> 2
+
++ (1 − p) uko
+
+> 2
+
+= uko 
+
+> 2
+
++ p2 zko 
+
+> 2
+> pB
+
++ 2 p2 D
+
+uko , √Bz ko
+
+E
+
+. (13) Since zko = wko − √Bu ko , we have 
+
+⟨uko , √Bz ko ⟩ = ⟨√Bu ko , wko − √Bu ko ⟩
+
+= ⟨wko , √Bu ko ⟩ − ∥ uko ∥2 
+
+> B
+
+.
+
+Thus, combining with (13), we have 
+
+E[∥uk+1  
+
+> o
+
+∥2|θk] = ∥uko ∥2 + p2∥zko ∥2
+
+> pB
+
++ 2 p2(⟨wko , √Bu ko ⟩ − ∥ uko ∥2 
+
+> B
+
+).
+
+Finally, combining with (12), it holds that 
+
+E
+
+h 
+
+xk+1  
+
+> o
+> 2
+
++ 1/p2 uk+1 
+
+> o
+> 2
+
+
+
+|θk
+
+i
+
+≤ wko 
+
+> 2
+
++ uko 
+
+> 2
+> B
+
+− 2
+
+D
+
+wko , √Bu ko
+
+E
+
+− zko
+
+> 2
+> pB
+
++ 1/p2 uko 
+
+> 2
+
++ zko 
+
+> 2
+> pB
+
++ 2 
+
+D
+
+wko , √Bu ko
+
+E
+
+− 2 uko
+
+> 2
+> B
+
+= wko 
+
+> 2
+
++ 1/p2 uko 
+
+> 2
+
+− uko 
+
+> 2
+> B
+
+.
+
+Next, we consider the lower bound of uko 
+
+> 2
+> B
+
+. From (8c), it gives that, for u0 = 0, uk ∈ span( √B) for any k ≥ 0. Consid-ering that u⋆b ∈ span( √B). It holds that uko ∈ span( √B) for any k ≥ 0. Therefore, it gives that uko 
+
+> 2
+> B
+
+≥ σm(B) uko
+
+> 2
+
+,which implies that Lemma 2 holds. □
+
+3.1 Sublinear convergence rate 
+
+Using Lemmas 1 and 2, we give the following theorem. 
+
+Theorem 1 Under Assumptions 1, 2, and 3, if α ∈ (0 , 2/L)
+
+and p ∈ (0 , 1] , then lim k→∞ ∥∇ F (xk) − ∇ F (x⋆)∥2 = 0 
+
+and lim k→∞ ∥uk − u⋆b ∥2 = 0 , almost surely and in quadratic mean. In addition, letting ¯XK = 1
+
+> K
+
+PK−1 
+
+> k=0
+
+xk and ¯U K =
+
+> 1
+> K
+
+PK−1 
+
+> k=0
+
+uk, it holds that 
+
+E
+
+h
+
+∇F ( ¯XK ) − ∇ F (x⋆) 2 + ¯U K − u⋆b
+
+> 2
+
+i
+
+= O
+
+ 1
+
+K
+
+
+
+.
+
+Proof : From the definition of wko , we have 
+
+wko 
+
+> 2
+
+= xko 
+
+> 2
+
++ α2∥∇ F (xk) − ∇ F (x⋆)∥2
+
+− 2α xko , ∇F (xk) − ∇ F (x⋆)
+
+≤ xko 
+
+> 2
+
+− α(2/L − α)∥∇ F (xk) − ∇ F (x⋆)∥2,
+
+where the second inequality follows from the convexity and smoothness of fi, which is equivalent to ⟨xko , ∇F (xk) −∇F (x⋆)⟩ ≥ 1/L∥∇ F (xk) − ∇ F (x⋆)∥2. Let 
+
+Φk ≜ xk − x⋆ 2 + 1/p2 uk − u⋆b 
+
+> 2
+
+,
+
+Ψk ≜ ∇F (xk) − ∇ F (x⋆) 2 + uk − u⋆b 
+
+> 2
+
+.
+
+From (9), one has 
+
+E[Φ k+1 |θk] ≤Φk − α(2/L − α)∥∇ F (xk) − ∇ F (x⋆)∥2
+
+− σm(B)∥uk − u⋆b ∥2
+
+≤Φk − ϱΨk, (14) where ϱ = min {α(2/L−α), σ m(B)}. Using classical results on almost supermartingale convergence theorem (Bertsekas 2015, Proposition A.4.5, pp. 464) (Robbins & Siegmund 1971), it follows from (14) that Φk converges almost surely to a random 5variable Φ∞ and that P∞ 
+
+> k=0
+
+Ψk < ∞ almost surely. Thus, 
+
+lim k→∞ Ψk = 0 almost surely, i.e., 
+
+lim  
+
+> k→∞
+
+∥∇ F (xk) − ∇ F (x⋆)∥2 = 0 , almost surely ,
+
+lim  
+
+> k→∞
+
+∥uk − u⋆b ∥2 = 0 , almost surely .
+
+Moreover, taking full expectation in (14), it gives that 
+
+ϱE Ψk ≤ E Φk − E Φk+1  . (15) Summing the inequality (15) over k = 0 , 1, · · · , ∞, we have P∞ 
+
+> k=0
+
+E Ψk ≤ 1/ϱΦ0 < ∞. Therefore, lim k→∞ E Ψk = 0 ,which implies that lim k→∞ Ψk = 0 in quadratic mean, i.e., 
+
+lim  
+
+> k→∞
+
+∥∇ F (xk) − ∇ F (x⋆)∥2 = 0 , lim  
+
+> k→∞
+
+∥uk − u⋆b ∥2 = 0 
+
+in quadratic mean. Since ∥ · ∥ 2 is convex, summing (15) over 
+
+k = 0 , 1, · · · , K − 1, it gives that 
+
+E
+
+h
+
+∇F ( ¯XK ) − ∇ F (x⋆) 2 + ¯U K − u⋆b
+
+> 2
+
+i
+
+≤ Φ0
+
+ϱK ,
+
+where ¯XK = 1
+
+> K
+
+PK−1 
+
+> k=0
+
+xk and ¯U K = 1
+
+> K
+
+PK−1 
+
+> k=0
+
+uk. □
+
+With μ = 0 , Theorem 1 shows that FlexATC is sublinear convergence. However, achieving communication acceleration requires assuming μ > 0. In the next two subsections, we will give a more detailed analysis. 
+
+3.2 Linear convergence rate 
+
+In the strongly convex setting, applying Lemmas 1 and 2, we present the following theorem to demonstrate that FlexATC can achieve linear convergence. 
+
+Theorem 2 Under Assumptions 1, 2, and 3, if μ > 0, α ∈
+
+(0 , 2/L) and p ∈ (0 , 1] , then it holds that 
+
+E
+
+h
+
+xk − x⋆ 2i
+
+≤
+
+
+
+x0 − x⋆ 2 + 1/p2 ∥u⋆b ∥2
+
+ζk,
+
+with ζ = max {(1 − αL )2, (1 − αμ )2, 1 − p2σm(B)} < 1.Moreover, {(xk, uk)}k≥0 converges to (x⋆, u⋆b ) almost surely. Proof : Let DkF ≜ ∥∇ F (xk) − ∇ F (x⋆)∥2. From the cocoer-civity of (∇F − μI) and (Bertsekas 2015), we have 
+
+⟨∇ F (xk)−∇ F (x⋆), xk−x⋆⟩ ≥ Lμ L + μ ∥xk−x⋆∥2+ 1
+
+L + μ DkF .
+
+Thus, it gives that 
+
+wko 
+
+> 2
+
+≤
+
+
+
+1 − 2αLμ L + μ
+
+
+
+xk − x⋆ 2 +
+
+
+
+α2 − 2αL + μ
+
+
+
+DkF .
+
+If α ≤ 2 
+
+> L+μ
+
+, since DkF ≥ μ∥xk − x⋆∥, it gives that 
+
+wko 
+
+> 2
+
+≤
+
+
+
+1 − 2αLμ L + μ +
+
+
+
+α2 − 2αL + μ
+
+
+
+μ2
+
+
+
+xk − x⋆ 2
+
+= (1 − αμ )2 xk − x⋆ 2 .
+
+If α ≥ 2 
+
+> L+μ
+
+, since DkF ≤ L∥xk − x⋆∥, it gives that 
+
+wko 
+
+> 2
+
+≤
+
+
+
+1 − 2αLμ L + μ +
+
+
+
+α2 − 2αL + μ
+
+
+
+L2
+
+
+
+xk − x⋆ 2
+
+= (1 − αL )2 xk − x⋆ 2 .
+
+Therefore, we have ∥wko ∥2 ≤ max {(1 − αL )2, (1 −
+
+αμ )2}∥ xko ∥2. Then, combining it with (9), it holds that 
+
+E
+
+h 
+
+xk+1 − x⋆ 2 + 1/p2 uk+1 − u⋆b
+
+> 2
+
+
+
+|θk
+
+i
+
+≤ max {(1 − αL )2 , (1 − αμ )2} xk − x⋆ 2
+
++  1 − p2σm(B) 1/p2 uko − u⋆b
+
+> 2
+
+
+
+.
+
+Thus, it deduces that E[Φ k+1 |θk] ≤ ζΦk, where ζ = max {(1 −
+
+αL )2, (1 − αμ )2, 1 − p2σm(B)}. Using classical results on al-most supermartingale convergence theorem (Bertsekas 2015, Proposition A.4.5, pp. 464) (Robbins & Siegmund 1971), it holds that lim k→∞ Φk = 0 almost surely. Almost sure conver-gence of {(xk, uk)}k≥0 follows. Taking full expectation and unrolling the recurrence, one has that 
+
+E Φk+1  ≤ ζk+1 Φ0 ⇒ E
+
+h
+
+xk+1 − x⋆ 2i
+
+≤ ζk+1 Φ0.
+
+Thus, the proof is completed. □
+
+Under the strongly convex setting, Theorem 2 offers a sep-arated linear convergence rate of FlexATC, whose dependency on the agents’ loss functions and the network topology is decou-pled, and the term ζc = max {(1 − αL )2, (1 − αμ )2} matches the convergence rate exhibited by the proximal gradient algo-rithm (Combettes & Wajs 2005, Nesterov 2013) when applied to the problem (1). Next, we further analyze the effect of local updates on the convergence rate. We discuss the following two cases. 
+
+• Case 1 – when (1 −ζc)/σm(B) < 1: In real-world scenarios, this condition holds true when κ = L/μ is large (i.e., for ill-condition problems, which are precisely the ones that need ac-celeration). In this case, it can be verified that the convergence rate of FlexATC is 
+
+ζ ≡ max {(1 − αL )2, (1 − αμ )2}, when p2 ∈
+
+ 1 − ζc
+
+σm(B) , 1
+
+
+
+.
+
+Since the stepsize α = O(1/L) is independent of the number of local updates 1/p, the convergence rate of FlexATC stays unaffected when p is reduced from 1 to p(1 −ζc)/σm(B) (i.e., the introduction of a local update mechanism will not cause any loss). This explains why we can often skip communication rounds without any negative impact on the convergence rate, essentially allowing us to “skip” communication at no cost. 
+
+• Case 2 – when (1 −ζc)/σm(B) ≥ 1: In real-world scenarios this condition holds true when κ = L/μ is not too large. In this case, the convergence rate of FlexATC is ζ = 1 − p2σm(B),i.e., the optimal efficient approach is to perform communica-tion at each iteration, corresponding to setting p = 1 . In fact, for this well-conditioned problem ( κ is not large), additional acceleration is not needed because the improvement from κ to √κ is not significant. Note that, due to the flexibility of FlexATC, we can make 
+
+> (1 −ζc)
+
+/σm(B) < 1 hold for any κ by selecting B. For example, similar as MG-ED (Yuan et al. 2023) and MG-SONATA (Sun et al. 2022), we can use muti-gossip communications to make 
+
+O(σm(B)) = 1 . In other words, combining local updates with multi-gossip can accelerate any situation. 6Table 3 Comparison with existing strongly convex convergence rates of SOTA ATC-based distributed algorithms. Iter. = Iteration, Comm. = Communication, Dec. = Deceleration, Acc. = Acceleration. Algorithm B O (σm(B)) N # of Iter.: p = 1 # of Iter.: p ∈                                                                                                                           
+
+> hq (1 −ζc)
+> σm(B),1
+> i
+> No Iter. Dec. # of Comm.: p= 1 # of Comm.: p∈
+> hq (1 −ζc)
+> σm(B),1
+> i
+> Acc. Comm. literature this paper this paper literature this paper this paper
+> NIDS/ED/D2 c(I−W)1−ρ1O
+> κ
+> 1−ρlog 1/ϵ
+> 
+> O
+> κ
+> 1−ρlog 1/ϵ
+> 
+> !O
+> κ
+> 1−ρlog 1/ϵ
+> 
+> O
+> q κ
+> 1−ρlog 1/ϵ
+> 
+> ,p=1√κ(1 −ρ)!
+> MG-ED 1/2(I−WN)1O
+> 1√1−ρ
+> 
+> O(κlog 1/ϵ)O(κlog 1/ϵ)!O
+> κ√1−ρlog 1/ϵ
+> 
+> O
+> q κ
+> 1−ρlog 1/ϵ
+> 
+> ,p=1√κ!
+> ATC-GT (I−W)2(1 −ρ)2O(1) O
+> κ
+> (1 −ρ)2log 1/ϵ
+> 
+> O
+> κ
+> (1 −ρ)2log 1/ϵ
+> 
+> !O
+> κ
+> (1 −ρ)2log 1/ϵ
+> 
+> O
+> √κ
+> 1−ρlog 1/ϵ
+> 
+> ,p=1√κ(1 −ρ)2!
+> MG-SONATA (I−WN)21O
+> 1√1−ρ
+> 
+> O(κlog 1/ϵ)O(κlog 1/ϵ)!O
+> κ√1−ρlog 1/ϵ
+> 
+> O
+> q κ
+> 1−ρlog 1/ϵ
+> 
+> ,p=1√κ!
+
+3.3 Communication complexity analysis 
+
+In this subsection, we consider the communication com-plexity of FlexATC (2) under strongly convexity. Note that 
+
+ζc = max {(1 − αL )2, (1 − αμ )2} ≤ 1 − αμ . It holds that 
+
+ζ ≤ max {1 − αμ, 1 − p2σm(B)}. Letting κ = L/μ and setting 
+
+α = 1/L, we have ζ ≤ max {1 − 1/κ, 1 − p2σm(B)}. Thus, for the desired accuracy level ϵ > 0, when E[∥xk+1 −x⋆∥2] ≤ ϵΦ0,the expected iteration complexity of FlexATC with μ > 0 is # of Iter.: O
+
+
+
+max 
+
+
+
+κ, 1
+
+p2σm(B)
+
+
+
+log 1/ϵ
+
+
+
+.
+
+When 1/√κσ m(B) ≤ 1, setting p ∈ [1/√κσ m(B), 1] , it holds that the iteration complexity of FlexATC is # of Iter.: O (κ log 1/ϵ) , unchanged .
+
+Thus, the introduction of a local update mechanism will not affect the convergence rate. Given that communication occurs with probability p in each iteration, the expected communication complexity is # of Comm.: O
+
+
+
+N
+
+
+
+pκ + 1
+
+pσ m(B)
+
+
+
+log 1/ϵ
+
+
+
+, (16) where N is the order of the polynomial functions B with respect to W . If 1/√κσ m(B) ≤ 1, i.e., κ ≥ 1/σm(B), letting p = 1 and 
+
+p = 1/√κσ m(B), respectively, from (16), we have 
+
+
+
+p = 1 : O
+
+
+
+N κσm(B) log 1/ϵ
+
+
+
+,p = 1√κσ m(B) : O
+
+
+
+N q κσm(B) log 1/ϵ
+
+
+
+, improved .
+
+Therefore, we conclude that local updates can accelerate the communication of ATC-based distributed algorithms without reducing convergence rates. To elucidate this phenomenon further, we specialize FlexATC (2) to NIDS/ED/D2 (Li et al. 2019, Yuan et al. 2018, Tang et al. 2018), MG-ED (Yuan et al. 2023), ATC-GT (Xu et al. 2015, Nedi´ c, Olshevsky, Shi & Uribe 2017), and MG-SONATA (Sun et al. 2022), as presented in Table 3. Our analysis reveals that not only local gradient steps demonstrably enhance the communication efficiency for NIDS/ED/D2, MG-ED, ATC-GT, and MG-SONATA, without increasing the number of iteration rounds, but they also enable NIDS/ED/D2, MG-ED, and MG-SONATA to achieve the optimal communication complexity, as established in (Scaman, Bach, Bubeck, Lee & Massouli´ e 2017). 
+
+4 Numerical experiment results 
+
+In this numerical experiment, we validate the proposed frame-work and theoretical results using the real-world datasets ijcnn1 0 200 400 600 800 1000                                    
+
+> 10 -6
+> 10 -4
+> 10 -2
+> 10 00200 400 600 800 1000
+> 10 -15
+> 10 -10
+> 10 -5
+> 10 00200 400 600 800 1000
+> 10 -6
+> 10 -4
+> 10 -2
+> 10 00200 400 600 800 1000
+> 10 -15
+> 10 -10
+> 10 -5
+> 10 00200 400 600 800 1000
+> 10 -5
+> 10 00200 400 600 800 1000
+> 10 -15
+> 10 -10
+> 10 -5
+> 10 00200 400 600 800 1000
+> 10 -5
+> 10 00200 400 600 800 1000
+> 10 -15
+> 10 -10
+> 10 -5
+> 10 0
+
+Fig. 1. The numerical results over ijcnn1 dataset for communication acceleration are shown, with the relative error ∥xk −x⋆∥/∥x⋆∥ plotted against the number of iteration and communication rounds. 
+
+from the widely used LIBSVM (Chang & Lin 2011). Choose the local loss function fi(x) = 1/mi
+
+Pmi
+
+j=1 ln(1+ e−(X T 
+
+> ij
+
+x)Yij )+ 
+
+γ1/2∥x∥2 and the global loss function r(x) = γ2∥x∥1. Set γ1 =0.01 and γ2 = 0 .01 . In this setup, each node holds its own local training data (Xij , Yij ) ∈ Rd × {− 1, 1}, where j = 1 , . . . , m i,consisting of feature vectors Xij and their corresponding binary class labels Yij . The data (Xij , Yij ) ∈ Rd ×{− 1, 1} used in this experiment are sourced from ijcnn1. For the ijcnn1 dataset, the data dimensions are (d, Pni=1 mi) = (22 , 49950) . The train-ing samples are randomly and uniformly distributed across all 
+
+n agents. The communication topology is set up as a random connected network with 50 nodes, and the probability of a com-munication link between any two nodes is 0.1.We compare the iteration and communication performance of 7ATC-based algorithms, such as ED/NIDS/D2, MG-ED, ATC-GT, and MG-SONATA, under different values of p. The specific choices for A and B of these algorithms are shown in Table 2. Set the stepsize α = 1/L. Fig. 1 shows that FlexATC with 
+
+p = 1 , 0.5, 0.2 have the same iteration performance. It implies that skipping some communication will not affect the conver-gence rate. In addition, as shown in Fig. 1, these ATC-based algorithms achieve communication acceleration through the pa-rameter p. Through this experiment, we show that local updates can accelerate the communication of ATC-based algorithms. 
+
+5 Conclusion 
+
+We introduced a novel algorithmic framework called Flex-ATC featuring local updates for composite distributed optimiza-tion, which unifies numerous ATC-based algorithms. Leverag-ing this ATC framework, we conducted a unified convergence analysis and established both sublinear and linear convergence rates under general convexity and strong convexity, respectively. Importantly, the convergence stepsize condition of FlexATC re-mains independent of both the network topology and the num-ber of local updates. Moreover, we demonstrated that the estab-lished linear convergence rate is decoupled, with the function component aligning with the centralized proximal gradient de-scent algorithm. Additionally, we provided the first theoretical evidence that probabilistic local updates significantly accelerate communication for ATC-based distributed algorithms. 
+
+References 
+
+Alghunaim, S. A. (2024). Local exact-diffusion for decentralized optimization and learning, IEEE Transactions on Automatic Control 69 (11): 7371– 7386. Alghunaim, S. A., Ryu, E. K., Yuan, K. & Sayed, A. H. (2020). Decentralized proximal gradient algorithms with linear convergence rates, IEEE Transactions on Automatic Control 66 (6): 2787–2794. Bertsekas, D. P. (2015). Convex Optimization Algorithms , Athena Scientific. Chang, C.-C. & Lin, C.-J. (2011). Libsvm: A library for support vector machines, ACM Transactions on Intelligent Systems and Technology 
+
+2(3): 27. Combettes, P. L. & Wajs, V. R. (2005). Signal recovery by proximal forward-backward splitting, Multiscale modeling & simulation 4(4): 1168–1200. Condat, L. & Richt´ arik, P. (2023). Randprox: Primal-dual optimization algorithms with randomized proximal updates, International Conference on Learning Representations .Guo, L., Shi, X., Cao, J. & Wang, Z. (2023). Decentralized inexact proximal gradient method with network-independent stepsizes for convex composite optimization, IEEE Transactions on Signal Processing 
+
+71 : 786–801. Guo, L., Shi, X., Yang, S. & Cao, J. (2024). Disa: A dual inexact splitting algorithm for distributed convex composite optimization, IEEE Transactions on Automatic Control 69 (5): 2995–3010. Guo, L., Wang, L., Shi, X. & Cao, J. (2024). A proximal gradient method with probabilistic multi-gossip communications for decentralized composite optimization, arXiv preprint arXiv:2312.11861 .Li, Z., Shi, W. & Yan, M. (2019). A decentralized proximal-gradient method with network independent step-sizes and separated convergence rates, 
+
+IEEE Transactions on Signal Processing 67 (17): 4494–4506. Liang, S., Wang, L. & Yin, G. (2019). Exponential convergence of distributed primal–dual convex optimization algorithm without strong convexity, 
+
+Automatica 105 : 298–306. Liu, Y., Lin, T., Koloskova, A. & Stich, S. U. (2024). Decentralized gradient tracking with local steps, Optimization Methods and Software .Mishchenko, K., Malinovsky, G., Stich, S. & Richt´ arik, P. (2022). Proxskip: Yes! local gradient steps provably lead to communication acceleration! finally!, International Conference on Machine Learning ,PMLR, pp. 15750–15769. Nedi´ c, A. (2015). Convergence rate of distributed averaging dynamics and optimization in networks, Foundations and Trends® in Systems and Control 2(1): 1–100. Nedi´ c, A., Olshevsky, A. & Rabbat, M. G. (2018). Network topology and communication-computation tradeoffs in decentralized optimization, 
+
+Proceedings of the IEEE 106 (5): 953–976. Nedic, A., Olshevsky, A. & Shi, W. (2017). Achieving geometric convergence for distributed optimization over time-varying graphs, SIAM Journal on Optimization 27 (4): 2597–2633. Nedi´ c, A., Olshevsky, A., Shi, W. & Uribe, C. A. (2017). Geometrically convergent distributed optimization with uncoordinated step-sizes, 
+
+American Control Conference , IEEE, pp. 3950–3955. Nedi´ c, A. & Ozdaglar, A. (2009). Distributed subgradient methods for multi-agent optimization, IEEE Transactions on Automatic Control 54 (1): 48– 61. Nesterov, Y. (2013). Gradient methods for minimizing composite functions, 
+
+Mathematical Programming 140 (1): 125–161. Nguyen, E. D. H., Alghunaim, S. A., Yuan, K. & Uribe, C. A. (2023). On the performance of gradient tracking with local updates, IEEE Conference on Decision and Control , IEEE, pp. 4309–4313. Qu, G. & Li, N. (2017). Harnessing smoothness to accelerate distributed optimization, IEEE Transactions on Control of Network Systems 
+
+5(3): 1245–1260. Robbins, H. & Siegmund, D. (1971). A convergence theorem for nonnegative almost supermartingales and some applications, Optimizing Methods in Statistics pp. 233–257. Scaman, K., Bach, F., Bubeck, S., Lee, Y. T. & Massouli´ e, L. (2017). Optimal algorithms for smooth and strongly convex distributed optimization in networks, International Conference on Machine Learning , PMLR, pp. 3027–3036. Shi, C.-X. & Yang, G.-H. (2018). Augmented lagrange algorithms for distributed optimization over multi-agent networks via edge-based method, Automatica 94 : 55–62. Shi, W., Ling, Q., Wu, G. & Yin, W. (2015a). Extra: An exact first-order algorithm for decentralized consensus optimization, SIAM Journal on Optimization 25 (2): 944–966. Shi, W., Ling, Q., Wu, G. & Yin, W. (2015b). A proximal gradient algorithm for decentralized composite optimization, IEEE Transactions on Signal Processing 63 (22): 6013–6023. Song, Z., Shi, L., Pu, S. & Yan, M. (2024). Optimal gradient tracking for decentralized optimization, Mathematical Programming 207 (1): 1–53. Sun, Y., Scutari, G. & Daneshmand, A. (2022). Distributed optimization based on gradient tracking revisited: Enhancing convergence rate via surrogation, SIAM Journal on Optimization 32 (2): 354–385. Tang, H., Lian, X., Yan, M., Zhang, C. & Liu, J. (2018). D2: Decentralized training over decentralized data, International Conference on Machine Learning , PMLR, pp. 4848–4856. Xu, J., Tian, Y., Sun, Y. & Scutari, G. (2021). Distributed algorithms for composite optimization: Unified framework and convergence analysis, 
+
+IEEE Transactions on Signal Processing 69 : 3555–3570. Xu, J., Zhu, S., Soh, Y. C. & Xie, L. (2015). Augmented distributed gradient methods for multi-agent optimization under uncoordinated constant stepsizes, IEEE Conference on Decision and Control , IEEE, pp. 2055– 2060. Yuan, K., Alghunaim, S. A. & Huang, X. (2023). Removing data heterogeneity influence enhances network topology dependence of decentralized sgd, 
+
+Journal of Machine Learning Research 24 (280): 1–53. Yuan, K., Ling, Q. & Yin, W. (2016). On the convergence of decentralized gradient descent, SIAM Journal on Optimization 26 (3): 1835–1854. Yuan, K., Ying, B., Zhao, X. & Sayed, A. H. (2018). Exact diffusion for distributed optimization and learning—part i: Algorithm development, 
+
+IEEE Transactions on Signal Processing 67 (3): 708–723. 
+
+8

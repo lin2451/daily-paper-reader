@@ -1,0 +1,1939 @@
+Title: Energy Efficient Federated Learning with Hyperdimensional Computing over Wireless Communication Networks
+
+URL Source: https://arxiv.org/pdf/2602.21949v1
+
+Published Time: Thu, 26 Feb 2026 02:01:26 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Energy Efficient Federated Learning with Hyperdimensional Computing over Wireless Communication Networks 
+
+Yahao Ding, Yinchao Yang, Jiaxiang Wang, Zhaohui Yang, Dusit Niyato, Fellow, IEEE, Zhu Han, Fellow, IEEE, and Mohammad Shikh-Bahaei, Senior Member, IEEE 
+
+Abstract—In this paper, we investigate a problem of mini-mizing total energy consumption for secure federated learning (FL) over wireless edge networks. To address the high computa-tional cost and privacy challenges in conventional FL with neu-ral networks (NN) for resource-constrained users, we propose a novel FL with hyperdimensional computing and differential privacy (FL-HDC-DP) framework. In the considered model, each edge user employs hyperdimensional computing (HDC) for local training, which replaces complex neural updates with simple hypervector operations, and applies differential privacy (DP) noise to protect transmitted model information. We optimize the total energy of computation and communication under both latency and privacy constraints. We formulate the problem as an optimization that minimizes the total energy of all users by jointly allocating HDC dimension, transmission time, system bandwidth, transmit power, and CPU frequency. To solve this problem, a sigmoid-variant function is proposed to characterize the relationship between the HDC dimension and the convergence rounds required to reach a target accuracy. Based on this model, we develop two alternating optimization algorithms, where closed-form expressions for time, frequency, bandwidth, and power allocations are derived at each iteration. Since the iterative algorithm requires a feasible initialization, we construct a feasibility problem and obtain feasible initial resource parameters by solving a per round transmission time minimization problem. Simulation results demonstrate that the proposed FL-HDC-DP framework achieves up to 83.3% total energy reduction compared with the baseline, while attaining about 90% accuracy in approximately 3.5 × fewer communication rounds than the NN baseline. Index Terms—Federated learning, hyperdimensional com-puting, differential privacy, resource allocation, energy effi-ciency. 
+
+I. Introduction In the contemporary digital era, the proliferation of billions of intelligent edge devices, such as smartphones, 
+
+Yahao Ding, Yinchao Yang, Jiaxiang Wang, and Mohammad Shikh-Bahaei are with the Department of Engineering, King’s College London, London, UK (emails: yahao.ding@kcl.ac.uk; yinchao.yang@kcl.ac.uk; jiaxiang.wang@kcl.ac.uk; m.sbahaei@kcl.ac.uk). Zhaohui Yang is with the College of Information Science and Electronic Engineering, Zhejiang University, Hangzhou, Zhejiang 310027, China, and Zhejiang Provincial Key Lab of Information Processing, Communication and Networking (IPCAN), Hangzhou, Zhejiang, 310007, China (email: yang_zhaohui@zju.edu.cn). Dusit Niyato is with College of Computing and Data Sci-ence, Nanyang Technological University, Singapore (e-mail: dniy-ato@ntu.edu.sg). Zhu Han is with the Department of Electrical and Computer Engineering at the University of Houston, Houston TX 77004, USA, and also with the Department of Computer Science and Engineering, Kyung Hee University, Seoul 446701, South Korea (e-mail: hanzhu22@gmail.com). 
+
+Internet of things (IoT) devices, and wearable technol-ogy, is generating an unprecedented volume of data at the network edge. This trend has catalyzed the rise of edge artificial intelligence (AI), a paradigm focused on processing data and delivering intelligent services locally on these devices. To leverage collective intelligence of this decentralized data while preserving user privacy, federated learning (FL) has emerged as a key enabling technology [1], [2]. By training models locally on each device and sharing only anonymized model updates, FL obviates the need to transfer sensitive raw data to a central server, representing a transformative shift in privacy-preserving collaborative machine learning (ML) [3]–[5]. However, despite FL great promise, two core chal-lenges constrain its large-scale, real-world deployment. The first is the fundamental bottleneck of energy con-sumption. Edge devices are typically resource-constrained and battery-powered, yet FL process is inherently energy-intensive due to both local computation, especially when training complex neural network (NN) models, and wire-less communication. The second is the core concern of privacy leakage [6]. Standard FL is not completely secure, as model updates are still vulnerable to inference attacks that could reveal sensitive user information, necessitating robust, quantifiable privacy guarantees. To address the high computational energy challenge posed by complex models like NN, hyperdimensional com-puting (HDC) offers a compelling solution as an emerging, brain-inspired computing paradigm. HDC operates by representing and manipulating information in a vector space with thousands of dimensions. Unlike NN model, which is predicated on iterative backpropagation and floating-point arithmetic, HDC relies on a set of simple and computationally lightweight vector operations. These core operations include bundling, binding, and permutation, which are highly parallelizable and hardware-friendly. Concurrently, to address the privacy leakage risks in FL, differential privacy (DP) has been established as the canonical approach for providing rigorous, mathematically provable privacy guarantees by adding controlled noise. Existing research has explored these challenges from various angles, yet a unified framework that co-optimizes all key metrics remains elusive. In the domain of resource efficiency optimization, the research has bifurcated into optimizing traditional FL and introducing novel compu-tational paradigms. For traditional frameworks, the efforts 
+
+> arXiv:2602.21949v1 [cs.DC] 25 Feb 2026
+
+have focused on minimizing energy consumption. For in-stance, the work in [7] proposed a comprehensive joint op-timization problem, collaboratively adjusting transmission time, power, bandwidth, and computation frequency. The authors of [8] similarly focused on minimizing total energy by jointly optimizing weight quantization and wireless resource allocation. Other works have targeted reducing communication overhead and latency. For example, the authors of [9] and [10] demonstrated improved communi-cation efficiency through bipolarized hypervectors and the novel HyperFeel framework, respectively. Furthermore, the study in [11] further combined federated split learn-ing with HDC, designing an algorithm to minimize the maximum user transmission time. The research in privacy and security is equally critical. To defend against threats like gradient leakage attacks, the work in [5] proposed a scheme to minimize total privacy leakage by jointly optimizing resource allocation, the selection of layers for uploading, and DP noise. HDC introduces its own unique security considerations. The work in [12] thoroughly investigated security risks caused by reversible encoding of HDC and designed a framework with sparse encoding and a DP-enhanced model to achieve efficient and secure private learning. Furthermore, balanc-ing privacy and accuracy in continuous learning is a key challenge. The FedHDPrivacy framework [13] was designed specifically for this, actively monitoring and adding only the necessary noise to maintain model accuracy over multiple rounds. More advanced and systemic designs have also emerged. The HyDREA system [14] focused on noisy FL scenarios, achieving robustness and high efficiency by adaptively adjusting model bitwidth based on the signal-to-noise ratio. From a hardware perspective, the authors of [15] addressed the energy efficiency bottleneck in HDC pro-cessors by generating hypervectors on-the-fly instead of relying on memory storage. More broadly, systemic studies and future-looking frameworks are being developed. For example, the authors of [16] conducted a systematic study on aggregation strategies and parameter impacts in HDC-FL. The study in [17] explored the fusion of large AI models and HDC within the context of integrated learning and communication (ILAC) for future sixth generation (6G) networks, demonstrating how to balance learning performance with communication efficiency. Therefore, a clear research gap exists: there is a lack of a unified framework that jointly models and co-optimizes the computational efficiency of HDC, the privacy guar-antees of DP, as well as system-level computation and communication resources to fundamentally solve the en-ergy consumption problem for FL in wireless edge envi-ronments. To fill this critical gap, this paper proposes a novel framework, FL with HDC and DP (FL-HDC-DP). We specifically design this framework for energy-constrained wireless edge networks, enabling the users to leverage computational efficiency of HDC for local model training while obtaining robust privacy protection through mathematical rigor of DP. The central objective of our work is to minimize the total energy consumption of all participating users via a joint optimization strategy. The contributions of the paper can be summarized as follows:  
+
+> •
+
+We propose an FL-HDC-DP framework designed for edge devices in wireless networks, where the users employ HDC instead of traditional NN for local model training. We analyze effects of HDC dimension, DP noise, and data distribution (independent and identically distributed (IID) vs. non-IID) on model performance.  
+
+> •
+
+We formulate a joint optimization problem aimed at minimizing total energy consumption, encompassing both local computation and wireless communication. To the best of our knowledge, this is the first work to jointly co-optimize the HDC model dimension together with system resources, including transmis-sion time, transmit power, bandwidth, and CPU frequency. To solve this problem, we first develop a sigmoid-variant model to capture the relationship between HDC dimension and the required conver-gence rounds. Based on the formulated model, we solve the problem via an alternating algorithm, where the closed-form solution is obtained at each iteration.  
+
+> •
+
+To obtain a feasible solution for the total energy minimization problem, we construct a per round transmission time minimization problem. Starting from a given initial HDC dimension, a closed-form feasibility criterion is proposed using the maximum admissible per round communication time and the minimum required bandwidth. If feasible, the initial bandwidth allocation is obtained by solving a convex transmission time minimization via a bisection search over the associated Lagrange multiplier, followed by closed-form computation of the corresponding trans-mission times and CPU frequencies.  
+
+> •
+
+Simulation results indicate that the proposed FL-HDC-DP achieves approximately 90% accuracy while converging about five times faster than the NN baseline (FL-NN-DP); equivalently, to reach the same accuracy, FL-NN-DP requires about 3.5× as many epochs as FL-HDC-DP. Moreover, the proposed op-timization method, which jointly optimizes model dimension, transmission time, power, and CPU fre-quency, reduces total energy consumption by up to 83.3% compared to the baseline. The rest of the paper is organized as follows. The preliminary concepts of the HDC model and DP are illustrated in Section II. The system model is described in Section III. The optimization problem is formulated in Section IV, and solution processes are given in Section V. Section VI provides a method to find a feasible original solution of the proposed optimization problem. Section VII describes the simulation results and analysis of the Position HV 0              
+
+> Position HV 783
+> Position HV 405
+> Value HV 0
+> Value HV 253
+> (Position, Value)
+> (405,253) (Position, Value)
+> (0,0)
+> Value HV 255
+> Item Memory
+> Position HV
+> Value HV
+> Sample HV
+> Class HV Label (0)
+> Class HV Label (1)
+> Class HV Label (9)
+> Associative Memory
+> Sample HV Label
+> Sample HV Label
+> Sample HV Label
+> Encoded Samples
+> Training
+> Class HV Label (9)
+> Inference Result
+> Inference
+> Similarity Check
+> Retraining
+> Position HV
+> Value HV
+> Position HV
+> Value HV Figure 1. Overview of HDC model encoding, training, inference, and retraining.
+
+proposed approach. Finally, the conclusions are drawn in Section VIII. II. Preliminaries A. Notions of HDC HDC is a brain-inspired computing paradigm that rep-resents information using a high-dimensional hypervector (HV) [18]. Its learning and inference mainly rely on simple, dimension-preserving operations together with similarity-based retrieval, which yields fast training, hardware-friendly computation, and robustness to noise. An HV is a d-dimensional vector with d typically on the order of 
+
+10 3–10 4 [19], and we use bipolar HVs, i.e., H ∈ { +1 , −1}d.Due to the high dimensionality, randomly generated HVs are quasi-orthogonal with high probability [20], providing a stable basis for encoding and comparison. HDC manip-ulates HVs via three key algebraic operations: bundling (addition) aggregates multiple HVs into a single HV to represent collective information, binding (multiplication) associates two HVs to encode their relationship into a new HV, and permutation applies a fixed reordering to inject positional or sequential structure while maintaining similarity-related properties. The framework utilizes two memory components: an item memory (IM) that stores fixed, orthogonal HVs for basic symbols, and an associative memory (AM) that stores class-specific prototypes. During inference, the query HV is compared against these proto-types to determine the nearest match for classification. B. HDC Model Development HDC model development consists of encoding, training, inference, and optional retraining. The detailed processes are illustrated in Fig. 1. We adopt record-based encoding [21] to map an input sample with S pixels {(s, a s)}Ss=1 
+
+into a d-dimensional bipolar HV. Specifically, a position item memory assigns each pixel position s a random HV, denoted by position HV Ps ∈ { +1 , −1}d, while a value item memory maps the pixel value as to a value HV V (as) ∈ { +1 , −1}d. The sample HV is then formed by binding position and value HVs at each position and bundling across all positions: 
+
+H =
+
+> S
+
+∑
+
+> s=1
+
+(
+
+Ps ⊙ V (as)
+
+)
+
+, (1) where ⊙ denotes the Hadamard product. During training, class HVs An are obtained by adding all encoded HVs of the same class n, as given by 
+
+An = ∑ 
+
+> ℓ:yℓ=n
+
+Hℓ, (2) where Hℓ denotes the encoded HV of the ℓ-th training sample and yℓ ∈ { 1, . . . , N } is its ground-truth class label. All class HVs constitute the AM A = {A1, . . . , AN }.
+
+For inference, a test sample is encoded into a query HV 
+
+Hq , and the predicted label is determined by maximum similarity, 
+
+ˆy = arg max   
+
+> n∈{ 1,...,N }
+
+sim( Hq , An) , (3) where sim( ·, ·) can be cosine similarity or Hamming distance. To further improve the accuracy of the HDC model, retraining can be applied to the AM over several additional iterations on the training set. If the prediction is correct, no adjustment is necessary. If the prediction is incorrect, i.e., ˆy̸ = y⋆ where y⋆ is the ground-truth class, the AM can be refined by weakening the predicted class and strengthening the true class: 
+
+Aˆy = Aˆy − η Hq ,
+
+Ay⋆ = Ay⋆ + η Hq , (4) where η is the learning rate. C. Preliminary Concepts of DP and zCDP DP provides a rigorous framework for quantifying pri-vacy loss [22]. A randomized mechanism M satisfies (ϵ, δ )-DP if for adjacent datasets D1, D 2:
+
+Pr [M(D1) ∈ L] ≤ eϵ Pr [M(D2) ∈ L] + δ, (5) where ϵ is the privacy budget and δ is the failure probability. The Gaussian mechanism achieves this by adding noise proportional to the ℓ2-sensitivity, ∆ =max D1∼D2 ∥M (D1) − M (D2)∥2. However, for multiple communication rounds, standard (ϵ, δ ) composition is loose. We therefore adopt ρ-zCDP, which yields tighter bounds. A mechanism is ρ-zCDP if the Rényi divergence between outputs on adjacent datasets is bounded linearly User U User 2 User 1              
+
+> Dataset
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Global AM
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Local AM
+> Class HV Label
+> Class HV
+> Class HV
+> Label
+> Local AM
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Local AM
+> Class HV Label
+> Class HV Label
+> Class HV Label
+> Local AM
+> Label
+> BS
+> Class HVs aggregation and update
+> Eavesdropper
+
+Figure 2. Illustration of the considered model for FL-HDC over wireless communication networks. 
+
+by ρ [23]. A key advantage of zCDP is its additive composition: for J rounds, the total privacy cost is 
+
+ρtot = ∑Jj=1 ρj .We calibrate the Gaussian noise variance for zCDP using σ2 = ∆2/(2 ρ). The final cumulative guarantee can be converted back to standard (ϵ, δ )-DP via: ε(δ) = ρtot + 2 
+
+√
+
+ρtot ln (1/δ ). (6) III. System Model We consider a single-cell network with one base sta-tion (BS) serving U users, as shown in Fig. 2. They cooperatively train an FL model over wireless networks for classification inference [11]. To reduce computational burden on resource-constrained edge devices and to pro-tect user privacy against an honest-but-curious server and external eavesdroppers, we adopt a secure FL framework that combines HDC with DP, named FL-HDC-DP. Let 
+
+U = {1, 2, . . . , U } denote the user set. User i ∈ U holds a private dataset Di = {(xi,ℓ , y i,ℓ )}Di 
+
+> ℓ=1
+
+where xi,ℓ is the ℓ-th input sample and yi,ℓ ∈ { 1, . . . , N } is its class label. Each sample is encoded into a bipolar HV Hi,ℓ ∈ { +1 , −1}d
+
+using the record-based encoder introduced in Section II. Moreover, the main notations are listed in Table I. A. DP Mechanism and Sensitivity in FL-HDC The FL-HDC-DP framework ensures privacy in FL by incorporating DP into the exchange of class HV between clients and the server. Without a privacy-preserving mech-anism, this shared information is vulnerable to model inversion and membership inference attacks, which could reveal sensitive training data. To mitigate these risks, Gaussian noise is added to the HDC models, with the variance of the noise calculated based on key privacy pa-rameters: the privacy budget ϵ, the privacy loss threshold 
+
+δ, and the sensitivity of the function ∆.In our work, we apply zCDP [23] to FL-HDC. The n-th class HV held by user i at round j is denoted by Aji,n ∈ Rd,and AM of user i is denoted as Aji = {Aji, 1, . . . , Aji,N }. Our DP guarantee is defined with record-level add or remove adjacency, i.e., one sample may be added or deleted between adjacent datasets. 
+
+Table I Main Notations Symbol Description 
+
+Ai,n The n-th class HV held by user i
+
+Ai The AM of user iB Total system bandwidth 
+
+Di Number of data samples for user i
+
+DHDC Candidate set of HDC dimensions 
+
+ei Inference error rate of user iE Total energy consumption of all users 
+
+gi Channel power gain for user i
+
+Hi,ℓ ℓ-th encoded HV of user iJ Total number of communication rounds 
+
+Jd Rounds required for convergence with dimension dκ Clipping bound for HVs 
+
+N0 Noise power spectral density 
+
+Ni Number of classes in the AM of user iPmax Maximum transmit power 
+
+ri Uplink transmission rate of user iσj Standard deviation of DP noise in round jT Total completion time for FL training 
+
+U Total number of users 
+
+δ Privacy loss threshold 
+
+ϵ Privacy budget in DP 
+
+d HDC dimension 
+
+bi Bandwidth allocation of user ipi Transmit power of user ifi CPU frequency of user iti Transmission time of user i
+
+Assumption 1 (HDC clipping). For any user i and sample 
+
+ℓ, the encoded bipolar HV is ℓ2-clipped before any local aggregation or communication [24]: 
+
+Hclip  
+
+> i,ℓ
+
+= Hi,ℓ · min 
+
+{
+
+1, κ
+
+∥Hi,ℓ ∥2
+
+}
+
+, ∥∥Hclip 
+
+> i,ℓ
+
+∥∥2 ≤ κ. (7) Before clipping, ∥∥Hi,ℓ 
+
+∥∥2 = √d and after clipping equals 
+
+κ.Two conditions should be analyzed separately: 1) One-pass training ( j = 1 ): Each user performs a single pass of encoding and aggregation, summing clipped sample hypervectors with the same label to form class HVs: 
+
+A1 
+
+> i,n
+
+= ∑ 
+
+> ℓ:yi,ℓ =n
+
+Hclip  
+
+> i,ℓ
+
+. (8) Under sample-level add or remove adjacency, only one sample differs between neighboring datasets; hence, the ℓ2-sensitivity of the local AM sent in round 1 is ∆1 = κ. (9) 2) Retraining rounds ( j ≥ 2): In round j ≥ 2, user i
+
+compares each Hclip  
+
+> i,ℓ
+
+with the global AM. If a sample is misclassified with predicted label ˆyi,ℓ ̸ = yi,ℓ , user 
+
+i updates two classes: 
+
+Aji,y i,ℓ = Aji,y i,ℓ + Hclip  
+
+> i,ℓ
+
+,
+
+Aji, ˆyi,ℓ = Aji, ˆyi,ℓ − Hclip  
+
+> i,ℓ
+
+. (10) A single sample therefore affects at most two class HVs whose norms are bounded by κ, which yields the per-round sensitivity 
+
+∆j = √2 κ, j ≥ 2. (11) Given the sensitivity, the per-round noise required to ensure that the overall J-round mechanism satisfies (ε, δ )-DP is characterized by the following lemma. Lemma 1 (Per-round Gaussian noise to ensure (ε, δ )-DP after J rounds). We calibrate noise using zCDP. Define 
+
+ρmax =
+
+(√ ε + ln(1 /δ ) − √ln(1 /δ )
+
+)2
+
+. (12) Let the sample-level ℓ2-sensitivities be ∆1 = κ for the one-pass round and ∆j = √2 κ for retraining rounds 
+
+j = 2 , . . . , J . Then, to ensure that the overall J-round mechanism satisfies (ε, δ )-DP, the required per-round noise standard deviation added to each coordinate of every class HV Aji,n is 
+
+σj =
+
+
+
+κ
+
+√
+
+J
+
+2 ρmax 
+
+, j = 1 ,
+
+√2 κ
+
+√ J
+
+2 ρmax 
+
+, j = 2 , . . . , J. 
+
+(13) Proof. A Gaussian mechanism with ℓ2-sensitivity ∆ and per-coordinate noise standard deviation σ is ρ =∆2/(2 σ2)-zCDP. Across J rounds, zCDP composes ad-ditively: ρtot = ∑Jj=1 ∆j 2/(2σ2
+
+> j
+
+). With the choice σj =∆j √J/ (2 ρmax ), we obtain ρtot = ρmax . Finally, any 
+
+ρ-zCDP mechanism implies (ε, δ )-DP via ε = ρ +2√ρ ln(1 /δ ). □
+
+B. The Framework of FL-HDC-DP The details of the FL-HDC-DP training process include three steps and the overall procedure is summarized in Algorithm 1: Step 1: Server-side initialization. The BS first generates bipolar HV benchmarks to ensure consistency in the posi-tion HVs and value HVs across all clients. It also initializes a global AM and broadcasts it to all users, together with the training hyperparameters such as learning rate, DP clipping bound, and the number of local passes per round. Step 2: Client-side local training with DP. In the first round, each user encodes all local raw data into sample HVs using Eq. (1), and clips them according to Eq. (7), and then aggregates them according to their class to obtain their local class HVs Ai,n and the local AM Ai.In subsequent rounds, the users perform retraining guided by the received global AM Ajg at the jth round from the server. Specifically, all local sample HVs are compared with each class HV in the global AM Ajg using the cosine similarity measure. For incorrectly predicted cases, the class HVs are updated according to (4). After encoding or retraining, the resulting Aj+1  
+
+> i
+
+is added with DP noise as specified as follows: 
+
+˜Aj+1  
+
+> i
+
+= Aj+1  
+
+> i
+
++ nj+1  
+
+> i
+
+. (14) The noise standard deviation of nj+1  
+
+> i
+
+is calculated accord-ing to Eq. (13). Finally, local AMs are transmitted to the BS. Step 3: Server aggregation and broadcast. Upon receiv-ing the DP-protected local AMs from all users in U, the BS Algorithm 1 FL-HDC-DP Algorithm Input:User set U; class set N ; user dataset Di, round 
+
+J, learning rate η; clip bound κ; noise standard deviation {σj }Jj=1 .Output: Final global AM AJg . 
+
+> 1:
+
+for j = 0 to J − 1 do  
+
+> 2:
+
+BS broadcasts global AM Ajg and bipolar HV benchmarks to all users.  
+
+> 3:
+
+for user i ∈ U in parallel do  
+
+> 4:
+
+if j = 0 then  
+
+> 5:
+
+Encode local data to obtain Hi,ℓ and clip them according to Eq.(7).  
+
+> 6:
+
+Aggregate all HVs to obtain local AM Ai. 
+
+> 7:
+
+else  
+
+> 8:
+
+Perform retraining guided by Ajg to update the local AM according to Eq.(4), yielding Aj+1  
+
+> i
+
+. 
+
+> 9:
+
+end if  
+
+> 10:
+
+Add DP noise to Ai: ˜Aj+1  
+
+> i
+
+= Aj+1  
+
+> i
+
++ nj+1  
+
+> i
+
+. 
+
+> 11:
+
+Transmit ˜Aj+1  
+
+> i
+
+to the BS.  
+
+> 12:
+
+end for Server-side Aggregation:  
+
+> 13:
+
+Receive { ˜Aj+1  
+
+> i
+
+}Ui=1 from all users.  
+
+> 14:
+
+Conduct element-wise average to update the global AM: Aj+1  
+
+> g
+
+= 1
+
+> U
+
+∑Ui=1 ˜Aj+1  
+
+> i
+
+. 
+
+> 15:
+
+Broadcast Aj+1  
+
+> g
+
+to all users for the next round.  
+
+> 16:
+
+end for aggregates them by calculating the element-wise average of the class HV to obtain the updated global AM, as given by 
+
+Aj+1  
+
+> g
+
+=
+
+∑Ui=1 ˜Aj+1 
+
+> i
+
+U (15) The updated global AM Aj+1  
+
+> g
+
+is then broadcast to all users. Steps 2–3 repeat until the desired accuracy is achieved or the global loss converges. C. Transmission Model After local computing, the users upload their DP-added AMs to the BS for aggregation. We adopt frequency division multiple access (FDMA). The achievable uplink transmission rate between user i and the server with the allocated bandwidth is given by [25] 
+
+ri = bi log 2
+
+(
+
+1 + pigi
+
+N0bi
+
+)
+
+, (16) where N0 denotes the noise power spectral density, bi is the bandwidth allocated to user i, pi is the user’s transmit power, and gi is the end-to-end channel power gain. The per-round bandwidth allocations satisfy ∑ 
+
+> i∈U
+
+bi ≤ B and 
+
+bi ≥ 0, where B is the total bandwidth. The corresponding transmission time is given by: 
+
+ti = Nidri
+
+. (17) where Nid be the payload size of the AMs update for user 
+
+i, Ni is the number of classes in the AM of user i, and d
+
+is the HDC dimension. D. Energy Consumption Model In our network, we focus on the energy consumption of each user during the FL training phase, which can be divided into two primary components: a) local com-putation, including encoding the dataset and HDC model retraining by using its local dataset and the received global AM from server, and b) wireless communication, which involves transmitting the updated local AM. 1) Energy Consumption of Computation Model: Dur-ing the FL training process, in the first round, each user encodes the entire local dataset into HVs and aggregates HVs of the same class to construct the local AM. In the subsequent rounds, the user retrains the HDC model using the encoded HVs together with the global AM re-ceived from the server. These procedures are implemented through simple operations such as bundling, binding, and permutation. Let Cenc , Cagg , Csim , and Cup denote the CPU cycles per dimension required for encoding, first‑round aggregation, similarity comparison, and error‑driven update, respec-tively. Let Di denote the total number of data sample for user i, d is HV dimension, fi is CPU frequency, γ is the switched‑capacitance coefficient, ei = Mi 
+
+> Di
+
+is inference error rate, and Mi is the number of misclassifications per round.  
+
+> •
+
+Round 1 (Encoding & Aggregation): Define the per‑dimension initialization CPU cycles: C(init ) 
+
+> i
+
+=
+
+Cenc + Cagg , so that the latency and energy are given by [26] 
+
+τ 1 
+
+> i
+
+= Di d C (init )
+
+> i
+
+fi
+
+, ∀i ∈ U , (18) 
+
+E1 
+
+> i
+
+= γ D i d C (init ) 
+
+> i
+
+f 2 
+
+> i
+
+. (19) where Di d C (init ) 
+
+> i
+
+is the total CPU cycles.  
+
+> •
+
+Rounds J ≥ 2 (Retraining): Define the per‑dimension retraining CPU cycles: C(ret ) 
+
+> i
+
+= Csim + ei Cup . Then, the time and energy consumption at user i for re-training the HDC model can be expressed as follows: 
+
+τ (ret ) 
+
+> i
+
+= Di d C (ret )
+
+> i
+
+fi
+
+, ∀i ∈ U , (20) 
+
+E(ret ) 
+
+> i
+
+= γ D i d C (ret ) 
+
+> i
+
+f 2 
+
+> i
+
+. (21) Eq. (21) captures the cost of similarity checks plus inference error‑driven updates, with inference error-rate ei.2) Energy Consumption of Transmission Model: After local computation, users transmit their local AM to the server for aggregation via FDMA. Based on Eqs. (16) and (17), the energy consumption for data transmission can be expressed as 
+
+E(trans ) 
+
+> i
+
+= ti pi, (22) where pi is the transmission power. 3) Total Energy Consumption: The total energy con-sumption of all users participating in FL is given as 
+
+E =
+
+> U
+
+∑
+
+> i=1
+
+(
+
+E1 
+
+> i
+
++E(trans )
+
+> i
+
+)︸ ︷︷ ︸
+
+> First round energy consumption
+
++ ( J −1) 
+
+> U
+
+∑
+
+> i=1
+
+(
+
+E(ret ) 
+
+> i
+
++E(trans )
+
+> i
+
+)︸ ︷︷ ︸  
+
+> Energy consumption of J−1rounds
+
+,
+
+=
+
+> U
+
+∑
+
+> i=1
+
+γD idC (init ) 
+
+> i
+
+f 2 
+
+> i
+
++( J −1) γD idC (ret ) 
+
+> i
+
+f 2 
+
+> i
+
++Jt ipi, (23) where J is the total number of communication rounds. Since the operations in the first round differ from those in the subsequent rounds, the energy consumption is calculated separately. The former of Eq. (23) represents the energy consumption of all users in the first round, while the latter denotes the energy consumption of all users in the remaining J − 1 rounds. Hereinafter, the total time needed for completing the execution of the FL algorithm is called the completion time. The completion time of each user includes the local computation time and transmission time, based on Eqs. (18) and (20), the completion time of user i will be 
+
+Ti = τ 1 
+
+> i
+
++ ti
+
+︸ ︷︷ ︸ 
+
+> First round time cost
+
++ ( J − 1) 
+
+(
+
+τ (ret ) 
+
+> i
+
++ ti
+
+)︸ ︷︷ ︸ 
+
+> J−1rounds time cost
+
+,
+
+=
+
+Did
+
+(
+
+C(init ) 
+
+> i
+
++ ( J − 1) C(ret )
+
+> i
+
+)
+
+fi
+
++ J Nidri
+
+. (24) IV. Problem Formulation In this section, we formulate the total energy con-sumption minimization problem of all users for secure FL-HDC, which jointly considers HDC dimension, trans-mission time, bandwidth, transmit power, and computing frequency. The optimization problem is given by 
+
+min 
+
+> d, t,b,p,f
+
+E (25) s.t. 
+
+Did
+
+(
+
+C(init ) 
+
+> i
+
++( Jd −1) C(ret )
+
+> i
+
+)
+
+fi
+
++Jdti ≤ T, ∀i ∈ U ,
+
+(25a) 
+
+tibi log 2
+
+(
+
+1 + pigi
+
+N0bi
+
+)
+
+≥ Nid, ∀i ∈ U , (25b) 
+
+> K
+
+∑
+
+> i=1
+
+bi ≤ B, (25c) 
+
+d ∈ D HDC , (25d) 
+
+0 ≤ pi ≤ Pmax , ∀i ∈ U , (25e) 
+
+0 ≤ fi ≤ f max  
+
+> i
+
+, ∀i ∈ U , (25f) 
+
+bi ≥ 0, ∀i ∈ U, (25g) 
+
+ti ≥ 0, ∀i ∈ U , (25h) where t = [t1, . . . , t U ]T , b = [b1, . . . , b U ]T , p =[p1, . . . , p U ]T . Jd represents the number of communication rounds required for a secure HDC-FL model of dimension 
+
+d to achieve the desired accuracy. Since d is optimized in Problem (25), we use Jd to explicitly denote the required training rounds as a function of d. Constraint (25a) ensures that the combined local execution time and transmission time for each user does not exceed the maximum com-pletion time T for the whole FL algorithm. Since the FL algorithm is performed in parallel and the server updates the global AM only after receiving the uploaded local AMs from all users, this constraint synchronizes the parallel process. Constraint (25b) indicates the restriction of the data transmission, while constraint (25c) limits the sum of all allocated bandwidth to be smaller than the total amount of bandwidth. The discrete set of admissible HDC dimensions is given by (25d). Furthermore, constraints (25e) and (25f) limit the transmission power of each user and the maximum local computation frequency, respectively. Lastly, constraints (25g) and (25h) define the type of variable. V. Algorithm Design To solve the optimization of dimension, bandwidth, power, and time, we propose an alternating optimization scheme that incorporates the HDC dimension. Initially, we characterize the relationship between the required conver-gence rounds Jd and HDC dimension d. Subsequently, the optimization problem is decomposed into two iteratively subproblems: subproblem 1 focuses on optimizing the dimension d given the fixed resource allocation (t, b, p, f ),and subproblem 2 focuses on optimizing resource allo-cation given d. By alternating between the two sets of variables, this scheme efficiently converges to the globally optimal solution (d∗, b∗, p∗, t∗, f ∗) that jointly minimizes the total energy. A. Empirical Modeling of Convergence Rounds In the total energy minimization problem (25), the number of communication rounds, Jd, is a critical coupling variable that links the HDC dimension d to both com-putation and communication energy consumption. While increasing the dimension d enhances model robustness and accelerates convergence, this improvement is observed to be non-linear and subject to saturation at high dimensions. Since deriving an analytical relationship among dimension, privacy, and convergence remains challenging, we develop an empirical model to precisely estimate Jd for any given 
+
+d.This empirical relationship is derived by observing how the convergence rounds Jd vary with dimension d
+
+under different privacy budgets ϵ and target accuracies (Acc target ). Based on the non-linear inverse relationship that asymptotically approaches a lower bound, as con-sistently revealed by multiple independent simulation runs and statistical averaging, we propose the following sigmoid-variant function to continuously approximate the convergence rounds Jd:
+
+Jd(d) = μ + ν
+
+1 + eβ(log d−α) (26) where Jd denotes the total number of communication rounds required to achieve the target accuracy. The coefficients μ, ν, α, and β are obtained via non-linear least squares fitting against the simulated data and depend on the selected Acc target and ϵ. As illustrated in Fig. 5, this model closely captures the actual relationship between d
+
+and Jd.We design this structure of this model to reflect the physical characteristics of HDC: the term involving the exponential function captures the rapid, non-linear perfor-mance gains observed when moving from low to moderate dimensions, while the constant parameter μ represents the minimum limiting number of rounds achievable in the high-dimensional regime. B. Iterative Algorithm The proposed iterative algorithm mainly contains two subproblems at each iteration. Subproblem 1 optimizes the dimension d given the fixed resource allocation ( t, b, p, f ), and subproblem 2 optimizes (t, b, p, f ) based on the obtained d in the previous step. 1) Subproblem 1: HDC Dimension Allocation for Fixed (t, b, p, f ): In this step, problem (25) becomes: 
+
+min 
+
+> d
+> U
+
+∑
+
+> i=1
+
+(Yi − Ri)d + RiJdd + QiJd (27) s.t. 
+
+Did
+
+(
+
+C(init ) 
+
+> i
+
++( Jd −1) C(ret )
+
+> i
+
+)
+
+fi
+
++Jdti ≤ T, ∀i ∈ U ,
+
+(27a) 
+
+d ∈ D HDC . (27b) where the constants Yi = γD iC(init ) 
+
+> i
+
+f 2 
+
+> i
+
+, Ri = γD iC(ret ) 
+
+> i
+
+f 2 
+
+> i
+
+,and Qi = tipi are determined by the fixed resource allo-cation. And we denote Ei(d) = ( Yi − Ri)d + RiJdd + QiJd.To find the optimal d, we relax the discrete constraint (27b) based on (26) and seek the optimal continuous dimension ˜d by setting the first-order derivative of the total energy E(d) with respect to d to zero. The derivative  
+
+> ∂E (d)
+> ∂d
+
+is given by 
+
+∂E (d)
+
+∂d =
+
+> U
+
+∑
+
+> i=1
+
+[( Yi −Ri)+ Ri(J′
+
+> d
+
+(d)d+Jd)+ QiJ′
+
+> d
+
+(d)] , (28) where J′
+
+> d
+
+(d) = ∂J d(d) 
+
+> ∂d
+
+= − νβe β(log d−α)
+
+> d
+
+(1+ eβ(log d−α))2 . Setting the derivative to zero yields the following non-linear equation: 
+
+> U
+
+∑
+
+> i=1
+
+[( Yi −Ri)+ Ri (J′
+
+> d
+
+(d)d+Jd(d))+ QiJ′
+
+> d
+
+(d)] = 0 . (29) We solve Eq. (29) via bisection to obtain candidate stationary points. To guarantee global optimality, we need to evaluate the total energy E(d) at these points as well as at the boundary values determined by Eq. (27a). The optimal continuous dimension ˜d is the one that minimizes 
+
+E(d) among these candidates. Finally, ˜d is projected onto the closest dimension within the discrete feasible set 
+
+DHDC .2) Resource Allocation for Fixed d: In the second stage, the d and Jd are fixed, the problem is to find the optimal parameters (t, b, p, f ) that minimize the total energy. We employ a secondary alternating update scheme, where we alternate between optimizing the uplink time t and optimizing the remaining resources (f , b, p).In the first step of this secondary iteration, the CPU frequency vector f , bandwidth vector b and the power vector p are fixed. Under this assumption, the original joint problem (25) decouples across users and reduces to a linear program in the uplink times t. Specifically, we solve 
+
+min 
+
+> t
+> U
+
+∑
+
+> i=1
+
+piti, (30) s.t. 
+
+Did
+
+(
+
+C(init ) 
+
+> i
+
++( Jd − 1) C(ret )
+
+> i
+
+)
+
+fi
+
++Jdti ≤ T, ∀i ∈ U ,
+
+(30a) 
+
+tibi log 2
+
+(
+
+1 + pigi
+
+N0bi
+
+)
+
+≥ Nid, ∀i ∈ U , (30b) 
+
+ti ≥ 0, ∀i ∈ U , (30c) where for any given d, Nid can be treated as a constant. Because the objective in Eq. (30) is linear and monotoni-cally increasing with respect to t and each rate‐constraint 
+
+bi log 2
+
+(
+
+1 + pi gi 
+
+> N0bi
+
+)
+
+ti ≥ Nid imposes a lower bound: 
+
+tmin  
+
+> i
+
+= Nidbi log 2
+
+(1 + pigi
+
+> N0bi
+
+) , ∀i ∈ U , (31) To minimize the transmission energy in Eq. (30), the optimal time can be derived using Theorem 1. Theorem 1. The optimal solution t⋆ of problem (30) satisfies 
+
+t∗ 
+
+> i
+
+= tmin  
+
+> i
+
+, ∀i ∈ U , (32) where tmin  
+
+> i
+
+is given by (31), provided the feasibility condition tmin  
+
+> i
+
+≤ ¯ti holds for all i, with ¯ti = (T −  
+
+> Did(C(init)
+> i+( Jd−1) C(ret)
+> i)
+> fi
+
+)/ Jd.Proof. The objective in problem (30) is ∑ 
+
+> i
+
+piti, which is strictly increasing in each ti since pi > 0. Constraint (30b) implies the lower bound ti ≥ tmin  
+
+> i
+
+in Eq. (31). Thus any ti > tmin  
+
+> i
+
+can be decreased to tmin  
+
+> i
+
+while preserving feasibility and strictly reducing the objective, contradicting optimality. Hence t⋆i = tmin  
+
+> i
+
+componentwise. The stated feasibility condition ensures that Eq. (30a) is not violated at tmin  
+
+> i
+
+.In the second sub-step, given (t, d ), we solve the 
+
+(f , b, p). The optimization problem (25) can be rewritten as 
+
+min  
+
+> f,b,p
+> U
+
+∑
+
+> i=1
+
+γZ idf 2 
+
+> i
+
++ ( Jd − 1) γG idf 2 
+
+> i
+
++ Jdtipi, (33) s.t. Zid + ( Jd − 1) Gidfi
+
++ Jdti ≤ T, ∀i ∈ U , (33a) 
+
+tibi log 2
+
+(
+
+1 + gi pi
+
+N0bi
+
+)
+
+≥ Nid, ∀i ∈ U , (33b) 
+
+> U
+
+∑
+
+> i=1
+
+bi ≤ B, ∀i ∈ U , (33c) 
+
+0 ≤ pi ≤ pmax  
+
+> i
+
+, ∀i ∈ U , (33d) 
+
+0 ≤ fi ≤ f max  
+
+> i
+
+, ∀i ∈ U , (33e) where Zi = DiC(init ) 
+
+> i
+
+and Gi = DiC(ret ) 
+
+> i
+
+are con-stants. Since the objective function and constraints can be decoupled, problem (33) can be reformulated as two subproblems (34) and (36). 
+
+min 
+
+> f
+> U
+
+∑
+
+> i=1
+
+(Zi + ( Jd − 1) Gi) γdf 2 
+
+> i
+
+, (34) s.t. Zid + ( Jd − 1) Gidfi
+
++ Jdti ≤ T, ∀i ∈ U , (34a) 
+
+0 ≤ fi ≤ f max  
+
+> i
+
+, ∀i ∈ U . (34b) According to (34), the objective function is strictly increasing in each fi, thus the optimal solution is obtained by setting each fi to its lower bound, which is given as follows: 
+
+f ∗ 
+
+> i
+
+= Zid + ( Jd − 1) GidT − Jdti
+
+, ∀i ∈ U . (35) The (b, p) optimization problem out of Eq. (33) can be formulated as: 
+
+min 
+
+> b,p
+> U
+
+∑
+
+> i=1
+
+Jdtipi, (36) s.t. ti bi log 2
+
+(
+
+1 + gi pi
+
+N0 bi
+
+)
+
+≥ Nid, ∀i ∈ U , (36a) 
+
+> U
+
+∑
+
+> i=1
+
+bi ≤ B, ∀i ∈ U , (36b) 
+
+0 ≤ pi ≤ pmax  
+
+> i
+
+, ∀i ∈ U . (36c) Proposition 1. At optimality of Eq. (36), the rate con-straint (36a) is tight for every user. Consequently, 
+
+pi = N0bi
+
+gi
+
+(
+
+2 Nidtibi − 1
+
+)
+
+, ∀i ∈ U . (37) Substituting (37) into problem (36) yields a single-variable optimization problem in b.
+
+min 
+
+> b
+> U
+
+∑
+
+> i=1
+
+N0tibi
+
+gi
+
+(
+
+2 Nidbiti − 1
+
+)
+
+, (38) s.t. 
+
+> U
+
+∑
+
+> i=1
+
+bi ≤ B, ∀i ∈ U , (38a) 
+
+bi ≥ bmin  
+
+> i
+
+, ∀i ∈ U . (38b) The value bmin  
+
+> i
+
+denotes the minimum required bandwidth to meet the transmission rate constraint when the max-imum transmission power is used. Based on constraint (36a), bmin  
+
+> i
+
+can be computed in closed form using the Lambert-W function, which is shown by 
+
+bmin  
+
+> i
+
+= − (ln 2) NidtiW
+
+(
+
+− (ln 2) N0 Nidgipmax   
+
+> iti
+
+e− (ln 2) N0Nidgipmax  
+
+> iti
+
+)
+
++ (ln 2) N0Nidgipmax 
+
+> i
+
+. (39) By computing the first and second order derivatives of problem (38), named F (bi), we obtain: 
+
+∂F (bi)
+
+∂b i
+
+= N0ti
+
+gi
+
+(
+
+e(ln 2) Nidtibi − (ln 2) Nidtibi
+
+e(ln 2) Nidtibi −1
+
+)
+
+< 0, (40) 
+
+∂2F (bi)
+
+∂b 2
+
+> i
+
+= N0(ln 2) 2Ni2d2
+
+gitib3
+
+> i
+
+e (ln 2) Nidtibi > 0. (41) According to Eqs. (40) and (41), it can be shown that the problem (38) is monotonically decreasing and convex with respect to bi > 0, which can be solved by using the Karush-Kuhn-Tucker (KKT) conditions. The Lagrangian function of (38) is 
+
+L(b, λ ) = 
+
+> U
+
+∑
+
+> i=1
+
+N0tibi
+
+gi
+
+(
+
+2 Nidbiti − 1
+
+)
+
++ λ
+
+( U∑
+
+> i=1
+
+bi − B
+
+)
+
+, (42) where λ is the Lagrange multiplier associated with con-straint (38a). The first order derivative of L(b, λ ) with respect to bi is 
+
+∂L(b, λ )
+
+∂b i
+
+= N0ti
+
+gi
+
+(
+
+e (ln 2) Nidtibi − (ln 2) Nidtibi
+
+e (ln 2) Nidtibi −1
+
+)
+
++λ. (43) We define bi(λ) as the unique solution to ∂L(b,λ ) 
+
+> ∂b i
+
+= 0 .Given constraint (38b), the optimal b∗ 
+
+> i
+
+can be chosen as 
+
+b∗ 
+
+> i
+
+= max {bi(λ), b min 
+
+> i
+
+}, ∀i ∈ U . (44) Moreover, the problem (38) is a decreasing function of 
+
+bi, constraint (38a) always holds with equality for the optimal solution, which shows that the optimal Lagrange multiplier should satisfies 
+
+> U
+
+∑
+
+> i=1
+
+max {bi(λ), b min 
+
+> i
+
+} = B. (45) Once b∗ 
+
+> i
+
+is obtained, the corresponding p∗ 
+
+> i
+
+can be computed by (37). Theorem 2. Define Φ( λ) = ∑ 
+
+> i∈U
+
+max {bi(λ), b min  
+
+> i
+
+}. Then 
+
+Φ( λ) is continuous and strictly decreasing in λ. Therefore there exists a unique λ⋆ such that Φ( λ⋆) = B, and 
+
+b⋆i = max {bi(λ⋆), b min  
+
+> i
+
+}, p⋆i from (37) ,
+
+solve problem (38) globally. Algorithm 2 concludes that the proposed method solves problem (25) by alternately optimizing subproblem 1 and subproblem 2. Subproblem 2 is solved by alternately opti-mizing (30) and (33). Since each subproblem achieves its optimal solution at every iteration, the objective function value of problem (25) decreases monotonically with each update. Algorithm 2 Iterative Alternating Optimization  
+
+> 1:
+
+Initialize a feasible solution (d(0) , t(0) , b(0) , f (0) , p(0) )
+
+and set k = 0 . 
+
+> 2:
+
+repeat  
+
+> 3:
+
+With given (t(k), b(k), f (k), p(k)), obtain the op-timal d(k+1) (solve the stationarity condition and project to DHDC ).  
+
+> 4:
+
+Set l = 0 . 
+
+> 5:
+
+repeat  
+
+> 6:
+
+With given (b(l), f (l), p(l)), obtain the optimal 
+
+t(l+1) . 
+
+> 7:
+
+With given t(l+1) , obtain the optimal 
+
+(b(l+1) , f (l+1) , p(l+1) ). 
+
+> 8:
+
+Set l = l + 1 . 
+
+> 9:
+
+until the inner objective value converges or l ≥
+
+Lmax in . 
+
+> 10:
+
+Set (t(k+1) , b(k+1) , f (k+1) , p(k+1) ) ←
+
+(t(l), b(l), f (l), p(l)). 
+
+> 11:
+
+Set k = k + 1 . 
+
+> 12:
+
+until the outer objective value converges or k ≥ Lmax out . 
+
+> 13:
+
+Output: (d⋆, t⋆, b⋆, f ⋆, p⋆).C. Complexity Analysis Let U be the number of users. The algorithm runs 
+
+Lout outer alternations between updating d and updating 
+
+(t, b, f , p). The d-update is a one-dimensional root-finding step with O(U ) cost per function (or derivative) evalua-tion, and thus costs O(U L d
+
+) with Ld = O(log(1 /ϵ d)) .For a fixed d, the resource update performs Lin inner alternations, where the bandwidth KKT procedure domi-nates: bisection finds λ⋆ in Lλ = O(log(1 /ϵ λ)) iterations, and each λ-iteration computes bi(λ)i = 1 U by solving U
+
+monotone scalar equations in Lb = O(log(1 /ϵ b)) steps [27]. Hence, each inner iteration costs O(U L bLλ ) =
+
+O(U log(1 /ϵ b) log(1 /ϵ λ)), and the overall complexity is 
+
+O
+
+(
+
+Lout U ( log(1 /ϵ d) + Lin log(1 /ϵ b) log(1 /ϵ λ)))
+
+.VI. Algorithm to Finding a Feasible Solution of Problem (25) Since the proposed alternating energy-minimization al-gorithm requires a feasible starting point, this section presents an initialization procedure under the bandwidth budget B and time limit T .A. Dimension Initialization and Feasibility Certificate We choose an initial d(0) ∈ D HDC (e.g., a moderate value, or the smallest value in DHDC ). Given d(0) , the cor-responding convergence round number Jd(d(0) ) is obtained from Eq. (26). To certify feasibility under the CPU frequency cap, we define the maximum admissible per-round communication time tmax  
+
+> i
+
+(d) as: 
+
+tmax  
+
+> i
+
+(d) = T − Zid+( Jd−1) Gidf max 
+
+> i
+
+Jd
+
+, ∀i ∈ U . (46) If tmax  
+
+> i
+
+(d) ≤ 0 for some i, then the instance is infeasible for this d.Next, fix pi = pmax  
+
+> i
+
+and let bmin  
+
+> i
+
+(t(d)) denote the minimum bandwidth required to satisfy the rate constraint within a transmission time t for dimension d, which can be obtained in closed form via the Lambert W function (39). We then have the following proposition. Proposition 2. Given (B, T ) and per-user limits 
+
+{f max  
+
+> i
+
+, p max  
+
+> i
+
+}, the constraint set of problem (25) is nonempty for a fixed d if and only if 1) tmax  
+
+> i
+
+(d) > 0, ∀i ∈ U ; and 2) ∑Ui=1 bmin  
+
+> i
+
+(tmax  
+
+> i
+
+(d)) ≤ B.Proof. If (46) yields tmax  
+
+> i
+
+(d) ≤ 0 for some i, then even with 
+
+fi = f max  
+
+> i
+
+the local computation time already exceeds the available budget, hence infeasible. Otherwise, ti ≤ tmax  
+
+> i
+
+(d)
+
+must hold for feasibility (since fi ≤ f max  
+
+> i
+
+). For any such ti, the rate constraint requires bi ≥ bmin  
+
+> i
+
+(ti(d)) ,in particular, bi ≥ bmin  
+
+> i
+
+(tmax  
+
+> i
+
+(d)) . Therefore, feasibility implies ∑ 
+
+> i
+
+bmin  
+
+> i
+
+(tmax  
+
+> i
+
+(d)) ≤ B.If either condition fails, the d is infeasible. If no candidate in DHDC passes the certificate, the instance is infeasible for the given (B, T ).B. Initialization of (b, p, t, f ) for a Given d
+
+Given a dimension d that passes the feasibility certifi-cate in Proposition 2, we construct an initial resource point 
+
+(b(0) , p(0) , t(0) , f (0) ) as follows. We allocate bandwidth by minimizing the total trans-mission time subject to the bandwidth budget and per-user feasibility lower bounds. In particular, with p(0)  
+
+> i
+
+=
+
+pmax  
+
+> i
+
+, we solve 
+
+min 
+
+> b,t
+> U
+
+∑
+
+> i=1
+
+ti (47) s.t. tibi log 2
+
+(
+
+1 + ci
+
+bi
+
+)
+
+≥ Nid, ∀i ∈ U , (47a) 
+
+> U
+
+∑
+
+> i=1
+
+bi ≤ B, (47b) 
+
+bi ≥ bmin 
+
+> i
+
+(tmax  
+
+> i
+
+(d)), t i ≥ 0, ∀i ∈ U , (47c) where ci = pmax   
+
+> igi
+> N0
+
+. Since the objective ∑ 
+
+> i
+
+ti is strictly increasing in each ti, the rate constraint (47a) is tight at optimum. Therefore, for any given bi > 0, the optimal transmission time is ti(bi) = Nidbi log 2  
+
+> (
+> 1+ cibi
+> )
+
+. Therefore, problem (47) can be rewritten as: 
+
+min 
+
+> b
+> U
+
+∑
+
+> i=1
+
+Nidbi log 2 (1 + ci/b i) (48) s.t. (47b) − (47c) . (48a) Lemma 2. The function ϕi(bi) = Nidbi log 2  
+
+> (
+> 1+ cibi
+> )
+
+is convex and strictly decreasing in bi > 0. Hence, problem (48) is convex and admits a unique optimal solution b(0) 
+
+characterized by 
+
+ϕ′
+
+> i
+
+(b(0)  
+
+> i
+
+)+ λ⋆ = 0 , b (0)  
+
+> i
+
+> b min 
+
+> i
+
+(tmax  
+
+> i
+
+(d)),
+
+> U
+
+∑
+
+> i=1
+
+b(0)  
+
+> i
+
+= B, (49) where λ⋆ ≥ 0 is the Lagrange multiplier. Proof. Convexity and monotonicity of ϕi(·) follow from differentiation. Since the constraints in (48) are convex, (48) is a convex program and the KKT conditions are necessary and sufficient. Uniqueness follows from strict convexity of ϕi(·) on bi > 0. Finally, because ϕi(·) is strictly decreasing, the sum-bandwidth constraint is tight at optimum. After obtaining b(0) , we then compute the transmission time by the tight rate constraint: 
+
+t(0)  
+
+> i
+
+= Nidb(0)  
+
+> i
+
+log 2
+
+(
+
+1 + ci
+
+> b(0)
+> i
+
+) , ∀i ∈ U , (50) and set the CPU frequency by enforcing the time con-straint with equality: 
+
+f (0)  
+
+> i
+
+= Zid + ( Jd − 1) GidT − Jd t(0) 
+
+> i
+
+, ∀i ∈ U . (51) Proposition 3. If d(0) satisfies Proposition 2 and b(0) is obtained by solving (48) with p(0)  
+
+> i
+
+= pmax  
+
+> i
+
+, then the constructed (b(0) , p(0) , t(0) , f (0) ) is feasible for Problem (25) under dimension d(0) .Proof. Since p(0)  
+
+> i
+
+= pmax  
+
+> i
+
+by initialization and Eq. (47b) ensures ∑ 
+
+> i
+
+b(0)  
+
+> i
+
+≤ B, the power and sum-bandwidth constraints are satisfied. Eq. (50) enforces the rate con-straint with equality. Moreover, from Eq. (47c) and the definition of bmin  
+
+> i
+
+(·), the induced transmission time satisfies t(0)  
+
+> i
+
+≤ tmax  
+
+> i
+
+(d) for all i. Therefore, T − Jdt(0)  
+
+> i
+
+≥
+
+T − Jdtmax  
+
+> i
+
+(d) = Zid+( Jd−1) Gidf max 
+
+> i
+
+, and substituting into (51) yields f (0)  
+
+> i
+
+≤ f max  
+
+> i
+
+. Hence, all constraints in problem (25) are satisfied. C. Complexity Analysis For a given candidate d, computing tmax  
+
+> i
+
+(d) and 
+
+bmin  
+
+> i
+
+(tmax  
+
+> i
+
+(d)) for all users costs O(U ). The dominant cost is solving the bandwidth initialization problem (48). By Lemma 2, it admits a KKT characterization with a scalar multiplier λ⋆, found by bisection in Lλ1 = O(log(1 /ϵ λ1 )) 
+
+iterations [27]. In each iteration, bi(λ) are obtained by solving U monotone scalar equations to accuracy 
+
+ϵb1 in Lb1 = O(log(1 /ϵ b1 )) steps, yielding complexity 
+
+O(U L b1 Lλ1 ). After b(0) is obtained, updating t(0) and f (0) 
+
+is closed-form and costs O(U ). Therefore, the initialization complexity for a given d is O(U L b1 Lλ1 ), and checking Ld1
+
+candidate dimensions in D leads to O(Ld1 U L b1 Lλ1 ).Table II Simulation parameters Parameters Value 
+
+K: number of users 50 
+
+Cenc : encoding cycles per dimension 28 ∗ 28 ∗ 2
+
+Cagg : 1st-round aggregation cycles per dimension 28 ∗ 28 ∗ 2
+
+Csim : similarity evaluation cycles per dimension 10 ∗ 10 
+
+Cup : error-driven update cycles per dimension 8
+
+ei: inference error ratio for user i 0.4
+
+d : HV dimension range 3000:1000:10000 
+
+η: learning rate of HDC model 1
+
+T : total time budget 30 s 
+
+f max  
+
+> i
+
+: maximum CPU frequency of user i 2.3 GHz 
+
+γ: switched-capacitance coefficient 1 × 10 −28 
+
+B: total bandwidth 10 MHz 
+
+Pmax : maximum transmit power 1 mW 
+
+n0: noise power spectral density −174 dBm/Hz 
+
+VII. Simulation Results and Analysis A. Simulation Setup We consider a secure FL-HDC system in which K = 50 
+
+users are independently and uniformly distributed over a circular area of radius 500 m, with the BS located at the center. The wireless link adopts a standard large-scale path-loss model L (di) = 128 .1 + 37 .6 log 10 (di) [7]. Uplink access is orthogonal within a total bandwidth B,and each user’s transmit power is constrained by Pmax .Local computation energy is modeled using a standard frequency–energy coupling surrogate that captures the fact that lowering the CPU frequency saves energy at the expense of longer execution time [26]. The per-dimension cycle costs in the HDC pipeline: encoding, first-round class aggregation, similarity evaluation, and error-driven update are denoted Cenc , Cagg , Csim , and Cup , respectively. All system and computation parameters are summarized in Table II and are used as defaults unless otherwise specified. Our simulation comprises three parts. 
+
+• We evaluate the performance of the proposed FL-HDC-DP framework, analyze its convergence and the impact of the HV dimension. Moreover, comparing it with an FL-NN-DP baseline under different privacy budgets and data distributions. 
+
+• We fit the relationship between d and the number of convergence rounds Jd using the sigmoid-variant model to validate its accuracy and suitability for HDC convergence efficiency under target accuracy and privacy budget. 
+
+• We assess the advantages of the proposed joint dimen-sion, bandwidth, transmit power, transmission time, and CPU frequency optimization method in reducing total energy within the FL-HDC-DP framework while satisfying accuracy and privacy requirements. B. Performance of FL-HDC-DP For the performance study, both IID and non-IID MNIST client data are considered. Under IID, the training set is uniformly split across U = 50 users (1200 samples each). Under non-IID [28], the 60,000 training images are label-sorted and partitioned into 3U shards (400 images 1          
+
+> 
+> 
+>  
+>   
+>   
+>    
+>    
+>    
+>    
+>    
+>   1
+
+(a) Without DP noise 1           
+
+> 
+> 
+> 
+>  
+>   
+>   
+>    
+>    
+>    
+>    
+>    
+>   1
+
+(b) With DP noise ( ϵ = 20 )Figure 3. Accuracy vs. Epochs of FL-HDC under IID data with different hypervector dimensions: (a) without DP noise and (b) with DP noise ( ϵ = 20 ). 5  5  5           
+
+> 
+> 
+> 
+> 
+> 5
+> 
+> 
+> 
+>  !  "  
+>   ε 
+>   ε 
+>   ε 
+>   ε 
+
+(a) IID and non-IID data, ( ϵ = 20 )5  5  5            
+
+> 
+> 
+> 
+> 
+> 5
+> 
+> 
+> 
+>     
+>   ε
+>   ε
+>   ε
+>   ε
+
+(b) non-IID data, ( ϵ = 10 , 20 )Figure 4. Accuracy vs. epochs of FL-HDC-DP and FL-NN-DP under different data distributions and privacy budgets: (a) IID and non-IID data with ϵ = 20 and (b) non-IID data with ϵ = 10 , 20 .
+
+per shard), with each client randomly assigned three shards without replacement. Client uploads are protected by a Gaussian DP mechanism with ε ∈ {10 , 20 } and 
+
+δ = 10 −5, where the noise is pre-calibrated and not optimized. Fig. 3 illustrates the accuracy versus epochs under IID data for different d, highlighting the impact of both di-mensionality and DP noise on convergence speed and final accuracy. Fig. 3(a) shows the results of FL-HDC without DP noise: as d increases from 3000 to 10000, the accuracy improves from about 92% to approximately 95%, and the number of epochs required to reach the 92% threshold decreases from around 20 to about 10. Fig. 3(b) presents the results of FL-HDC-DP with DP noise ( ε = 20 ): the overall accuracy drops and becomes more oscillatory, but larger d remains consistently beneficial, achieving faster convergence and higher accuracy at the same epoch (e.g., reaching 88% requires about 55% fewer epochs at d =10000 than at d = 3000 ). Overall, higher-dimensional HVs enhance representation and reduce inter-class interference, but they also increase computation and communication overhead, requiring a practical trade-off between accuracy and cost while ensuring privacy. Fig. 4 compares the accuracy versus epochs of FL-HDC-DP and FL-NN-DP under privacy constraints across different data distributions and privacy budgets. Fig. 4(a) shows that, under the same privacy budget ( ϵ = 20 ), FL-HDC-DP converges faster than FL-NN-DP for both IID and non-IID partitions: under IID, it exceeds 80% accuracy in the first round and reaches about 90% within 40 rounds, whereas FL-NN-DP typically needs around 140 rounds to reach 90% accuracy, i.e., about 3.5× more rounds. Under non-IID data, both methods converge more slowly and exhibit lower steady-state accuracy, yet FL-HDC-DP remains consistently higher throughout training. Fig. 4(b) further evaluates non-IID performance under two privacy budgets and confirms the privacy–accuracy trade-off: at round 50, FL-HDC-DP achieves about 88% for ϵ = 20 and 86% for ϵ = 10 , while FL-NN-DP attains about 72% and 69%, respectively. Moreover, FL-NN-DP typically requires 120–150 rounds to catch up and reaches about 92%–94% by 300 rounds. Note that the dimension of FL-HDC-DP in Fig. 4(a) and Fig. 4(b) is d = 10000 .C. Convergence Curve Fitting Fig. 5 illustrates the relationship between the dimension 
+
+d and the number of rounds to converge Jd under different target accuracies, and validates the fitting performance of the proposed sigmoid-based model. Fig. (5a) corresponds to the setting without DP noise, while Fig. (5b) shows the case with DP noise ( ϵ = 20 ). We observe that, for the same dimension and accuracy threshold, introducing DP noise increases the number of rounds required to reach the target accuracy, i.e., convergence is noticeably delayed. However, in both the DP and non-DP settings, Jd
+
+exhibits a similar trend with respect to d: it first decreases rapidly and then gradually saturates as the dimension increases. By fitting all curves using Eq. (26), the proposed sigmoid-shaped function has good generality: for any given privacy budget and target accuracy, simply adjusting the model parameters allows us to accurately characterize the relationship between the d and Jd.D. Total Energy Minimization For the optimization study, clients use an IID parti-tion. The privacy budget is fixed to (ε, δ ) = (25 , 10 −5).We minimize the end-to-end training energy by jointly optimizing the resource and model variables, hypervector dimension d, bandwidth allocation, transmit power, and CPU frequency, subject to (i) a target test accuracy of 
+
+88% and (ii) the fixed DP requirement (ε = 25 , δ = 10 −5).The DP noise variance is calibrated in advance to satisfy the budget and is not treated as a decision variable. Based on the convergence results under this setting, we fit the dimension–convergence relationship using Eq. (26) obtaining the parameters μ = 15 .25 , ν = 99 .99 , α = 7 .80 ,and β = 5 .69 , which are used throughout the subsequent optimization. Fig. 6 demonstrates the total energy versus the dimen-sion d for several total bandwidths, where bandwidth, transmit power, and CPU frequency are optimized to meet a fixed target accuracy. It is shown that total energy is non-monotonic in d and reaches a minimum at d = 4000 .According to Eq. (26), increasing d from 3000 to 4000 reduces the required global rounds by about 20; this reduction outweighs the higher per-round computation and transmission cost, leading to lower total energy. Increasing d further to 5000 reduces rounds by only about 3                
+
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>     
+>     
+>     
+>     
+>     
+>     
+>     
+
+(a) Without DP noise 3                 
+
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 3
+> 3
+> 
+> 
+>     
+>     
+>     
+>     
+>     
+>     
+>     
+
+(b) With DP noise ( ϵ = 20 )Figure 5. Fitting performance of the proposed sigmoid-variant model for the relationship between the hypervector dimension d and the number of rounds to converge Jd under different target accuracies: (a) without DP noise and (b) with DP noise ( ϵ = 20 ). 3000 4000 5000 6000 7000 8000 9000 10000 
+
+HV dimension d
+
+0500 1000 1500 
+
+> Total energy E (J)
+
+B = 0.5 MHz 
+
+B = 1 MHz 
+
+B = 5 MHz 
+
+B = 10 MHz 
+
+B = 20 MHz 
+
+Figure 6. Total energy vs. hypervector dimension under different total bandwidth values. 2 4 6 8 10 
+
+Pmax (W) 10 -3 
+
+100 150 200 250 300 350 400 450     
+
+> Total energy E (J)
+> Fixed d= 3000
+> Fixed d= 5000
+> Proposed
+
+Figure 7. Total energy vs. maximum transmit power. 
+
+5 more, which is insufficient to offset the increased per-round energy, so the total energy rises. At low bandwidths (0.5-1 MHz), transmission remains the bottleneck, yielding higher curves and a more pronounced turning point, whereas at higher bandwidths (5/10/20 MHz) communica-tion constraints ease and the curves shift downward and flatten, with diminishing gains from further bandwidth increases. 0.5 2 3.5 5 6.5 8 9.5                 
+
+> Total bandwidth B(MHz)
+> 0200 400 600 800 1000 1200
+> Total energy E (J)
+> Fixed p=Pmax
+> Fixed d= 8000
+> Proposed Figure 8. Total energy vs. total bandwidth. 0-100 m 100-200 m 200-300 m 300-400 m 400-500 m
+> Distance groups
+> 00.05 0.1 0.15 0.2
+> Bandwidth  b (MHz)
+> 0-100 m 100-200 m 200-300 m 300-400 m 400-500 m
+> Distance groups
+> 0.8 0.85 0.9 0.95 1
+> Power  p (mW)
+> 0-100 m 100-200 m 200-300 m 300-400 m 400-500 m
+> Distance groups
+> 00.02 0.04 0.06 0.08
+> Transmission time  t (s)
+> 0-100 m 100-200 m 200-300 m 300-400 m 400-500 m
+> Distance groups
+> 0.83 0.84 0.85 0.86
+> CPU frequency  f (GHz)
+> Figure 9. Optimized average values of bandwidth, transmit power, transmission time, and CPU frequency across different distance groups.
+
+Fig. 7 compares the total energy versus the maximum transmit power Pmax for the proposed scheme and two fixed-dimension baselines ( d = 3000 and d = 5000 ). The total energy decreases with Pmax , dropping sharply at small Pmax and then saturating. This is because higher power increases the uplink rate and shortens transmission, leaving more time for local computation; once the rate con-straint is sufficiently relaxed, computation dominates and further power yields diminishing returns. The proposed scheme achieves the lowest energy, about 40% lower than the fixed d = 3000 baseline and 46% lower than the fixed 
+
+d = 5000 baseline, by selecting optimal d = 4000 in this setting. The results also indicate that total energy is not monotonic in d, consistent with Fig. 6. Fig. 8 shows the total energy versus the total bandwidth 
+
+B. For all schemes, energy decreases with B, dropping sharply over 0.5-2 MHz and then leveling off, since larger bandwidths improve the uplink rate and shorten the transmission time; once the rate constraint becomes non-binding, local computation dominates and further bandwidth offers limited benefit. The proposed scheme consistently achieves the lowest energy, saving up to 83.3% compared with the fixed-d baseline and about 57% compared with the fixed-p baseline. This gain comes from jointly optimizing d and p, whereas the blue baseline fixes 
+
+p = Pmax and the red baseline fixes d = 8000 . The comparison also reveals that optimizing d affects both computation and transmission energy, while optimizing bandwidth or power mainly reduces the transmission com-ponent, leading to larger overall savings from dimension optimization. E. Optimization Strategy of Proposed Method Fig. 9 summarizes how the optimizer allocates band-width, transmit power, transmission time, and CPU fre-quency to uniformly distributed users as the link quality degrades with distance. A consistent pattern emerges. Bandwidth increases with distance, far users receive more spectrum to compensate for lower SNR and reduced spectral efficiency, which is an energy-efficient adjustment strategy compared with pushing power alone. Transmit power also increases with distance, with edge users ap-proaching the device limits, indicating that when rate and latency targets become challenging, the system si-multaneously employs power amplification and additional bandwidth strategies. Even so, transmission time for distant users still extends because transmitting the same payload over weak channels requires more time. This extended transmission time compresses computation time, prompting the optimizer to increase CPU frequency to ensure local processing completes within time constraints. Overall, distant users are more resource-hungry, consum-ing higher energy to meet the performance standards maintained by near users. VIII. Conclusion In this paper, we have proposed a secure FL frame-work based on HDC and DP for resource-constrained edge devices in wireless networks. We have formulated a joint optimization of the HDC dimension, transmission time, transmit power, bandwidth, and CPU frequency to minimize total energy consumption, which is the first study to consider the impact of HDC dimension on energy optimization. To address this issue, we have proposed a two-level alternating optimization scheme. First, we have established the relationship between HDC dimensions and the number of iterations required to achieve target accu-racy. Subsequently, an outer alternating optimization is applied to obtain the dimension, and an inner alternating optimization is applied to obtain resource allocation at a fixed dimension, where closed-form update formulas for computational and communication resources are derived for each iteration. We have further proposed a method for finding initial solutions by minimizing transmission time. Numerical results have demonstrated that FL-HDC-DP converges faster than traditional NN-based approaches while maintaining high accuracy. Moreover, the proposed sigmoid-variant model fits well the empirical relationship between dimension and convergence rounds. Furthermore, the proposed optimization scheme has achieved lower total energy consumption than the baseline method, with dimension selection having the most significant impact among the optimization variables. References 
+
+[1] C.-H. Hu, Z. Chen, and E. G. Larsson, “Energy-efficient feder-ated edge learning with streaming data: A lyapunov optimiza-tion approach,” IEEE Transactions on Communications, vol. 73, no. 2, pp. 1142–1156, 2025. [2] S. Hosseinalipour, S. S. Azam, C. G. Brinton, N. Michelusi, V. Aggarwal, D. J. Love, and H. Dai, “Multi-stage hybrid federated learning over large-scale d2d-enabled fog networks,” IEEE/ACM Transactions on Networking, vol. 30, no. 4, pp. 1569–1584, 2022. [3] N. Karakoç, A. Scaglione, M. Reisslein, and R. Wu, “Federated edge network utility maximization for a multi-server system: Algorithm and convergence,” IEEE/ACM Transactions on Net-working, vol. 30, no. 5, pp. 2002–2017, 2022. [4] Y. Ding, Z. Yang, Q.-V. Pham, Y. Hu, Z. Zhang, and M. Shikh-Bahaei, “Distributed machine learning for uav swarms: Comput-ing, sensing, and semantics,” IEEE Internet of Things Journal, vol. 11, no. 5, pp. 7447–7473, 2024. [5] Y. Ding, W. Shang, Y. Yang, W. Ding, and M. Shikh-Bahaei, “Joint layer selection and differential privacy design for feder-ated learning over wireless networks,” IEEE Internet of Things Journal, vol. 11, no. 24, pp. 39 767–39 779, 2024. [6] B. Khaleghi, M. Imani, and T. Rosing, “Prive-hd: Privacy-preserved hyperdimensional computing,” in 2020 57th ACM/IEEE Design Automation Conference (DAC). IEEE, 2020, pp. 1–6. [7] Z. Yang, M. Chen, W. Saad, C. S. Hong, and M. Shikh-Bahaei, “Energy efficient federated learning over wireless communica-tion networks,” IEEE Transactions on Wireless Communica-tions, vol. 20, no. 3, pp. 1935–1949, 2021. [8] R. Chen, L. Li, K. Xue, C. Zhang, M. Pan, and Y. Fang, “Energy efficient federated learning over heterogeneous mobile devices via joint design of weight quantization and wireless transmis-sion,” IEEE Transactions on Mobile Computing, vol. 22, no. 12, pp. 7451–7465, 2023. [9] C.-Y. Hsieh, Y.-C. Chuang, and A.-Y. A. Wu, “Fl-hdc: Hyper-dimensional computing design for the application of federated learning,” in Proc. IEEE Int. Conf. Artif. Intell. Circuits Syst. (AICAS). IEEE, 2021, pp. 1–5. [10] H. Li, F. Liu, Y. Chen, and L. Jiang, “HyperFeel: An efficient federated learning framework using hyperdimensional comput-ing,” in Proc. Asia South Pacific Des. Autom. Conf. (ASP-DAC), 2024, pp. 716–721. [11] Y. Ding, W. Shang, M. Xu, Z. Yang, Y. Hu, D. Niyato, and M. Shikh-Bahaei, “Hyperdimensional computing empowered federated foundation model over wireless networks for meta-verse,” in 2024 IEEE Smart World Congress (SWC), 2024, pp. 2187–2194. [12] B. Khaleghi, X. Yu, J. Kang, X. Wang, and T. Rosing, “Private and efficient learning with hyperdimensional computing,” IEEE Transactions on Circuits and Systems for Artificial Intelligence, 2024. [13] F. J. Piran, Z. Chen, M. Imani, and F. Imani, “Privacy-preserving federated learning with differentially private hyperdi-mensional computing,” Computers and Electrical Engineering, vol. 123, p. 110261, 2025. [14] J. Morris, K. Ergun, B. Khaleghi, M. Imani, B. Aksanli, and T. Simunic, “Hydrea: Utilizing hyperdimensional computing for a more robust and efficient machine learning system,” ACM Trans. Embed. Comput. Syst., vol. 21, no. 6, pp. 1–25, 2022. [15] A. Menon, D. Sun, S. Sabouri, K. Lee, M. Aristio, H. Liew, and J. M. Rabaey, “A highly energy-efficient hyperdimensional computing processor for biosignal classification,” IEEE Trans-actions on Biomedical Circuits and Systems, vol. 16, no. 4, pp. 524–534, 2022. [16] S. Zhang, D. Ma, S. Bian, L. Yang, and X. Jiao, “On hyperdi-mensional computing-based federated learning: A case study,” in Proc. Int. Joint Conf. Neural Netw.(IJCNN). IEEE, 2023, pp. 1–8. [17] W. Xu, Z. Yang, D. W. K. Ng, R. Schober, H. V. Poor, Z. Zhang, and X. You, “A new pathway to integrated learning and commu-nication (ilac): Large ai model and hyperdimensional computing for communication,” arXiv preprint arXiv:2506.18432, 2025. [18] P. Kanerva, “Hyperdimensional computing: An introduction to computing in distributed representation with high-dimensional random vectors,” Cognitive computation, vol. 1, pp. 139–159, 2009. [19] L. Ge and K. K. Parhi, “Classification using hyperdimensional computing: A review,” IEEE Circuits Sys. Mag., vol. 20, no. 2, pp. 30–47, 2020. [20] D. Ma, C. Hao, and X. Jiao, “Hyperdimensional computing vs. neural networks: Comparing architecture and learning process,” in Proc. Int. Symp. Qual. Electron. Des. (ISQED). IEEE, 2024, pp. 1–5. [21] A. Rahimi, S. Benatti, P. Kanerva, L. Benini, and J. M. Rabaey, “Hyperdimensional biosignal processing: A case study for EMG-based hand gesture recognition,” in Proc. IEEE Int. Conf. Rebooting Comput. (ICRC). IEEE, 2016, pp. 1–8. [22] C. Dwork, F. McSherry, K. Nissim, and A. Smith, “Calibrating noise to sensitivity in private data analysis,” in Theory of cryptography conference. Springer, 2006, pp. 265–284. [23] M. Bun and T. Steinke, “Concentrated differential privacy: Simplifications, extensions, and lower bounds,” in Theory of cryptography conference. Springer, 2016, pp. 635–658. [24] B. Khaleghi, X. Yu, J. Kang, X. Wang, and T. Rosing, “Private and efficient learning with hyperdimensional computing,” IEEE Transactions on Circuits and Systems for Artificial Intelligence, vol. 1, no. 2, pp. 204–219, 2024. [25] C. You, K. Huang, H. Chae, and B.-H. Kim, “Energy-efficient resource allocation for mobile-edge computation offloading,” IEEE Transactions on Wireless Communications, vol. 16, no. 3, pp. 1397–1411, 2017. [26] Y. Mao, J. Zhang, and K. B. Letaief, “Dynamic computation offloading for mobile-edge computing with energy harvesting devices,” IEEE Journal on Selected Areas in Communications, vol. 34, no. 12, pp. 3590–3605, 2016. [27] D. Palomar and M. Chiang, “A tutorial on decomposition methods for network utility maximization,” IEEE Journal on Selected Areas in Communications, vol. 24, no. 8, pp. 1439– 1451, 2006. [28] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentralized data,” in Proc. Artif. Intell. Stat. (AIS-TATS). PMLR, 2017, pp. 1273–1282.

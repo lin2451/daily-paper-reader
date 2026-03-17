@@ -1,0 +1,1250 @@
+Title: Federated Learning-Assisted Optimization of Mobile Transmission with Digital Twins
+
+URL Source: https://arxiv.org/pdf/2602.18627v1
+
+Published Time: Tue, 24 Feb 2026 01:14:22 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+# Federated Learning–Assisted Optimization of Mobile Transmission with Digital Twins 
+
+Mohammad Heydari ∗ Terence D. Todd ∗ Dongmei Zhao ∗ George Karakostas †
+
+February 24, 2026 
+
+Abstract 
+
+A Digital Twin (DT) may protect information that is considered private to its associated physical system. For a mobile device, this may include its mobility profile, recent location(s), and experienced channel conditions. Online schedulers, however, typically use this type of information to perform tasks such as shared bandwidth and channel time slot assignments. In this paper, we consider three transmission scheduling problems with energy constraints, where such information is needed, and yet must remain private: minimizing total transmission time when (i) fixed-power or (ii) fixed-rate time slotting with power control is used, and (iii) maximizing the amount of data uploaded in a fixed time period. Using a real-time federated optimization framework, we show how the scheduler can iteratively interact only with the DTs to produce global fractional solutions to these problems, without the latter revealing their private information. Then dependent rounding is used to round the fractional solution into a channel transmission schedule for the physical systems. Experiments show consistent makespan reductions with near-zero bandwidth/energy violations and millisecond-order end-to-end runtime for typical edge server hardware. To the best of our knowledge, this is the first framework that enables channel sharing across DTs using operations that do not expose private data. 
+
+Keywords: Scheduling, digital twins, federated optimization, federated learning, constrained optimization, augmented Lagrangian, network decision making, distributed algorithms 
+
+# 1 Introduction 
+
+Digital Twins (DTs) are software versions of physical systems that mirror device behavior on their behalf. In mobile communications, DTs can assist with functions such as scheduling and resource allocation, band-width sharing, base station association and power control. Prior work has studied many of these problems. DT modeling is used to assist adaptive aggregation for IIoT [34] and DTs are integrated with deep-RL optimization for industrial federated learning (FL) [39]. Reference [41] provisions multi-FL services with reinforcement-learned bandwidth control. Base station association and radio/edge resources are jointly opti-mized in a DT-enabled hierarchical FL framework in Reference [16]. The study in [37] considers DT-assisted FL over non-orthogonal multiple access (NOMA) with game-theoretic coordination to reduce latency and energy. Reference [27] introduces a DT wireless network with blockchain-empowered FL for low-latency edge association. DT-assisted scheduling arises in many applications, including federated-learning where devices period-ically upload model updates [29], industrial IoT workloads that offload sensing and computation to edge     
+
+> ∗Department of Electrical and Computer Engineering, McMaster University, CANADA (email: heydam3@mcmaster.ca ;todd@ mcmaster.ca ;dzhao@mcmaster.ca ).
+> †Department of Computing and Software, McMaster University, CANADA (email: karakos@mcmaster.ca ).
+
+1
+
+> arXiv:2602.18627v1 [cs.NI] 20 Feb 2026
+
+servers [26], and vehicles that transmit perception data and offloaded tasks to roadside infrastructure [28]. Another example arises in mobile transmission where the data consists of DT updates, i.e., physical systems periodically transmit DT state updates to satisfy periodicity requirements that keep DTs synchronized, while third-party applications interact only with the DTs rather than the devices themselves [35]. As part of its functionality, a DT may protect information that is considered private to its associated physical system [33]. For a mobile device, this may include information such as the device’s mobility profile, recent locations, and experienced channel conditions. Such channel parameters (e.g., channel gains/CSI or related propagation features) can implicitly encode location-dependent characteristics and may therefore enable location inference or tracking by an adversary. For example, prior work shows that an adversary can localize user equipment by exploiting location-relevant wireless channel parameters/CSI [23], and that access to received-signal measurements (RSSI) can be sufficient to infer users’ common locations over time [8]. Clearly this type of information is useful in resource allocation when it is used by a central coordinator to create bandwidth allocations, time-slot assignments, and other outputs that are needed for efficient network operation. But the DTs may be reluctant to directly share this type of raw information, in order, for example, to protect participants against membership inference and gradient-recovery attacks [43] in Machine Learning applications. This is the main concern addressed in this paper. In this work, we address the open question of how to exploit DTs in joint physical system transmission scheduling and resource allocation without revealing raw information to the central coordinator. To address this problem, a framework is proposed that keeps sensitive data local, and DTs exchange only lightweight summaries that do not directly reveal private data. This is done via a decentralized, federated optimization scheme in which, in each iteration, each DT solves a local subproblem using private data while a central coordinator interacts with these clients, in order to finally converge to the optimal solution of the global optimization problem. Here, privacy is respected by design under standard federated optimization/learning assumptions [20] (i.e., raw client/DT data remain local), and we do not claim additional formal guarantees such as differential privacy or secure aggregation. We consider three variants of the scheduling problem with energy constraints that differ by whether transmit power control is used. These are referred to as problems P1, P2 and P3 as follows: (P1) fixed-power transmissions with DT channel knowledge or predictions, aiming to minimize the transmission period; (P2) fixed-power transmissions within a given time block, so that the (common) fraction of data transmitted is maximized (thus minimizing the number of blocks needed to complete all data transmission); and (P3) fixed-rate time slotting with power control transmissions, with the same objective as P1. After fractional solutions to relaxations of these problems are computed using federated optimization as described above, integral schedules are obtained via dependent rounding. 
+
+1.1 Our contributions 
+
+The main contributions of the paper are summarized as follows. • Problem Formulations. We formalize the three variants P1-P3 of the scheduling problem with energy constraints when fixed-power transmissions are used (P1, P2) or fixed-rate, single-user slotting with power control is utilized (P3). • Federated learning (FL) based optimization. The scheduling problems are mapped into a con-strained federated workflow where each digital twin keeps raw data local and shares only lightweight summaries with a central coordinator. An FL-based optimization method handles per-user (local) and system-wide (global) constraints in a decentralized solving of convex relaxations, producing high-quality fractional decisions. This approach has two main advantages: 1. In prior DT-assisted scheduling approaches (e.g., [24, 18]) centralized access to client/DT private data 2was assumed in order to make scheduling decisions. To the best of our knowledge, our framework is the first one that supports channel scheduling without directly exposing raw client/DT data. 2. Since the communication required between the DTs and the central coordinator (which may itself be one of the DTs) is done via the high speed wired backbone network, the communication overhead between DTs is small when compared to the wireless communication between DTs and their corre-sponding Physical Systems (PS). The overall latency is heavily dominated by the local algorithm execution at the DTs and coordinator, rather than by communication. This allows us to factor this overhead out of our analysis. • Solution framework. Two schedulers are introduced: the Fixed-Power Scheduler (FPS) for the fixed-power variants and the Power-Control Scheduler (PCS) for the power-control variant. Each algorithm uses a pipeline that solves convex relaxations, converting fractional outputs into integral schedules via simple or smart dependent rounding algorithms, re-optimizing bandwidth for fixed-power cases when needed, and applying minimal feasibility bandwidth boosting for FPS and energy for PCS so that all constraints are met. These algorithms make the resource versus latency trade-off explicit and produce good results. • Evaluation. Simulations on wireless traces with FPS and PCS show consistent makespan reductions with negligible budget violations and end-to-end runtime on the order of milliseconds, suitable for edge deployment. 
+
+1.2 Related work 
+
+Existing networking work that is closest to ours falls into two streams. 
+
+Digital twins for edge scheduling and offloading. A first stream leverages DTs to guide networked resource management at the edge. Zhang et al. design a DT-driven framework for collaborative MEC task offloading, where virtual replicas steer low-latency decisions under dynamics [42]. Hao et al. target URLLC and show that DTs can improve robustness under model mismatch while jointly minimizing delay and energy [14]. Mobility and service-centric variants include DT-assisted offloading in UAV-aided edge networks [22] and DT-guided reinforcement learning for microservice offloading and bandwidth allocation across collabo-rative edges [5]. Broader surveys review DT-assisted task offloading in safety-critical systems and outline open challenges in modeling fidelity and closed-loop control [10]. These efforts demonstrate that DTs can forecast state, evaluate candidate policies, and close the loop for resource management. Complementary to DT-assisted edge scheduling and offloading, scheduling and resource allocation for federated learning in vehicular networks have also been studied in [17] Our paper complements them by addressing uplink scheduling with privacy-preserving coordination between DTs and a central scheduler. 
+
+Federated optimization/learning for constrained optimization. A second stream develops methods that solve optimization problems with both global and client-local constraints while keeping raw data on devices. He, Peng, and Sun propose a federated constrained-optimization framework using an augmented Lagrangian with inexact ADMM updates and provide complexity guarantees [15]. Related distributed opti-mization foundations include projected-subgradient and primal–dual schemes for local or conic constraints [30, 25, 36, 2, 3], as well as primal–dual projected approaches that handle simultaneous global and local constraints [44, 40], with surveys in [38]. There is also application-focused constrained FL on fairness and imbalance [31, 7, 11, 12], though these typically target specialized objectives. Our work builds on the general FL-with-constraints paradigm to coordinate DTs and a central scheduler where sensitive coefficients remain local to the DTs while the system jointly optimizes uplink schedules and resource allocation. 3...  
+
+> DTs
+> DmD1DN
+> U1
+> Um
+> UN
+> ...
+
+Figure 1: System model. 
+
+# 2 System Model 
+
+We consider a wireless communication network that facilitates the uplink transmissions of a set of mobile users. The scheduling that occurs is recurrent, and a central coordinator dynamically controls the use of a shared wireless channel so that users can upload their data. The communication infrastructure is shown in Fig. 1. It consists of a single base station (BS), a set of users and their corresponding DTs that are hosted at the edge of the network. The DTs act on behalf of their associated users and collaborate with the central coordinator in order to plan the uplink user transmissions. In order to do so, each DT holds information that can enable the coordinator to make resource assignment decisions. This information includes recent uplink channel conditions, which are considered private to each user. This information may be updated between a given user and its DT as part of the usual digital twin synchronization process [6]. Alternately, this information may be communicated directly by the base station to each DT. Note that this information is not directly shared with the central coordinator, but instead, it shares summary information as part of the federated optimization process discussed later. We adopt a time-slotted wireless communication channel where transmission occurs within discrete time slots, each of duration τ . At every time slot, the total available uplink BS bandwidth is B Hz. Let N = {1, 2, . . . , N } denote the set of users and T = {1, 2, . . . , T } the set of slots in a scheduling period. When needed, we also use fixed-length blocks of ts slots and write Ts = {1, 2, . . . , t s} for a single block. The parameter ts represents the maximum common horizon over which all users can obtain channel knowledge or predictions. As a general guideline, the choice of ts should satisfy tsτ < T c, where Tc is the channel coherence time. Our objective is to schedule the uplink transmission of tasks from all users via their DTs, which collaborate with the central coordinator, so as to minimize the makespan , i.e., the time by which every user has completed their upload. We consider three variants of the scheduling problem, distinguished by whether power control is enabled. These are referred to as Problems P1, P2 and P3. When power control is not used, i.e., each user transmits with a fixed power in Problems P1 and P2 (which differ in the available horizon of channel knowledge). When power control is enabled, we define Problem P3. For each user m ∈ N , the following quantities are defined: • Um is the edge device of user m that communicates with the BS. • Dm is the DT associated with user m, hosted at the edge server. 4• Cm is the size (in bits) of the task that user m must upload to the BS. • ¯Pm is fixed transmit power of user m during one time slot (used in Problems P1 and P2). • R is the target uplink rate (bit/s) prescribed by the scheduler when power-control is enabled (Prob-lem P3). • Pm,t is slot-adaptive power chosen by user m in slot t under power control in Problem P3, where the total bandwidth B is assigned to a single user. To guarantee the fixed rate R, Shannon’s formula yields: 
+
+Pm,t = N0Bgm,t 
+
+> (
+
+2 RB − 1
+
+> )
+
+, (1) where gm,t is the link gain, N0 is the noise power spectrum density at the BS receiver input, and B is the available bandwidth. • Em is the energy budget allocated to user m. The total energy consumption of user m over all T time slots must not exceed this budget. In each period, the DTs and the central coordinator collaborate to compute a feasible schedule for the upcoming transmissions. The resulting plan is disseminated to the users and executed at the start of the next period (or the next block of ts slots in P2). The optimizer runs with a one period look ahead: while the current plan is being executed, the DTs and the coordinator prepare the schedule for the following period. The system always remains under a valid schedule, since the last feasible plan stays in effect until a new one starts. We assume that either the number N of users that need scheduling simultaneously is small or the users can be partitioned into independent groups that can be separately scheduled. 
+
+# 3 Problem Formulation 
+
+We study the problem of scheduling the periodic transmission of Cm bits for each user m over a period of T
+
+time slots, and the determination of its uplink data rates for each time slot, so that period T is minimized, without exceeding the available channel bandwidth B at every time slot or the energy budget of each user. We will consider three different variations of this problem. If there is no power control for the user transmissions, i.e., there is a fixed transmission power ¯Pm for each user m, then we consider the following two variations, that differ in their assumption of channel knowledge and/or prediction by a user: 
+
+P1 We assume that each user has knowledge or prediction capabilities of channel parameters, such as gain factors, for a large-enough time horizon so that a (minimized) time period T for the whole transmission is always possible. In this case, we minimize T .
+
+P2 Without the previous assumption, let ts be the maximum possible common time horizon during which all users can have knowledge or prediction capabilities of channel parameters. Typically, we assume that ts is significantly smaller than the time needed to finish the whole transmission (otherwise this problem reduces to problem P1). In this version of the problem, we break the transmission into blocks of ts time slots, and we minimize the number of blocks used, by maximizing the fraction of data transmitted by the users during a single block. The third version of the problem assumes the existence of power control for the user transmission. We denote this version by P3 .For all three versions, let xm,t ∈ { 0, 1} be the decision variable that determines whether user m uploads during time slot t (xm,t = 1 ) or not ( xm,t = 0 ). 5Energy budget constraints: For P1 and P2, let nm := ⌊Em/( ¯Pmτ )⌋ be the maximum number of time slots that user m can utilize for data transmission due to its energy budget. Then the following constraints must hold for P1: T∑
+
+> t=1
+
+xm,t ≤ nm, ∀m ∈ N . (2) For P2, if γ is the fraction of data demand transmitted during a block ts of time slots, then it is natural to allocate only a fraction γ of the energy budget nm to this transmission, for every user m. Then we have the following constraints: ts∑
+
+> t=1
+
+xm,t ≤ γn m, ∀m ∈ N . (3) In P3 the energy budget is enforced directly through adaptive power: 
+
+> T
+
+∑
+
+> t=1
+
+Pm,t xm,t ≤ Em
+
+τ , ∀m ∈ N . (4) 
+
+Bandwidth constraints: In P1 and P2, let wm,t be the decision variable that determines the fraction 
+
+of total bandwidth allocated to user m in time slot t. Then the following constraints must hold: 
+
+> N
+
+∑
+
+> m=1
+
+wm,t ≤ 1, ∀t ∈ T . (5) To ensure that no bandwidth is assigned when user m does not transmit during time slot t, we add the following constraints: 
+
+wm,t ≤ xm,t , ∀m ∈ N , t ∈ T . (6) In P3, there are no bandwidth constraints, but since each slot is allocated to a single user, we must have: 
+
+> N
+
+∑
+
+> m=1
+
+xm,t ≤ 1, ∀t ∈ T . (7) 
+
+Demand constraints: The achievable uplink rate for user m in slot t is 
+
+rm,t =
+
+
+
+Bw m,t log 2
+
+(
+
+1 + ¯Pmgm,t 
+
+> N0Bw m,t
+
+)
+
+, for P1, P2 
+
+R, for P3. (8) During period T , each user m must transmit Cm bits. For P1, this implies the following demand constraints: T∑
+
+> t=1
+
+rm,t ≥ Cm
+
+τ , ∀m ∈ N . (9) and for P2 the following constraints: 
+
+> ts
+
+∑
+
+> t=1
+
+rm,t ≥ γ Cm
+
+τ , ∀m ∈ N . (10) For P3, let ⌈Cm/(Rτ )⌉ be the number of time slots needed by user m. Then the demand constraints become: 
+
+> T
+
+∑
+
+> t=1
+
+xm,t ≥ ⌈ Cm/(Rτ )⌉, ∀m ∈ N . (11) In order to solve P1, we will perform a binary search for T within a sufficiently large range. For each T
+
+value, we will look for a feasible solution x ∈ { 0, 1}N ×T , w ∈ RN ×T 
+
+> +
+
+that satisfies constraints Eq. (2), Eq. (5), 6Eq. (6), and Eq. (9). Depending on whether there is a feasible solution or not, we try a smaller or larger value for T , respectively. We formulate the non-linear (but convex) mixed-integer mathematical program we solve at each binary search step for P1. In order to align its formulation with the formulation of P2, we introduce here also the fraction γ of user data transmitted in T time slots, and, instead of feasibility, we check whether the maximum γ is at least 1 or not. Abusing the notation a bit, we will use the term “infeasible” for the latter case, i.e., γ < 1. Hence we solve the following: 
+
+max  
+
+> x,w,γ
+
+γ s.t. (P1) 
+
+> N∑
+> m=1
+
+wm,t ≤ 1, ∀t ∈ T (12) 
+
+> T∑
+> t=1
+
+Blog 2(1 + ¯Pmgm,t 
+
+N0Bw m,t 
+
+)wm,t ≥ γ Cm
+
+τ , ∀m ∈ N (13) 
+
+> T∑
+> t=1
+
+xm,t ≤ nm, ∀m ∈ N , (14) 
+
+wm,t ≤ xm,t , ∀m ∈ N , t ∈ T (15) 
+
+xm,t ∈ { 0, 1}, ∀m ∈ N , t ∈ T (16) 
+
+wm,t ≥ 0, ∀m ∈ N , t ∈ T 
+
+γ ≥ 0.
+
+Our objective is to compute T ∗, the minimum T for which P1 has a feasible ( γ ≥ 1) solution. Solving problem P1 is NP-complete by a simple reduction from Partition . The reduction works by setting B equal to exactly half the total value of the n items in Partition , N := n, T := 2 , Cm equal to the item value (adjusted to account for the log 2 factor in Eq. (13)), and nm = 1 for every m. Then there is a solution to Partition iff the items can be partitioned into the two available time slots each with exactly half the total value. For problem P2, there is no need for binary search since the time period ts is fixed. The formulation of P2 becomes 
+
+max  
+
+> x,w,γ
+
+γ s.t. (P2) 
+
+> N∑
+> m=1
+
+wm,t ≤ 1, ∀t ∈ T s (17) 
+
+> ts∑
+> t=1
+
+Blog 2(1 + ¯Pmgm,t 
+
+N0Bw m,t 
+
+)wm,t ≥ γ Cm
+
+τ , ∀m ∈ N (18) 
+
+> ts∑
+> t=1
+
+xm,t ≤ γn m, ∀m ∈ N , (19) 
+
+wm,t ≤ xm,t , ∀m ∈ N , t ∈ T s (20) 
+
+xm,t ∈ { 0, 1}, ∀m ∈ N , t ∈ T s (21) 
+
+wm,t ≥ 0, ∀m ∈ N , t ∈ T s
+
+γ ≥ 0.
+
+For P3, we again perform a binary search to find the minimum value T ∗ for T for which constraints 7Eq. (4), Eq. (7), and Eq. (11) are satisfied, i.e., the following is feasible: 
+
+min  
+
+> x
+
+0 s.t. (P3) 
+
+> N
+
+∑
+
+> m=1
+
+xm,t ≤ 1, ∀t ∈ T (22) 
+
+> T
+
+∑
+
+> t=1
+
+Pm,t xm,t ≤ Em
+
+τ , ∀m ∈ N (23) 
+
+> T
+
+∑
+
+> t=1
+
+xm,t ≥ ⌈ Cm/(Rτ )⌉, ∀m ∈ N , (24) 
+
+xm,t ∈ { 0, 1}, ∀m ∈ N , t ∈ T (25) P3 is also NP-complete by a reduction of the well-known Partition problem to it. In the latter problem, we are given n values a1, a 2, . . . , a n and we ask whether there is a partition into two sets, each of cardinality 
+
+n/ 2, so that the sum of values in each is exactly ∑ni=1 ai/2. The reduction sets m := 2 (i.e., two users), 
+
+T := n, Em 
+
+> τ
+
+:= ∑ni=1 ai/2, P1,t = P2,t := at, and ⌈Cm/(Rτ )⌉ := n/ 2. Then it is easy to see that P3 has a solution iff the Partition problem has one. 
+
+# 4 Solution Algorithms 5RXQGLQJ$OJRULWKP 5HOD[DWLRQ6ROXWLRQ )HDVLELOLW\%RRVWLQJ  
+
+> ELQDU\VHDUFKRQ
+> ,QSXW 5H2SWLPL]DWLRQ
+
+Figure 2: General solution scheme. Since the solution of problem P2 is very similar to solving problem P1, in what follows we are going to concentrate on solving P1 and P3. Our general solution scheme for both problems is outlined in Figure 2: 
+
+Binary search: Since all problems are NP-complete, we do not expect to have an efficient algorithm that solves them. Therefore, we are going to solve their relaxations , obtained by relaxing constraints xm,t ∈ { 0, 1}
+
+into xm,t ≥ 0, and then rounding the obtained fractional solution. Note that for P1 and P2, if the relaxation is feasible we can always have a feasible solution with xm,t ≤ 1 ∀m, t by reducing any xm,t > 1 to xm,t = 1 
+
+without violating any constraints, since Eq. (12) for P1, and Eq. (17) for P2 guarantees that wm,t ≤ 1 ∀m, t ,so there is no need for xm,t > 1.We perform a binary search on the value of T , starting with T := 1 , as follows: We double the current value of T until the relaxation becomes feasible; then we perform a usual binary search between the previous and the current T values, in order to obtain the smallest value Tf that allows relaxation feasibility. Let 
+
+zf = ( xf , w f ) or zf = xf be the feasible fractional solution of P1 or P3 corresponding to Tf , respectively. 
+
+Rounding: The fractional solution zf is rounded to a new solution zr, so that a transmission schedule 
+
+xr is produced ( xr(m, t ) ∈ { 0, 1}). The dependent rounding method we use produces a schedule x that respects the integral constraints, i.e., the energy bound Eq. (14) of P1 and demand bound Eq. (24) of P3, but it may violate constraints Eq. (13) or constraints Eq. (23). 
+
+Re-optimization for P1: Keeping fixed the rounded schedule xr as calculated in the previous step, we re-solve equation P1, to obtain possibly better bandwidth allocations wro for P1. 8Feasibility boosting: If there are violated constraints Eq. (13) of P1, then we increase the available bandwidth B until they are all satisfied. Similarly, if there are violated constraints Eq. (23) of P3, then we increase the available energy Em until they are all satisfied. An alternative solution would be to avoid scheduling the whole demand of users with violated constraints during the current period Tf , but postpone the transmission of the remaining demand in subsequent periods. We do not adopt this solution, since our solution ensures the synchronicity of all DT transmissions, which can be a requirement for the application using the transmitting DTs. While the solution method summarized above is easily implementable if complete information is available to all DTs, and no time restrictions are imposed, the requirements of data privacy and periodic transmission 
+
+in this work preclude such a straight-forward approach. Instead, we propose solutions that address both these requirements. 
+
+4.1 Data privacy via Federated Learning 
+
+We assume that certain pieces of data (coefficients) of relaxations P1 or P3 are private , i.e., they are known only to their users and the corresponding DTs. We assume that data ZP 1 
+
+> m
+
+:= {Cm, n m, ¯Pm, [gm,t ]Tt=1 } for P1, or data ZP 3 
+
+> m
+
+:= {Cm, E m, [Pm,t ]Tt=1 } for P3, are private to user m, since the latter does not want to disclose any information about their location, distance from the BS, channel conditions, battery status, etc. Note that, although channel data for all users are available at the BS, access to these data is only permitted to the DTs of their owners. Equivalently, we assume that constraints Eq. (13)-Eq. (14) in P1, and Eq. (23)-Eq. (24) in P3, are local 
+
+for each user m. In order to solve P1 or P3 while keeping the coefficients of these constraints private, we employ the recent Federated Learning (FL) algorithm of [15], where the clients are the user DTs, and the global model to be learned is a solution to P1 or P3, residing in the central coordinator. [15] solve general convex optimization problems with global and local constraints of the following form: 
+
+min 
+
+> ϕN∑
+> m=1
+
+fm(ϕ; Zm) + h(ϕ), (26) subject to c0(ϕ; Z0) ≤ 0, (27) 
+
+cm(ϕ; Zm) ≤ 0, ∀m ∈ N . (28) where • ϕ ∈ Rd is the decision variables vector, • fm(ϕ; Zm) is the objective function for client m with data Zm,• h(ϕ) is a closed convex regularization function, • c0(ϕ; Z0) are global constraints with central coordinator data Z0, and • cm(ϕ; Zm) are local constraints (unique to each client). The clients enter into rounds of interaction with the central coordinator, where each of the clients (users) and the central coordinator maintains a set of Lagrangian multipliers for all the constraints (corresponding to the ‘model’ notion of FL). They enter into rounds of interaction, where in each round the clients send their current estimates of the Lagrangian multipliers (their ‘models’) to the central coordinator, the latter computes a new solution ϕ and new estimates for its own Lagrangian multipliers (its ‘model’), and sends the new ϕ to the clients. The interaction terminates when the maximum divergence between successive 9solutions falls below a threshold parameterized by parameter ϵ1 and the maximum divergence between successive model estimates falls below a threshold parameterized by parameter ϵ2.To apply the algorithm of [15], we set • ϕ := ( x, w, γ ) for P1 or ϕ := x for P3. • fm(ϕ; Zm) := 0 , ∀m for both P1, P3 and Zm defined as above. • h(ϕ) := −γ for P1 and h(ϕ) := 0 for P3. • Global constraints c0(ϕ; Z0) (where Z0 = ∅ in our case) are constraints Eq. (12) and Eq. (15) for P1, and constraints Eq. (22) for P3. • As mentioned above, local constraints cm(ϕ; Zm) are constraints Eq. (13)-Eq. (14) for P1, and Eq. (23)-Eq. (24) for P3. In what follows, we describe the Federated Learning (FL) algorithm used to solve the relaxations of P1 and P3. They are based on a proximal augmented Lagrangian (AL) method in which, at each round, the associated unconstrained subproblem is solved in a federated manner by an inexact alternating direction method of multipliers (ADMM) . We adopt this framework from [15], whose exposition is included here for completeness (see Section 4.1.1 and Section 4.1.2 below). Figure 3 shows the structure of the FL framework. 
+
+4.1.1 A proximal AL based FL algorithm for solving Eq. (26) 
+
+In this subsection, we describe a proximal AL-based FL algorithm (Algorithm 1) for finding a (nearly) optimal solution of Eq. (26) for prescribed ϵ1, ϵ 2 ∈ (0 , 1) . For notational convenience, we omit the data symbols Zm
+
+in local objectives and constraints when no confusion arises, and we denote by μm the Lagrangian multiplier associated with constraint cm with m = 0 referring to the global constraint. Each cm(ϕ) is understood as the vector formed by stacking the corresponding scalar local or global inequality constraints, we denote by pm
+
+the number of stacked scalar inequalities, i.e., the dimension of cm(ϕ). The operator [·]+ acts elementwise. The multiplier μm ∈ Rpm 
+
+> +
+
+is the nonnegative vector with the same dimension as cm(ϕ). At outer round k,the proximal AL subproblem associated with Eq. (26) is defined as 
+
+min 
+
+> ϕ
+> {
+
+ℓk(ϕ) := 
+
+> N∑
+> m=1
+
+fm(ϕ) + h(ϕ) + 12β
+
+> N∑
+> m=0
+> (
+
+∥[μkm + βc m(ϕ)] +∥2 − ∥ μkm∥2)︸ ︷︷ ︸
+
+> augmented Lagrangian function
+
++ 12β ∥ϕ − ϕk∥2  
+
+> ︸︷︷ ︸
+> proximal term
+> }
+
+. (29) Then, the multiplier estimates are updated according to the classical scheme: 
+
+μk+1  
+
+> m
+
+= [ μkm + βc m(ϕk+1 )] +, 0 ≤ m ≤ N. (30) The method uses the sequential penalization approach with parameter β, which involves solving a se-quence of unconstrained subproblems that combine the objective function with penalization of constraint violations. Notice that the subproblem in Eq. (29) can be rewritten as 
+
+min 
+
+> ϕ
+> {
+
+ℓk(ϕ) := 
+
+> N∑
+> m=0
+
+Pm,k (ϕ) + h(ϕ)
+
+> }
+
+, (33) 10 Algorithm 1 A proximal AL based FL algorithm 
+
+Input : tolerances ϵ1, ϵ 2 ∈ (0 , 1) , ϕ0, μ0 
+
+> m
+
+≥ 0 for 0 ≤ m ≤ N , ¯s > 0, and β > 0. 
+
+> 1:
+
+for k = 0 , 1, 2, . . . do  
+
+> 2:
+
+Set δk = ¯ s/ (k + 1) 2. 
+
+> 3:
+
+Call Algorithm 2 (see Section 4.1.2 below) with (δ, ˜ϕ0) = ( δk, ϕ k) to find an approximate solution 
+
+ϕk+1  
+
+> 4:
+
+to Eq. (33) in a federated manner such that 
+
+dist ∞(0 , ∂ℓ k(ϕk+1 )) ≤ δk. (31)  
+
+> 5:
+
+Coordinator update: The central coordinator updates μk+1 0 = [ μk 
+
+> 0
+
++ βc 0(ϕk+1 )] +. 
+
+> 6:
+
+Communication (broadcast): Each local DT m, 1 ≤ m ≤ N , receives ϕk+1 from the coordinator.  
+
+> 7:
+
+DT update (local): Each local DT m, 1 ≤ m ≤ N , updates μk+1  
+
+> m
+
+= [ μkm + βc m(ϕk+1 )] +. 
+
+> 8:
+
+Communication: Each local DT m, 1 ≤ m ≤ N , sends ∥μk+1  
+
+> m
+
+− μkm∥∞ to the coordinator.  
+
+> 9:
+
+Termination (Coordinator side): Output (ϕk+1 , μ k+1 ) and terminate the algorithm if 
+
+∥ϕk+1 − ϕk∥∞ + βδ k ≤ βϵ 1, max  
+
+> 0≤m≤N
+
+{∥ μk+1  
+
+> m
+
+− μkm∥∞} ≤ βϵ 2. (32)  
+
+> 10:
+
+end for 
+
+where Pm,k , 0 ≤ m ≤ N , are defined as 
+
+P0,k (ϕ) := 12β
+
+> (
+
+∥[μk 
+
+> 0
+
++ βc 0(ϕ)] +∥2 − ∥ μk 
+
+> 0
+
+∥2)
+
++ 12( N + 1) β ∥ϕ − ϕk∥2, (34) 
+
+Pm,k (ϕ) := fm(ϕ) + 12β
+
+> (
+
+∥[μkm + βc m(ϕ)] +∥2 − ∥ μkm∥2)
+
++ 12( N + 1) β ∥ϕ − ϕk∥2, ∀1 ≤ m ≤ N. (35) At each round of Algorithm 1, it applies an inexact ADMM solver (Algorithm 2) to find an approximate solution ϕk+1 to the subproblem Eq. (33), in which the local merit function Pm,k , constructed from the local objective fm and local constraint cm, is handled by the respective local client m, while the merit function 
+
+P0,k is handled by the central coordinator. For ease of later reference, we refer to the update from ϕk to ϕk+1 as one round of Algorithm 1, and call one iteration of Algorithm 2 for solving Eq. (29) one inner iteration of Algorithm 1. 
+
+4.1.2 An inexact ADMM for FL 
+
+In this subsection, we describe an inexact ADMM-based FL algorithm (Algorithm 2) for solving Eq. (33). We need to solve the subproblem of the same form each k, therefore we drop k and focus on solving the following model problem in an FL manner. To make each participating client m handle their local objective 
+
+Pm independently (see Section 4.1.1), we introduce decoupling variables um’s and obtain the following equivalent consensus reformulation for Eq. (33): 
+
+min  
+
+> ϕ,u m
+> {N∑
+> m=1
+
+Pm(um) + P0(ϕ) + h(ϕ)
+
+> }
+
+s.t. um = ϕ, 1 ≤ m ≤ N, (42) which allows each local client m to handle the local variable um and the local objective function Pm while imposing consensus constraints that force clients’ local parameters um equal to the global parameter ϕ. This reformulation enables the applicability of an inexact ADMM that solves Eq. (42) in a federated manner. At 11 Algorithm 2 An inexact ADMM based FL algorithm 
+
+Input : tolerance δ ∈ (0 , 1] , q ∈ (0 , 1) , ˜ϕ0, and ρm > 0 for 1 ≤ m ≤ N ; 
+
+> 1:
+
+Set ϕ0 = ˜ϕ0, and (u0
+
+> m
+
+, λ 0
+
+> m
+
+, ˜u0
+
+> m
+
+) = ( ˜ϕ0, −∇ Pm( ˜ϕ0), ˜ϕ0 − ∇ Pm( ˜ϕ0)/ρ m) for 1 ≤ m ≤ N . 
+
+> 2:
+
+for t = 0 , 1, 2, . . . do  
+
+> 3:
+
+Set εt+1 = qt; 
+
+> 4:
+
+Coordinator update: The central server finds an approximate solution ϕt+1 to 
+
+min 
+
+> ϕ
+
+{
+
+φ0,t (ϕ) := P0(ϕ) + h(ϕ) + 
+
+> N
+
+∑
+
+> m=1
+
+[ ρm
+
+2 ∥˜utm − ϕ∥2
+
+]}
+
+(36)  
+
+> 5:
+
+such that dist ∞(0 , ∂φ 0,t (ϕt+1 )) ≤ εt+1 . 
+
+> 6:
+
+Communication (broadcast): Each local DT m, 1 ≤ m ≤ N , receives ϕt+1 from the coordinator.  
+
+> 7:
+
+Client update (local): Each local DT m, 1 ≤ m ≤ N , finds an approximate solution ut+1  
+
+> m
+
+to 
+
+min 
+
+> um
+
+{
+
+φm,t (um) := Pm(um) + ⟨λtm, u m − ϕt+1 ⟩ + ρm
+
+2 ∥um − ϕt+1 ∥2
+
+}
+
+(37)  
+
+> 8:
+
+such that ∥∇ φm,t (ut+1  
+
+> m
+
+)∥∞ ≤ εt+1 , and then updates 
+
+λt+1  
+
+> m
+
+= λtm + ρm(ut+1  
+
+> m
+
+− ϕt+1 ), (38) 
+
+˜ut+1  
+
+> m
+
+= ut+1  
+
+> m
+
++ λt+1  
+
+> m
+
+/ρ m, (39) 
+
+˜εm,t +1 = ∥∇ φm,t (ϕt+1 ) − ρm(ϕt+1 − utm)∥∞. (40)  
+
+> 9:
+
+Communication: Each local DT m, 1 ≤ m ≤ N , sends (˜ ut+1  
+
+> m
+
+, ˜εm,t +1 ) back to the coordinator.  
+
+> 10:
+
+Termination (Coordinator side): Output ϕt+1 and terminate this algorithm if 
+
+εt+1 +
+
+> N
+
+∑
+
+> m=1
+
+˜εm,t +1 ≤ δ. (41)  
+
+> 11:
+
+end for 
+
+each iteration, an ADMM solver optimizes the AL function associated with Eq. (42): 
+
+LP (ϕ, u, λ ) := 
+
+> N
+
+∑
+
+> m=1
+
+[
+
+Pm(um) + ⟨λm, u m − ϕ⟩ + ρm
+
+2 ∥um − ϕ∥2
+
+]
+
++ P0(ϕ) + h(ϕ) (43) with respect to the variables ϕ, u, and λ alternately, where u = [ uT 
+
+> 1
+
+, . . . , u TN ]T and [λT 
+
+> 1
+
+, . . . , λ TN ]T collect all the local parameters and the multipliers associated with the consensus constraints, respectively. Specifically, in iteration t, one performs 
+
+ϕt+1 ≈ arg min 
+
+> ϕ
+
+LP (ϕ, u t, λ t), (44) 
+
+ut+1 ≈ arg min 
+
+> u
+
+LP (ϕt+1 , u, λ t), (45) 
+
+λt+1  
+
+> m
+
+= λtm + ρm(ut+1  
+
+> m
+
+− ϕt+1 ), ∀1 ≤ m ≤ N. (46) By the definition of LP in Eq. (43), one can verify that the step in Eq. (44) is equivalent to Eq. (36), and also the step in Eq. (45) can be computed in parallel, which corresponds to Eq. (37). Therefore, the ADMM updates naturally suit the FL framework, as the separable structure in Eq. (43) over the pairs {(um, λ m)}
+
+enables the local update of (um, λ m) at each client m while ϕ is updated by the central coordinator. 12 Local Optimizer  
+
+> Local Optimizer
+> Local Optimizer
+> Global Optimizer
+> Central Coordinator
+> DT
+> DT
+> DT
+> model
+> update
+> model
+> update
+> model
+> update
+> Initial
+> model update
+> Termination
+> (Algorithm 2)
+> Termination
+> (Algorithm 1)
+
+Figure 3: Structure of proximal AL-based FL algorithm. By setting Blog 2(1 + ¯Pmgm,t  
+
+> N0Bx
+
+)x|x=0 := 0 , Assumptions 0 and 1 of [15] (convexity and continuous differ-entiability of objectives and constraints, and strong duality for P1 and P3) are satisfied. Unfortunately the Lipschitz conditions of Assumption 2 (b) hold only for P3 (while Assumption 2 (a) is trivially true for both problems), and this will affect our complexity analysis for P1 below. By applying the FL algorithm of [15] we obtain a (nearly) optimal fractional solution for P1, P3 (Theorem 7 in [15]), without disclosing private information, as guaranteed by FL. Note that one could argue that nm (for P1) or ⌈Cm/(Rτ )⌉ (for P3) can be deduced by the (globally available) transmission schedule x, since the latter discloses how many time slots each user uses. But determining exactly these values, and not a lower bound for them, is not possible since only user m knows whether the fractional solution makes constraint Eq. (14) or Eq. (24) tight or not. 
+
+4.2 Rounding the fractional solution 
+
+In what follows, we describe our algorithms used to round xf to an integral schedule x∗. They are based on dependent rounding [13], which we employ similarly to [6], and whose exposition is included here for completeness. Assume we are given a bipartite graph (V1, V 2, E ) with bipartition (V1, V 2) and a value 
+
+xi,j ∈ [0 , 1] for each edge (i, j ) ∈ E. Initialize yi,j = xi,j for each (i, j ) ∈ E. Values yi,j will be probabilistically modified in several (at most |E|) iterations such that yi,j ∈ { 0, 1} at the end, at which point we will set 
+
+xi,j := yi,j for all (i, j ) ∈ E, where now xi,j are the (random) rounded final values for edges (i, j ) ∈ E.13 The iterations that modify y proceed as follows: We call an edge (i, j ) floating if its value yi,j is not integral (i.e., yi,j ∈ (0 , 1) ). Let ˜E ⊆ E be the current set of floating edges. If ˜E = ∅, the process terminates by setting xi,j := yi,j for all (i, j ) ∈ E. Otherwise, find a maximal path S in the subgraph (V1, V 2, ˜E)
+
+in O(|V1| + |V2|) time running depth-first-search (DFS). Partition the edge-set of S into two alternating matchings A and B. We define 
+
+α := min {γ > 0 : ( ∃(i, j ) ∈ A : yi,j + γ = 1) ∨ (∃(i, j ) ∈ B : yi,j − γ = 0) } (47) 
+
+β := min {γ > 0 : ( ∃(i, j ) ∈ A : yi,j − γ = 0) ∨ (∃(i, j ) ∈ B : yi,j + γ = 1) }. (48) Then we execute the following randomized step: • With probability β/ (α + β) set yi,j := yi,j + α ∀(i, j ) ∈ A, y i,j := yi,j − α ∀(i, j ) ∈ B, and • with probability α/ (α + β) set yi,j := yi,j − β ∀(i, j ) ∈ A, y i,j := yi,j + β ∀(i, j ) ∈ B.In either case, at least one edge (i, j ) ∈ ˜E will stop being floating, i.e., yi,j ∈ { 0, 1}, and, therefore, after at most |E| iterations or O(|E|(|V1| + |V2|)) time, all values y will become integral and the rounding process terminates. We refer to this algorithm as Simple Dependent Rounding , which is summarized in Algo-rithm 3. Note that it is a randomized algorithm, and the final rounded solutions x∗ are random variables. In the context of our problem, V1 = {m : m ∈ N } , V2 = {t : t ∈ T } , and E = {(m, t ) : xm,t > 0}. Also, since dependent rounding never violates the degree of the nodes of G, constraints Eq. (14) or Eq. (24) are satisfied from the beginning to the end of the algorithm when applied to the fractional solution of P1 or P3, respectively. We propose a modification of this standard dependent rounding algorithm (called Smart Dependent Rounding ), that uses a limited amount of information about the users’ channel gain factors gm,t in the hope of achieving a better rounding. Namely, dependent rounding is applied separately first on the set of edges with large link gains gm,t ≥ θ for some threshold θ, then on the set of edges with link gains gm,t < θ , and, finally, on all remaining floating edges so that in the end an integral schedule is calculated. A step-by-step description is given in Algorithm 4. Note that in lines 6-8 each edge value yi,j that is rounded to 0 or 1 is not a floating edge for subsequent applications of Algorithm 3. The intuition behind the prioritization of large link gain edges for rounding is that the fractional solution would give large value xi,j to such edges 
+
+(i, j ) for users that are tightly constrained by their demands. Hence, in order to satisfy Eq. (14) or Eq. (24) they should be scheduled on high-gain links for transmission. More specifically, and since link gains are private, θ is computed by the central coordinator, in collabo-ration with the user DTs, using a Gaussian Mixture Model (GMM) approach that doesn’t reveal the gm,t ’s. In the case of Jakes’s model [19], a two-component GMM is fit in a federated EM manner [9] to the ob-served link gains, preserving the privacy of the individual gm,t since no raw data leaves the local users (only aggregated sufficient statistics are shared), and θ is determined as the intersection point of the resulting Gaussian distributions. This GMM-based thresholding provides a lightweight, data-driven way to separate weak/strong gain regimes and set θ without centralizing raw link gains. It is important to emphasize that the proposed Smart Dependent Rounding framework is independent of both the channel model and the specific method used to determine θ. After computing θ, the central coordinator is asking each DT m to return 0 if gm,t < θ or 1 otherwise (this is the only bit of information about gain factors that users need to reveal). Then the edge grouping and the dependent rounding can proceed as described above. Algorithm 5 ( Fixed-Power Scheduler (FPS) ) below codifies the solution steps for problem P1 (prob-lem P2 is similar), while Algorithm 6 ( Power-Control Scheduler (PCS) ) codifies the solution steps for problem P3. Lines 1 in both algorithms apply binary search on T in order to determine the minimum Tf
+
+for which the FL algorithm of [15] produces a feasible solution. Lines 2-6 round xf using either the Simple 
+
+14 Algorithm 3 Simple Dependent Rounding 
+
+Input : bipartite graph G = ( V1, V 2, E ); fractional assignments xi,j ∈ [0 , 1] for all (i, j ) ∈ E. 
+
+> 1:
+
+Initialize yi,j ← xi,j for all (i, j ) ∈ E; ˜E ← E. 
+
+> 2:
+
+for all (i, j ) ∈ ˜E do  
+
+> 3:
+
+if yi,j ∈ { 0, 1} then  
+
+> 4:
+
+˜E ← ˜E \ { (i, j )} 
+
+> 5:
+
+end if  
+
+> 6:
+
+end for  
+
+> 7:
+
+while ˜E̸ = ∅ do  
+
+> 8:
+
+Path selection: Find a maximal alternating path S ← DFS( V1, V 2, ˜E); let S = A ∪ B with alter-nating matchings A, B . 
+
+> 9:
+
+Step sizes: Compute α and β from Eq. (47) and Eq. (48).  
+
+> 10:
+
+With probability β/ (α + β):
+
+yi,j ← yi,j + α for all (i, j ) ∈ A, and yi,j ← yi,j − α for all (i, j ) ∈ B. 
+
+> 11:
+
+With probability α/ (α + β):
+
+yi,j ← yi,j − β for all (i, j ) ∈ A, and yi,j ← yi,j + β for all (i, j ) ∈ B. 
+
+> 12:
+
+for all (i, j ) ∈ ˜E do  
+
+> 13:
+
+if yi,j ∈ { 0, 1} then  
+
+> 14:
+
+˜E ← ˜E \ { (i, j )} 
+
+> 15:
+
+end if  
+
+> 16:
+
+end for  
+
+> 17:
+
+end while  
+
+> 18:
+
+Set xi,j ← yi,j for all (i, j ) ∈ E. 
+
+> 19:
+
+return x
+
+Dependent Rounding or the Smart Dependent Rounding (depending on choice rounding_mode ). Al-gorithm 5 applies an extra step of re-optimization for bandwidth allocation w (line 7) to satisfy as many of the Eq. (13) constraints as possible, applying again the algorithm of [15]. Finally, if there are still unsatis-fied constraints Eq. (13), Algorithm 5 increases (global) bandwidth allocation B (line 8) by satisfying user requests. In Algorithm 6, if there are unsatisfied constraints Eq. (23), users increase their energy allocations 
+
+Em (line 7) until these constraints are satisfied. Note that this step is done internally by each user, so no private data are revealed. 
+
+4.3 Transmission periodicity 
+
+Besides ensuring the security of private data, the proposed solution must also comply with the requirement of periodic transmission, a feature of applications using DTs. To achieve this, we have to accelerate the computation of the next-round transmission schedule and bandwidth allocation (for problems P1 and P2), so that it can be completed before the current transmission round is completed. We start by noting that the binary search employed for the solution of problems P1 and P3 takes at most O(log Tf ) iterations. In every iteration, the FL algorithm of [15] runs in iterations, each computing a better primal or dual solution of a convex problem, related to relaxations P1-P3, and each such problem can be solved by a standard solver in polynomial time on N and Tf . Since the (linear) constraints of P3 satisfy the Lipschitz conditions of Assumption 2(b) of [15], the number of iterations is O(max {ϵ−41 , ϵ −42 }), where 
+
+ϵ1, ϵ 2 are implementation parameters that determine the maximum deviation from the optimal solution and satisfaction of constraints, respectively, in the sense of ϵ-KKT approximability (Theorem 4 of [15]). Unfortunately, constraints Eq. (13) of P1 and Eq. (18) of P2 do not satisfy these conditions. In particular, 15 Algorithm 4 Smart Dependent Rounding 
+
+Input : G = ( V1, V 2, E ), xi,j ∈ [0 , 1] for each (i, j ) ∈ E; [gm,t ]Tt=1 for all m. 
+
+> 1:
+
+Preprocessing (Coordinator): In collaboration with the DTs, estimate θ via a two-component GMM fitted with federated EM [9]. Broadcast θ to all DTs.  
+
+> 2:
+
+Local step (each DT m): For each owned edge (m, t ), compute 
+
+bm,t =
+
+
+
+1, gm,t ≥ θ
+
+0, gm,t < θ  
+
+> 3:
+
+Communication: Each DT sends only bm,t (never gm,t ) to the coordinator.  
+
+> 4:
+
+Coordinator initialization: yi,j ← xi,j for all (i, j ) ∈ E. 
+
+> 5:
+
+Coordinator partition: 
+
+E1 := {(m, t ) ∈ E : bm,t = 1 }, E2 := {(m, t ) ∈ E : bm,t = 0 }. 
+
+> 6:
+
+Coordinator: Apply Algorithm 3 on graph G1 = ( V1, V 2, E 1). 
+
+> 7:
+
+Coordinator: Apply Algorithm 3 on graph G2 = ( V1, V 2, E 2). 
+
+> 8:
+
+Coordinator: Apply Algorithm 3 on graph G = ( V1, V 2, E ). 
+
+> 9:
+
+Set xi,j ← yi,j for all (i, j ) ∈ E. 
+
+> 10:
+
+return x
+
+Algorithm 5 Fixed-Power Scheduler (FPS) for P1 
+
+Input : user data Cm, n m, ¯Pm, [gm,t ]Tt=1 for all m; system parameters B, N 0, τ . 
+
+> 1:
+
+Binary search on T : obtain xf , w f , γ f , T f . 
+
+> 2:
+
+if rounding_mode == simple then  
+
+> 3:
+
+Simple Dependent Rounding (xf , w f ) → xr, w r 
+
+> 4:
+
+else  
+
+> 5:
+
+Smart Dependent Rounding (xf , w f ) → xr, w r 
+
+> 6:
+
+end if  
+
+> 7:
+
+Re-optimization (xr, T f ) → wro  
+
+> 8:
+
+Boost bandwidth (xr, w ro , B ) → w∗, B ∗ 
+
+> 9:
+
+return Tf , x r, w ∗, B ∗
+
+Assumption 2(b) of [15] requires the Jacobians of the local constraints cm(ϕ; Zm) (which include Eq. (13) and Eq. (18)) to be locally Lipschitz, i.e., 
+
+∥∇ ϕ(u) − ∇ ϕ(v)∥ ≤ L∥u − v∥, ∀ u, v ∈ U , (49) for some neighborhood U and constant L > 0. In Eq. (13) and Eq. (18), 
+
+ϕm,t (w) ≜ B w log 2
+
+(
+
+1 + αm,t 
+
+w
+
+)
+
+, αm,t ≜ ¯Pmgm,t 
+
+N0B > 0.
+
+It is easy to see that this function violates Eq. (49) at w = 0 : its derivative satisfies ϕ′
+
+> m,t
+
+(w) → +∞
+
+as w → 0+, and, therefore, it is not locally Lipschitz around w = 0 . In order to avoid iterating a lot when ϕm,t (w) → 0+, i.e., when wm,t → 0, we force bandwidth allocation wm,t := 0 . Although we have no theoretical upper bound for the number of iterations in this case, the number of iterations is greatly decreased by this heuristic in our simulations (Section 5), and this fast execution allows for the repeated application of our scheduling algorithms within small time periods. The downside is that the heuristic for handling the violated Lipschitz conditions may introduce additional approximation error. 16 Algorithm 6 Power-Control Scheduler (PCS) for P3 
+
+Input : user data Cm, E m, [Pm,t ]Tt=1 for all m; system parameters R, τ . 
+
+> 1:
+
+Binary search on T : obtain xf , T f . 
+
+> 2:
+
+if rounding_mode == simple then  
+
+> 3:
+
+Simple Dependent Rounding (xf ) → xr 
+
+> 4:
+
+else  
+
+> 5:
+
+Smart Dependent Rounding (xf ) → xr 
+
+> 6:
+
+end if  
+
+> 7:
+
+Boost energy (xr) 
+
+> 8:
+
+return Tf , x r
+
+Finally, the rounding algorithms need O(N 2T 2 
+
+> f
+
+) time. 
+
+# 5 Numerical Results 
+
+In this section, we present simulation results to demonstrate the performance of the proposed solution. We consider a single BS serving N users. The initial positions of the users are uniformly distributed within a circular area of radius 1 km centered at the BS. Each user moves at a constant speed v, and their moving directions are independently and uniformly distributed over [0 , 2π]. Let dm,t denote the distance between user m and the BS at time t and Lm,t = L0(dm,t )−α the distance-based path loss, where L0 is the path loss when the distance is 1 m and α is the path loss exponent. The complex channel gains between a user and the BS are generated from a first-order Gauss–Markov process [32] as follows: 
+
+hm,t +1 = ρ h m,t +
+
+> √
+
+1 − | ρ|2 ωm,t , (50) where ωm,t ∼ CN (0, L m,t  
+
+> )
+
+is the complex Gaussian noise with zero mean and variance Lm,t , and ρ =
+
+J0(2 πf dτ ) is the correlation coefficient between two successive time slots, in accordance with Jakes' model [32]. Here, J0(·) is the zeroth-order Bessel function, fd = vf c 
+
+> c
+
+is the Doppler shift, fc is the carrier frequency, and 
+
+c is the electromagnetic wave propagation speed. The channel power gain between user m and the BS at time slot t is then 
+
+gm,t = |hm,t |2. (51) Consistent with our assumption that either the number of users requiring simultaneous scheduling is small or that users can be partitioned into small, independent groups, we set the number of users to N = 10 ,which ensures that the runtime of our algorithms remains well below the scheduling time period. In addition, the scheduling horizon is set to T = 100 time slots, reflecting the practical limitation that reliable future channel state knowledge or prediction is typically unavailable beyond a short time horizon. Default parameters used in the simulation are summarized in Table 1, whereas the algorithm-specific hyperparameters of the proposed FL framework are listed in Table 2. Similar parameter values were also used in [29, 6, 21]. The hyperparameters of the federated optimization framework are selected to balance constraint satis-faction, numerical stability, and execution latency. The augmented–Lagrangian penalty β is chosen so that constraint violations are sufficiently penalized without causing ill-conditioning in the local convex subprob-lems. The local step size ρm is set conservatively (i.e., it is small) to ensure stable client/DT updates under heterogeneous channel and demand conditions. A small proximal parameter ¯s is used to regularize the local updates and improve robustness near boundary solutions (e.g., very small allocations). The primal and dual tolerances (ε1, ε 2) are selected to achieve reliable convergence with negligible practical constraint violations while keeping the number of iterations small. We use a relaxation/momentum factor q close to one to mildly 17 Table 1: Default simulation parameters.                                       
+
+> Parameter Value
+> Number of users N10
+> Slot duration τ5ms Update period T100 slots Block length (for P2) ts10 slots Per-user demand Cm1.6Mbit Fixed transmit power ¯Pm0.1WUser speed v10 km/h System bandwidth B9MHz Noise spectral density N0−174 dBm/Hz Fixed uplink rate R(single-user slotting) 80 Mb/s Energy budget Em40 mJ Carrier frequency fc900 MHz Path loss exponent 3
+
+Table 2: Algorithm-specific hyperparameters for the federated optimization/learning framework.                 
+
+> Parameter Value
+> Augmented–Lagrangian penalty β15
+> Local step size ρm0.01
+> Proximal parameter ¯s0.001
+> Primal tolerance ϵ10.5
+> Dual tolerance ϵ20.05
+> Relaxation/momentum q0.9
+> Initial local multipliers μ0
+> m(0 , . . . , 0) T
+
+accelerate convergence without inducing oscillations. Finally, the local multipliers μ0 
+
+> m
+
+are initialized to zero to provide a neutral starting point when no prior dual information is available. The specific values of these hyperparameters in Table 2 were finalized through trial-and-error tuning to obtain stable convergence and good performance. The hyperparameters of the federated GMM used to determine θ were finalized through trial-and-error tuning to achieve stable clustering and good performance on the Jakes-model-based channel traces employed in our simulations. The simulations were performed on a desktop with an Intel ® Core i7-12700 CPU (12 cores/20 threads, base 2.10 GHz), 64 GB RAM; the system ran a 64-bit operating system. To evaluate our proposed algorithms, we compared their performance against Bonmin [1], an open-source MINLP solver from the COIN-OR project [4], licensed under the Eclipse Public License. 
+
+5.1 Simulation Set I: resource allocation 
+
+For each simulation run, the channel gains are averaged over 100 independent channel realizations, each generated from a distinct set of initial user locations, moving directions, and small-scale fading, and spanning for T time slots. Based on the average channel gains, we apply the FPS Algorithm to P1 and P2 and the PCS algorithm to P3, and record the minimal bandwidth boost (FPS) or energy boost (PCS) required by the feasibility-boosting step to satisfy all constraints within the current T time slots. The reported results represent an average over 100 independent simulation runs. Since dependent rounding is inherently random, our results are obtained after five rounds of the rounding algorithms. Additional rounds further reduce required bandwidth or energy boost. For benchmarking, we also obtained the Optimum solution by directly solving the original problems using Bonmin, where the bandwidth (for P1 and P2) and energy budget (for 18 P3) is increased until the problem becomes feasible. Figures 4a-6b show the bandwidth or energy boost. Figures 4a and 4b, respectively, show the bandwidth boost when applying the FPS algorithm to P1, as the per-user demand Cm and the original bandwidth B change. Figure 4a shows that all methods require more bandwidth boost as the demand increases. Figure 4b shows that as B increases, the required bandwidth boost drops rapidly and then approaches zero. In both cases, Smart rounding slightly reduces the bandwidth boost compared with Simple rounding. Furthermore, for both rounding methods, the Re-optimization step significantly reduces the bandwidth boost and brings the requirement close to the optimum, though at the cost of additional decision latency. Figures 5a and 5b respectively, show the bandwidth boost when applying the FPS algorithm to P2 as the per-user demand Cm and the original bandwidth B increase. Compared with the results in figures 4a and 4b, P2 generally results in more bandwidth boosts, as the decisions are based on the channel gains over a shorter time interval and constraints must be satisfied within each block of ts time slots rather than across the entire T time slots. Figures 6a and 6b, respectively, show the required energy boosts when applying the PCS algorithm to P3, as per-user demand Cm and the energy budget Em change. As the demand increases, the required energy increases slowly at first and then more rapidly. As Em increases, the required energy boost decreases rapidly at the beginning and then gradually approaches zero once Em is sufficiently large. Compared with Simple rounding, Smart rounding achieves slight reduction in energy requirement. The gap between the PCS solutions and the optimum increases as Cm increases or Em decreases. 1 2 3 4 5 6 7       
+
+> 020 40 60 80 100
+> Bandwidth Boost (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+> (a) P1: boost vs. demand 45678910
+> 020 40 60 80 100
+> Bandwidth Boost (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum (b) P1: boost vs. bandwidth
+
+Figure 4: Simulation Set I (FPS, P1): required bandwidth boost under varying demand Cm and bandwidth 
+
+B.19 1 2 3 4 5 6 7
+
+020 40 60 80 100 120 
+
+> Bandwidth Boost (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+
+(a) P2: boost vs. demand 4 5 6 7 8 9 10 
+
+020 40 60 80 100  
+
+> Bandwidth Boost (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+
+(b) P2: boost vs. bandwidth 
+
+Figure 5: Simulation Set I (FPS, P2): required bandwidth boost under varying demand Cm and bandwidth 
+
+B.1 2 3 4 5 6 7
+
+010 20 30 40 50 60 70 80 90 
+
+> Energy Boost (%)
+> PCS + Simple
+> PCS + Smart
+> Optimum
+
+(a) P3: energy-boost vs. Cm25 30 35 40 45 50 55 
+
+010 20 30 40 50 60 70 80 90  
+
+> Energy Boost (%)
+> PCS + Simple
+> PCS + Smart
+> Optimum
+
+(b) P3: energy-boost vs. Em
+
+Figure 6: Simulation Set I (PCS): required energy boost for P3 under varying demand Cm and energy budget 
+
+Em.
+
+5.2 Simulation Set II: scheduling performance 
+
+In this set of simulations, we evaluate the performance of the resource allocation and scheduling decisions obtained from Set I. At the beginning of each T -interval, 100 independent channel realizations are generated based on the current user locations and moving directions, and the average channel gains at each time slot are used to solve problems P1-P3. The runtime for solving the problem should be less than T (for P1 and P3) or 
+
+ts (for P2) time slots, and the corresponding resource allocation and scheduling decisions are applied to data transmissions in the subsequent T (for P1 and P3) or ts (for P2) slots. For FPS (P1 and P2), the decisions 20 include the boosted bandwidth B∗, the bandwidth allocation w∗; and for PCS (P3), the decisions include 
+
+Tf , xr, and the boosted per-user energy budgets. Since the resource allocation and scheduling decisions are not based on the exact channel gains, the demand constraints Eq. (13) in P1 and Eq. (18) in P2, and the energy-budget constraint Eq. (23) in P3, may be violated. For each of these constraints, the percentage of violation, defined as the difference between the two sides of the expression divided by the right-hand side, is recorded and then averaged over 100 independent simulation runs. The remaining constraints are not subject to violation, as their satisfaction is guaranteed by the solutions and unaffected by channel gain variations. Figures 7a and 7c, respectively, show the average constraint violation under the FPS algorithm for P1 as the bandwidth B and demand Cm change. The results indicate that the constraint violations remain relatively low across all solution methods. Smart rounding achieves lower constraint violations than Simple rounding, and incorporating Re-optimization with either Simple or Smart rounding further reduces the violations. The violation rate achieved by Smart rounding with re-optimization is within approximately 1% higher than the Optimum, whereas Simple rounding without Re-optimization is about 2% above the optimum. Since the Optimum solution is obtained using the exact channel gains over the entire T time slots (for P1 and P3) or ts time slots (for P2), the proposed solutions demonstrate very strong performance in comparison. Figures 7b and 7d, respectively, show the average constraint violation under the FPS algorithm for P2 as the bandwidth B and demand Cm change. Similar to the results for P1 in figures 7a and 7c, the violations remain low and close to the Optimum across all proposed solutions. A comparison with figures 7a and 7c further indicates that the violations using P2 are smaller than using P1, and this is due to higher bandwidth boosts using P2. Figures 8a and 8b, respectively, show the average constraint violation using the PCS algorithm for P3 as the energy budget Em and demand Cm change. The constraint violation is consistently low and close to the optimum. Overall, we can conclude that i) Smart rounding achieves lower resource boosts (bandwidth or energy) and reduced constraint violations compared to Simple rounding, while maintaining similar complexity; ii) Re-optimization significantly reduces the bandwidth boosts in both P1 and P2; and iii) all proposed solutions achieve constraint violation close to the optimum. In practice, the user may continue transmitting the remaining bits at the end of the Tf interval. Since the constraint violations are small, data transmissions can be completed with a few additional time slots (typically one or two). Therefore, as long as T > T f , all user data can be successfully delivered within T time slots. In all of the presented results, the performance of the proposed algorithms have been compared with an optimum result obtained by directly solving the original problem formulations. It can be seen that the performance gap compared to this optimum is small, and the violation percentages are small values, indicating that the proposed method achieves near-optimal schedules. 
+
+5.3 Simulation Set III: algorithm runtime 
+
+Table 3 reports the mean runtime of the different solution methods. For P1 and P2, “Base” denotes the runtime of FPS with either Simple or Smart rounding (without Re-optimization), as the two rounding methods result in nearly identical runtimes. “+ Re-Opt” is the runtime of the Base method plus the additional runtime required for the Re-optimization stage. For P3, “Base” denotes the runtime of PCS with either Simple or Smart rounding. As shown in the table, enabling Re-optimization increases the overall runtime. The relative runtimes are consistent with the problem sizes and solver call patterns. P1 is the slowest because it conducts a binary search on T and therefore invokes the federated solver multiple times; P2 is faster than P1 because it optimizes over a fixed block of ts slots with fewer decision variables; and P3 is faster than P1 since its fractional relaxation reduces to a linear program that can be solved efficiently. We 21 4 5 6 7 8 9 10 
+
+00.5 11.5 22.5 33.5 4
+
+> Average Constraint Violation (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+
+(a) P1: violation vs. bandwidth 4 5 6 7 8 9 10 
+
+00.5 11.5 22.5 33.5 4 
+
+> Average Constraint Violation (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+
+(b) P2: violation vs. bandwidth 1 2 3 4 5 6 7
+
+00.5 11.5 22.5 33.5 4
+
+> Average Constraint Violation (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+
+(c) P1: violation vs. demand 1 2 3 4 5 6 7
+
+00.5 11.5 22.5 33.5 4 
+
+> Average Constraint Violation (%)
+> FPS + Simple
+> FPS + Smart
+> FPS + Simple + Re-optimization
+> FPS + Smart + Re-optimization
+> Optimum
+
+(d) P2: violation vs. demand 
+
+Figure 7: Simulation Set II (FPS): average constraint violation for P1 and P2 under varying channel band-width B and demand Cm.note that the iterative federated optimization is done via the backbone network that connects the DT edge servers. Therefore, this communication is a small part of the measured runtime in Table 3, i.e., the total scheduling latency is dominated by the computation of the fractional optimal solutions. Moreover, since the user group size is kept small as mentioned earlier, the problem size allows the algorithms to run within the current scheduled period. Scaling to larger user populations is achieved by increasing the number of user groups. For timing guarantees, recall that P1 and P3 operate over a period of T slots of duration τ , and the sched-ule computed for the next period must be available before the current period ends so it can be disseminated to users and applied at the beginning of the next period (one-period look-ahead operation). Therefore, the execution time of the algorithm should not exceed T τ = 500 ms. For P2, the runtime reported in Table 3 is the total runtime for an entire T -interval, comprised of a sequence of ts-blocks. Since each ts-block is used 22 25 30 35 40 45 50 55          
+
+> 00.5 11.5 22.5 33.5 4
+> Average Constraint Violation (%)
+> PCS + Simple
+> PCS + Smart
+> Optimum (a) P3: violation vs. energy budget Em1234567
+> 00.5 11.5 22.5 33.5 4
+> Average Constraint Violation (%)
+> PCS + Simple
+> PCS + Smart
+> Optimum (b) P3: violation vs. demand Cm
+
+Figure 8: Simulation Set II (PCS): average constraint violation for P3 under varying energy budget Em and demand Cm.Table 3: Runtime of the proposed solver.                
+
+> Problem P1 Problem P2 P3
+> Base + Re-Opt Base + Re-Opt Base
+> 125 ms 180 ms 50 ms 70 ms 60 ms
+
+to produce the schedule for the upcoming ts slots, the scheduler must be done in fewer than ts time slots. Indeed, the runtime of P2 is between 10ms and 14ms, which is well below the limit of tsτ = 50 ms. All measurements were obtained on a desktop with an Intel ® Core i7 12700 processor with 12 cores and 20 threads at 2.10 GHz and 64 GB of memory on a 64 bit operating system. In practical deployments, each user’s DT may run on an edge server with newer processors and more cores. Since client-side work in each federated round parallelizes across the DTs, such multi-core edge hardware can achieve shorter wall-clock times than our desktop baseline, so actual execution times can be considerably better than those shown in the table. 
+
+# 6 Concluding remarks 
+
+DTs may protect information that is considered private to their associated physical systems. For a mobile device, this may include things such as its mobility profile, recent location(s), and experienced channel con-ditions. Online schedulers typically use this type of information to perform tasks such as shared bandwidth and channel time slot assignments. In this paper, we considered three transmission scheduling problems with energy constraints, where such information is needed, and yet must remain private: minimizing to-tal transmission time when (i) fixed-power or (ii) fixed-rate time slotting with power control is used, and (iii) maximizing the amount of data uploaded in a fixed time period. Using a real-time federated opti-mization framework, we showed how the scheduler can iteratively interact only with the DTs to produce global fractional solutions to these problems, without the latter revealing their private information. Then dependent rounding was used to round the fractional solution into a channel transmission schedule for the 23 physical systems. Experiments on wireless traces showed that consistent makespan reductions with near-zero bandwidth/energy violations are possible with millisecond-order end-to-end runtime for typical edge server hardware. To the best of our knowledge, this is the first framework that enables channel sharing across DTs using operations that do not expose private data. 
+
+# References 
+
+[1] Bonmin (basic open-source mixed integer programming). http://projects.coin-or.org/Bonmin .[2] Necdet S. Aybat and Erfan Y. Hamedani. A primal-dual method for conic constrained distributed optimization problems. In Advances in Neural Information Processing Systems (NeurIPS) , volume 29, 2016. [3] Necdet S. Aybat and Erfan Y. Hamedani. A distributed admm-like method for resource sharing over time-varying networks. SIAM Journal on Optimization , 29(4):3036–3068, 2019. [4] P. Bonami, L. T. Biegler, A. R. Conn, G. Cornuéjols, I. E. Grossmann, C. D. Laird, J. Lee, A. Lodi, F. Margot, N. Sawaya, and A. Wächter. An algorithmic framework for convex mixed integer nonlinear programs. Discrete Optimization , 5(2):186–204, 2008. [5] H. Chen, X. Liu, Y. Wang, Z. Li, and S. Wang. Digital twin–assisted microservice offloading and bandwidth allocation via reinforcement learning. arXiv preprint arXiv:2403.08687, Mar 2024. [6] H. Chen, T. D. Todd, D. Zhao, and G. Karakostas. Digital twin model selection for feature accuracy. 
+
+IEEE Internet of Things Journal , 11(7):11415–11426, Apr 2024. [7] Lingyang Chu, Lanjun Wang, Yanjie Dong, Jian Pei, Zirui Zhou, and Yong Zhang. Fedfair: Training fair models in cross-silo federated learning. arXiv preprint arXiv:2109.05662 , 2021. [8] M. Cunha et al. Compromising location privacy through wi-Fi RSSI tracking. Scientific Reports , 2025. [9] Aymeric Dieuleveut, Gersende Fort, Eric Moulines, and Geneviève Robin. Federated expectation max-imization with heterogeneity mitigation and variance reduction. In NeurIPS , 2021. [10] P. R. X. do Carmo, D. F. Bezerra, A. O. Filho, and E. Freitas. Living on the edge: A survey of digital twin–assisted task offloading in safety-critical environments. J. Netw. Comput. Appl. , 232:104024, 2024. [11] Wei Du, Depeng Xu, Xintao Wu, and Hanghang Tong. Fairness-aware agnostic federated learning. In 
+
+SIAM International Conference on Data Mining (SDM) , pages 181–189, 2021. [12] Borja R. Gálvez, Filip Granqvist, Rogier van Dalen, and Matt Seigel. Enforcing fairness in private federated learning via the modified method of differential multipliers. In NeurIPS Workshop on Privacy in Machine Learning , 2021. [13] R. Gandhi, S. Khuller, S. Parthasarathy, and A. Srinivasan. Dependent rounding and its applications to approximation algorithms. Journal of the ACM (JACM) , 53(3):324–360, 2006. [14] Y. Hao, J. Wang, D. Huo, N. Guizani, L. Hu, and M. Chen. Digital twin-assisted URLLC-enabled task offloading in mobile edge network via robust combinatorial optimization. IEEE J. Sel. Areas Commun. ,41(10):3022–3036, Oct 2023. [15] C. He, L. Peng, and J. Sun. Federated learning with convex global and local constraints. Transactions on Machine Learning Research , 2024. https://openreview.net/forum?id=qItxVbWyfe .24 [16] Y. He, M. Yang, Z. He, and M. Guizani. Resource allocation based on digital twin-enabled federated learning framework in heterogeneous cellular network. IEEE Trans. Veh. Technol. , 72(1):1149–1158, Jan 2023. [17] Mohammad Heydari, Terence D. Todd, Dongmei Zhao, and George Karakostas. Scheduling and resource allocation for federated learning in vehicular networks. In 2025 IEEE 102nd Vehicular Technology Conference (VTC2025-Fall) , pages 1–6, 2025. [18] Xinyu Huang, Wen Wu, Shisheng Hu, Mushu Li, Conghao Zhou, and Xuemin Shen. Digital twin based user-centric resource management for multicast short video streaming. IEEE Journal of Selected Topics in Signal Processing , 18(1):50–65, 2024. [19] William C Jakes and Donald C Cox. Microwave mobile communications . Wiley-IEEE press, 1994. [20] Peter Kairouz, H. Brendan McMahan, Brendan Avent, Aurélien Bellet, Mehdi Bennis, Arjun Nitin Bhagoji, Kallista Bonawitz, Zachary Charles, Graham Cormode, Rachel Cummings, Rafael G. L. D’Oliveira, Hubert Eichner, Salim El Rouayheb, David Evans, Josh Gardner, Zachary Garrett, Adrià Gascón, Badih Ghazi, Phillip B. Gibbons, Marco Gruteser, Zaid Harchaoui, Chaoyang He, Lie He, Zhouyuan Huo, Ben Hutchinson, Justin Hsu, Martin Jaggi, Tara Javidi, Gauri Joshi, Mikhail Khodak, Jakub Konečný, Aleksandra Korolova, Farinaz Koushanfar, Sanmi Koyejo, Tancrède Lepoint, Yang Liu, Prateek Mittal, Mehryar Mohri, Richard Nock, Ayfer Özgür, Rasmus Pagh, Hang Qi, Daniel Ram-age, Ramesh Raskar, Mariana Raykova, Dawn Song, Weikang Song, Sebastian U. Stich, Ziteng Sun, Ananda Theertha Suresh, Florian Tramèr, Praneeth Vepakomma, Jianyu Wang, Li Xiong, Zheng Xu, Qiang Yang, Felix X. Yu, Han Yu, and Sen Zhao. Advances and open problems in federated learning. 
+
+Foundations and Trends in Machine Learning , 14(1–2):1–210, 2021. [21] J. Kim, S. Hosseinalipour, A. C. Marcum, T. Kim, D. J. Love, and C. G. Brinton. Learning-based adaptive irs control with limited feedback codebooks. IEEE Trans. Wireless Commun. , 21(11):9566– 9581, Nov 2022. [22] B. Li, Y. Liu, L. Tan, H. Pan, and Y. Zhang. Digital twin assisted task offloading for aerial edge computing and networks. IEEE Trans. Veh. Technol. , 71(10):10863–10877, Oct 2022. [23] Jianxiu Li and Urbashi Mitra. Channel state information-free location-privacy enhancement: Fake path injection. IEEE Transactions on Signal Processing , 72:3745–3760, 2024. [24] Mushu Li, Jie Gao, Conghao Zhou, Lian Zhao, and Xuemin Shen. Digital-twin-empowered resource allocation for on-demand collaborative sensing. IEEE Internet of Things Journal , 11(23):37942–37958, 2024. [25] Peng Lin, Wei Ren, and Yongduan Song. Distributed multi-agent optimization subject to nonidentical constraints and communication delays. Automatica , 65:120–131, 2016. [26] Peng Liu, Zhe Liu, Ji Wang, Zifu Wu, Peng Li, and Huijuan Lu. Reinforcement learning empowered multi-agv offloading scheduling in edge-cloud iiot. Journal of Cloud Computing , 11(1):78, 2022. [27] Y. Lu, X. Huang, K. Zhang, S. Maharjan, and Y. Zhang. Low-latency federated learning and blockchain for edge association in digital twin empowered 6g networks. IEEE Trans. Ind. Inf. , 17(7):5098–5107, Jul 2021. [28] Huned Materwala, Leila Ismail, Raed M Shubair, and Rajkumar Buyya. Energy-sla-aware genetic algo-rithm for edge–cloud integrated computation offloading in vehicular networks. Future Gener. Comput. Syst. , 135:205–222, 2022. 25 [29] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. Arcas. Communication-efficient learning of deep networks from decentralized data. In Proc. 20th Int. Conf. Artif. Intell. Statist. (PMLR) ,volume 54, pages 1273–1282, Apr 2017. [30] A. Nedić, A. Ozdaglar, and P. A. Parrilo. Constrained consensus and optimization in multi-agent networks. IEEE Trans. Autom. Control , 55(4):922–938, 2010. [31] Zebang Shen, Juan Cervino, Hamed Hassani, and Alejandro Ribeiro. An agnostic approach to federated learning with class imbalance. In International Conference on Learning Representations (ICLR) , 2021. [32] B. Sklar. Digital Communications: Fundamentals and Applications . Prentice Hall, 2nd edition, 2001. [33] Seunghwan Son, Deokkyu Kwon, Joonyoung Lee, Sungjin Yu, Nam-Su Jho, and Youngho Park. On the design of a privacy-preserving communication scheme for cloud-based digital twin environments using blockchain. IEEE Access , 10:75365–75375, July 2022. [34] W. Sun, S. Lei, L. Wang, Z. Liu, and Y. Zhang. Adaptive federated learning and digital twin for industrial internet of things. IEEE Trans. Ind. Inf. , 17(8):5605–5614, Aug 2021. [35] Mehrad Vaezi, Kiana Noroozi, Terence D. Todd, Dongmei Zhao, George Karakostas, Huaqing Wu, and Xuemin Shen. Digital twins from a networking perspective. IEEE Internet of Things Journal ,9(23):23525–23544, December 2022. [36] Peng Wang, Peng Lin, Wei Ren, and Yongduan Song. Distributed subgradient-based multiagent op-timization with more general step sizes. IEEE Transactions on Automatic Control , 63(7):2295–2302, 2018. [37] B. Wu, F. Fang, and X. Wang. Stackelberg game based performance optimization in digital twin assisted federated learning over noma networks. arXiv preprint arXiv:2501.01584, Jan 2025. [38] Tao Yang, Xinlei Yi, Junfeng Wu, Ye Yuan, Di Wu, Ziyang Meng, Yiguang Hong, Hong Wang, Zongli Lin, and Karl H. Johansson. A survey of distributed optimization. Annual Reviews in Control , 47:278– 305, 2019. [39] W. Yang, W. Xiang, Y. Yang, and P. Cheng. Optimizing federated learning with deep reinforcement learning for digital twin empowered industrial iot. IEEE Trans. Ind. Inf. , 19(2):1884–1893, Feb 2023. [40] Deming Yuan, Shengyuan Xu, and Huanyu Zhao. Distributed primal–dual subgradient method for mul-tiagent optimization via consensus algorithms. IEEE Transactions on Systems, Man, and Cybernetics, Part B (Cybernetics) , 41(6):1715–1724, 2011. [41] R. Zhang, Z. Xie, D. Yu, W. Liang, and X. Cheng. Digital twin-assisted federated learning service provisioning over mobile edge networks. IEEE Trans. Comput. , 73(2):586–598, Feb 2024. [42] Y. Zhang, Z. Xie, D. Yu, W. Liang, and X. Cheng. Digital twin–driven intelligent task offloading for collaborative mobile edge computing. IEEE J. Sel. Areas Commun. , 41(10), Oct 2023. [43] L. Zhu, Z. Liu, and S. Han. Deep leakage from gradients. In Advances in Neural Information Processing Systems 32 (NeurIPS) , pages 14774–14784, Dec 2019. [44] Minghui Zhu and Sonia Martínez. On distributed convex optimization under inequality and equality constraints. IEEE Transactions on Automatic Control , 57(1):151–164, 2012. 26 Appendix 
+
+In Section A, we include some extra numerical results. 
+
+# A Extra Numerical Results 
+
+A.1 Robustness to Mobility: Sensitivity to User Speed 10 15 20 25 30 35 40 45         
+
+> 0246810 12 14 16 18 20 22 24
+> Average Constraint Violation (%)
+> P1: FPS + Simple
+> P1: FPS + Smart
+> P1: FPS + Simple + Re-opt
+> P1: FPS + Smart + Re-opt
+> P2: FPS + Simple
+> P2: FPS + Smart
+> P2: FPS + Simple + Re-opt
+> P2: FPS + Smart + Re-opt
+> P1: Optimum
+> P2: Optimum
+> (a) FPS (P1 & P2): average constraint violation vs. user speed 10 15 20 25 30 35 40 45
+> 0246810 12 14 16 18
+> Average Constraint Violation (%)
+> PCS + Simple
+> PCS + Smart
+> Optimum (b) PCS (P3): average constraint violation vs. user speed
+
+Figure 9: Speed sensitivity on empirical channel traces. Panels show FPS (left) and PCS (right). Figures 9a and 9b show the constraint violation as the user moving speed changes. As speed increases, channel correlation decreases, and the resource allocation and scheduling decisions based on past channel gains become less accurate when applied to the current time period. As a result, constraint violations increase with speed for all the solution methods. Figure 9a further shows that P2 consistently yields lower constraint violations than P1 for all the solution methods, and the gap between the two increases as moving speed increases. Overall, the solutions to P2 are much less sensitive to the moving speed than those of P1, since P2 is solved over shorter time intervals. The difference between each proposed solution and the optimum also increases with the moving speed. The main reason is that we adopted the same time slot duration for all the experiments. In practice, as the moving speed increases, channel coherence time decreases, the resource and scheduling decisions should be updated more frequently to reduce constraint violation. 
+
+A.2 Runtime Sensitivity to Accuracy Tolerances (ϵ1, ϵ 2)
+
+We quantify how solver runtime varies with the accuracy tolerances ϵ1 and ϵ2. For each problem (P1–P3), we sweep (ϵ1, ϵ2) over a fixed grid while holding all other settings constant, and report mean runtime over repeated trials on the same hardware. As expected, tighter tolerances increase runtime, illustrating the accuracy–latency trade-off in our configurations. Results are summarized in Table 4. 27 Table 4: Mean runtime of the proposed solver under varying accuracy tolerances (ϵ1, ϵ 2). “+ Re-Opt” denotes execution with the re-optimization stage enabled. Tolerance parameters Problem P1 Problem P2 P3 
+
+ϵ1 ϵ2 Base + Re-Opt Base + Re-Opt Base 
+
+0.5 0.05 125 ms 180 ms 50 ms 70 ms 60 ms 
+
+10 −2 10 −2 600 ms 850 ms 175 ms 220 ms 250 ms 
+
+10 −3 10 −3 4000 ms 5800 ms 1250 ms 1600 ms 1900 ms 
+
+10 −4 10 −4 30000 ms 44000 ms 9200 ms 13000 ms 16000 ms 28

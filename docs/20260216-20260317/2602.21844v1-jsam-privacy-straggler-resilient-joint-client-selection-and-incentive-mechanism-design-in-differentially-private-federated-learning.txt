@@ -1,0 +1,3266 @@
+Title: JSAM: Privacy Straggler-Resilient Joint Client Selection and Incentive Mechanism Design in Differentially Private Federated Learning
+
+URL Source: https://arxiv.org/pdf/2602.21844v1
+
+Published Time: Thu, 26 Feb 2026 01:58:51 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+> 1
+
+# JSAM: Privacy Straggler-Resilient Joint Client Selection and Incentive Mechanism Design in Differentially Private Federated Learning 
+
+Ruichen Xu, Ying-Jun Angela Zhang, Fellow, IEEE , Jianwei Huang, Fellow, IEEE 
+
+Abstract —Differentially private federated learning faces a fun-damental tension: privacy protection mechanisms that safeguard client data simultaneously create quantifiable privacy costs that discourage participation, undermining the collaborative training process. Existing incentive mechanisms rely on unbiased client selection, forcing servers to compensate even the most privacy-sensitive clients (“privacy stragglers”), leading to systemic ineffi-ciency and suboptimal resource allocation. We introduce JSAM (Joint client Selection and privacy compensAtion Mechanism), a Bayesian-optimal framework that simultaneously optimizes client selection probabilities and privacy compensation to maximize training effectiveness under budget constraints. Our approach transforms a complex 2N-dimensional optimization problem into an efficient three-dimensional formulation through novel theoretical characterization of optimal selection strategies. We prove that servers should preferentially select privacy-tolerant clients while excluding high-sensitivity participants, and uncover the counter-intuitive insight that clients with minimal privacy sensitivity may incur the highest cumulative costs due to frequent participation. Extensive evaluations on MNIST and CIFAR-10 demonstrate that JSAM achieves up to 15% improvement in test accuracy compared to existing unbiased selection mechanisms while maintaining cost efficiency across varying data heterogene-ity levels. 
+
+Index Terms —Differential privacy, federated learning, incen-tive mechanism design, client selection 
+
+I. I NTRODUCTION 
+
+Federated learning (FL) is a widely studied learning paradigm that facilitates collaborative model training among distributed clients without directly sharing their local data [2]. During the iterative FL training process, each client computes model updates based on their local datasets and shares these updates, typically in the form of model parameter gradients, with a central server. The server then aggregates these model updates to iteratively refine the global model. Despite its decentralized nature, FL is susceptible to privacy leaks through various attacks, such as membership inference attacks [3], [4] and data reconstruction attacks [5]. 
+
+An earlier version of this paper was presented in part at the IEEE INFOCOM workshops 2024 [1]. Ruichen Xu and Ying-Jun Angela Zhang are with the Department of Information Engineering, The Chinese University of Hong Kong, Hong Kong (e-mail: xr021@ie.cuhk.edu.hk; co-corresponding author, email: yjzhang@ie.cuhk.edu.hk). Jianwei Huang is with the School of Science and Engineering, Shenzhen Institute of Artificial Intelligence and Robotics for Society, Shenzhen Key Laboratory of Crowd Intelligence Empowered Low-Carbon Energy Network, and CSIJRI Joint Research Centre on Smart Energy Storage, The Chinese University of Hong Kong, Shenzhen, Guangdong, 518172, P.R. China. (co-corresponding author, email: jianwei-huang@cuhk.edu.cn). 
+
+Fig. 1: Differentially private federated learning employs noisy gradient updates to safeguard client privacy. In recent years, differential privacy (DP) has emerged as a promising privacy protection mechanism in FL, offering rigorous privacy guarantees [6], as demonstrated in Fig. 1. Specifically, clients add noise to their gradients in accordance with their maximum tolerance to privacy leakage, known as privacy budgets, before transmitting them to the server. While DP can provide provable privacy protection, it does not fully eliminate privacy leakage [7]. Consequently, clients incur pri-vacy costs that, without adequate compensation mechanisms, may discourage them from participating in FL. This privacy-participation tension necessitates careful de-sign of client selection and privacy compensation mechanisms in differentially private federated learning (DP-FL). These mechanisms determine which clients to incentivize and how to compensate them for privacy leakage, with the server remunerating clients to secure specific amounts of privacy budgets tailored to their privacy sensitivities. These decisions are inherently interdependent as a client’s participation fre-quency increases, their privacy leakage and associated costs also increase. However, most existing studies treat client selection and privacy compensation as disparate problems. This decoupled approach is suboptimal, particularly in the presence of “pri-vacy stragglers” clients with stringent privacy requirements. In a disjointed design, the aggregation process is often con-strained by these stragglers’ low privacy budgets, forcing the injection of excessive noise. As illustrated in Fig. 2, this privacy straggler effect can significantly degrade global model performance. This necessitates jointly designing client selection and privacy compensation to balance contributions 
+
+> arXiv:2602.21844v1 [cs.LG] 25 Feb 2026 2
+
+Fig. 2: The "privacy straggler" effect. A single client with very low privacy budget ( ϵk) forces the server to add excessive noise, degrade the model utility. with costs, thereby mitigating straggler effects. Such a joint design presents several technical challenges. The first challenge lies in modeling how client selection strate-gies and privacy compensation mechanisms affect the server’s payoff, particularly in the presence of non-independent and identically distributed (non-IID) data and heterogeneous pri-vacy sensitivities. A client’s contribution to the global model does not monotonically increase with participation frequency, as frequent participation may introduce bias into the model. Moreover, due to the iterative nature of FL, a client’s privacy cost depends on both their sensitivity to privacy leakage and participation frequency. This leads to our first key research question: 
+
+Question 1 : How can the server optimally balance the privacy cost compensations against the degradation in model convergence from biased client selections? 
+
+The second major challenge involves identifying and in-centivizing the clients who can contribute most effectively to FL. Privacy sensitivities represent private information, creating opportunities for clients to misreport their sensitivities to obtain higher compensation. This strategic behavior motivates our second key research question: 
+
+Question 2 : How can we design an optimal joint client selection and privacy compensation (incentive) mechanism when clients have private heterogeneous privacy sensitivities in DP-FL? A. Contributions 
+
+The main contributions of the paper are summarized as follows.  
+
+> •
+
+Joint client selection and privacy compensation mecha-nism design : We present JSAM (Joint client Selection and privacy compensAtion Mechanism), the first work for pri-vacy straggler-resilient joint client selection and privacy compensation design in DP-FL, considering non-IID data and heterogeneous privacy sensitivities. JSAM addresses the fundamental optimization challenge of balancing clients’ data contributions against privacy leakage risks to discard privacy stragglers, thereby boosting the overall privacy-utility tradeoff.  
+
+> •
+
+Optimal solution characterization : Despite the inherent non-convexity of the optimization problem, we suc-cessfully characterize the optimal selection probabilities for clients with heterogeneous privacy sensitivities. This theoretical result significantly reduces the problem’s di-mensionality to just three dimensions, enabling efficient algorithmic implementation.  
+
+> •
+
+Mechanism design insights : Our analysis reveals that optimal selection favors clients with lower privacy sensi-tivities while potentially excluding high-sensitivity clients entirely. We identify an interesting phenomenon where frequently selected clients with low sensitivity may incur higher total privacy costs due to their frequent participa-tion and consequently larger privacy budget allocations.  
+
+> •
+
+Comprehensive empirical validation : Through extensive numerical evaluations, we show that JSAM outperforms both widely studied unbiased client selection mechanisms and existing biased client selection approaches. The em-pirical results demonstrate that our method achieves up to 15% improvement in test accuracy while maintaining reasonable monetary costs across different data hetero-geneity scenarios. 
+
+B. Related Work 
+
+This section reviews three key research areas: general FL incentive mechanisms, DP-FL techniques, and incentive mechanisms for DP-FL. We identify critical gaps in jointly optimizing client selection and privacy compensation under heterogeneous privacy sensitivities with rigorous convergence analysis. A detailed comparison is provided in TABLE I. 
+
+1) Incentive Mechanism Design for Federated Learning: 
+
+Encouraging high-quality participation in federated learning is critical, as clients incur costs for computation, communication, and data sharing. Consequently, a significant body of research has focused on designing effective incentive mechanisms. Auction theory is a prominent approach for efficiently allo-cating resources. For instance, some works propose truthful procurement auctions to minimize social cost by co-optimizing client selection, participation scheduling, and the number of training rounds [20]. Others have developed online randomized auctions to manage long-term budget and energy constraints while achieving low regret [21]. To address concerns about both data quality and privacy in bidding, multi-dimensional reverse auctions have been used to select participants based on data size, privacy levels, and data distribution [22]. Recent advancements extend this to dynamic environments, such as incentive-aware federated bargaining for client selection, which integrates auction-based rewards with adaptive bargain-ing to handle volatile participation [23]. Beyond auctions, other economic models have been ex-plored. Contract theory is leveraged to handle information asymmetry, where the server offers a menu of reward options to incentivize clients with multi-dimensional private informa-tion [24], [25]. Additionally, Stackelberg game models have been employed to ensure incentive compatibility in hetero-geneous settings, where the server acts as a leader adjusting decay factors to balance client contributions over time, promot-ing fairness without compromising convergence [26]. Quality-aware approaches employ Earth Mover’s Distance for client selection and Stackelberg games for time-dependent rewards, 3
+
+TABLE I: Comparison of Incentive Mechanisms in DP-FL                             
+
+> Mechanism Client selection Performance characterization Client heterogeneity Is privacy straggler-resilient? [7]–[15] Unbiased Convergence analysis Privacy budget ×
+> [16] Unbiased Convergence analysis Local dataset size ×
+> [17] Unbiased Convergence analysis Privacy budget ×
+> [18] Unbiased Curve fitting Privacy budget ×
+> [19] Bid based Training cost Training cost ×
+> Our Method Performance-aware (Flexible) Convergence analysis Privacy budget ✓
+
+optimizing privacy budgets and server costs in a Nash equilib-rium framework [27]. Other approaches focus on fairness and optimal resource allocation. The Shapley value, for example, has been used to design mechanisms that reward clients com-mensurate with their contribution to the model’s performance [28]. To maximize efficiency under a fixed budget, some mechanisms derive a closed-form optimal sampling probability to minimize the convergence bound [29]. These works provide a robust foundation for incentivizing participation but do not typically address the specific challenges introduced by formal privacy guarantees like differential privacy. Emerging directions also include incentive mechanisms for dynamic client selection in resource-constrained settings, where rewards are tied to real-time contribution metrics to mit-igate dropout risks [14]. Personalized incentive mechanisms further integrate clustering preferences to boost participation in heterogeneous data settings, enhancing model appeal and accuracy [30]. Our work considers incentive mechanisms to compensate the clients’s privacy costs, which is orthogonal to works considering other aspects such as communication costs and computation costs. 
+
+2) Differentially Private Federated Learning: The integra-tion of differential privacy (DP) into FL is essential for pro-viding formal privacy guarantees but introduces a fundamental privacy-utility trade-off. Much of the research in DP-FL aims to mitigate the negative impact of privacy-preserving noise on model accuracy. One line of work focuses on novel noise-injection techniques. For example, researchers have pro-posed using temporally correlated noise in online settings to improve utility [31] or cascading and offsetting noise between training iterations to reduce its cumulative effect [32]. Adaptive mechanisms dynamically adjust noise levels based on gradient norms or historical updates, enabling layer-specific clipping thresholds to balance privacy and convergence while preserving model fidelity [33], [34]. Another strategy involves modifying the communication protocol and aggregation rule, such as using a randomized interaction scheme where clients probabilistically transmit a neighbor’s model to reduce their privacy exposure [35]. Tang et al. [36] developed ReFL, a reputation-based system designed to identify and mitigate the impact of “rogue” clients who selfishly inject excessive DP noise to enhance their own privacy, thereby degrading global model accuracy. While these methods advance the state-of-the-art in privacy preservation, they do not consider the economic incentives required to persuade clients to accept the associated privacy costs. 
+
+3) Incentive Mechanism Design in Differentially Private Federated Learning: Combining incentive design with DP-FL presents unique challenges, as compensation must account for clients’ heterogeneous privacy sensitivities. Existing research in this area can be broadly categorized into two approaches. The first approach relies on unbiased client selection, where all clients are potential participants [8]–[12], [16]. More re-cently, game-theoretic models have been used to analyze the selfish privacy-preserving behaviors of clients in cross-silo FL, with incentives designed to steer clients from inefficient Nash equilibria toward a socially optimal strategy [13], [17]. In the unbiased client selection paradigm, the mechanism must be designed to compensate even the privacy stragglers. This often leads to systemic inefficiency, as the high rewards required to engage these stragglers may not be justified by their data contribution, straining the server’s budget. To improve efficiency, a second research thrust has emerged based on biased (or strategic) client selection. These mech-anisms aim to exclude clients who present a poor trade-off between contribution and cost. For example, mechanisms have been developed using the training cost itself as a selection criterion [19]. Current mechanisms fail to jointly optimize client selection and privacy compensation under non-IID data with heteroge-neous privacy sensitivities. The literature lacks convergence analysis that accounts for the interaction between privacy noise and client selection. Unlike existing approaches that treat selection and compensation as separate problems, JSAM integrates rigorous convergence analysis to simultaneously determine optimal selection probabilities and privacy com-pensation, addressing the fundamental challenge of balancing privacy costs against data utility. II. P RELIMINARY 
+
+In this section, we first introduce the basics of FL and DP in Sections II-A and II-B, respectively. Then, we describe the details of DP-FL in Section II-C. 
+
+A. Federated Learning 
+
+FL is a collaborative machine learning paradigm where a central server aims to train a global model using data distributed across N privacy-aware clients, denoted as N =
+
+{1, 2, · · · , N }. Each client k ∈ N possesses a local non-IID dataset Mk = {(xk,i , y k,i ) | i ∈ 1, · · · , N k}. For simplicity, we assume that all clients have equal dataset sizes, i.e. ,4
+
+|M 1| = |M 2| = · · · = |M N | = M . Our results can be extended to scenarios with imbalanced local datasets. When all clients participate in the learning, the objective is to minimize the global loss function [37]: 
+
+F (w) = 
+
+> N
+
+∑
+
+> k=1
+
+|M k|
+
+∑Ni=1 |M i| Fk(w), (1) where Fk(w) is the local objective function for client k,defined as: 
+
+Fk(w) = 1
+
+|M k|
+
+∑
+
+> (x,y )∈M k
+
+L(x, y, w), (2) and L(x, y, w) represents the loss of prediction from model 
+
+w on example (x, y ).However, in practical scenarios, only a subset of clients participate in each training round. When the server employs a general client selection strategy that selects clients with replacement based on the selection probability vector ps =[ps
+
+> k
+
+]Nk=1 , the global objective function becomes: 
+
+F b(w) = 
+
+> N
+
+∑
+
+> k=1
+
+ps
+
+> k
+
+Fk(w). (3) Most existing studies (e.g. , [8], [2]) consider an un-biased client selection strategy where ps = pu =[|M 1|/ ∑Ni=1 |M i|, · · · , |M N |/ ∑Ni=1 |M i|], ensuring that the objective function aligns with the global objective in equation (1). However, this unbiased selection becomes subop-timal in scenarios where clients exhibit heterogeneous privacy sensitivities. Our proposed mechanism is applicable to both cross-device and cross-silo FL settings, as the underlying algorithmic principles are consistent across these scenarios. 
+
+B. Differential Privacy 
+
+DP is a privacy notion that ensures no adversary can dis-tinguish two neighboring datasets from the algorithm’s output [38]. DP possesses desirable properties, such as composability and robustness to post-processing [39]. The definition of DP is given as follows. 
+
+Definition 1 (Differential privacy) . A randomized algorithm 
+
+M : X → R is said to satisfy ( ϵ, δ )-DP if for any neighboring datasets X, X ′ ∈ X that differ in at most one entry, and for all subsets S ⊆ R , the following holds: 
+
+Pr [ M(X) ∈ S ] ≤ eϵ Pr [ M(X′) ∈ S ] + δ. (4) A prevalent approach to achieve DP is adding Gaussian noise to sensitive information before its release. Specifically, when a private dataset is utilized iteratively T0 times, the noise variance of the Gaussian noise is determined as outlined in Lemma 1 [40]. 
+
+Lemma 1 (Noise variance [40]) . There exist constants c1 and 
+
+c2 so that for any ϵ < c 1T0, adding N (0 , σ 2) noise on the output in each iteration is (ϵ, δ )-differentially private for any 
+
+δ > 0 if 
+
+σ ≥ c2
+
+√T0 log(1 /δ )
+
+ϵ , (5) 
+
+where T0 is the number of iterations. C. Differentially Private Federated Learning 
+
+In this subsection, we introduce the workflow of DP-FL. Before training, the server determines the client selection strategy ps and the noise variance σ2. Subsequently, clients and server iteratively exchange noisy gradients and perform model aggregations. The DP-FL training process operates as follows: 1) Client selection and model Distribution: The server determines the subset of clients St to be selected in each iteration t based on the selection probabilities ps and dispatches the current global model wt to the selected clients. 2) Local gradient computation and perturbation: Upon re-ceiving wt, each selected client k ∈ S t performs the following steps:  
+
+> •
+
+Gradient computation: Computes the gradient of the local loss function with respect to the model parameters, ∇L wt (x, y, wt). 
+
+> •
+
+Gradient Clipping: Applies an L2-norm clipping function to the computed gradient to bound its sensitivity: 
+
+gclip  
+
+> k,t
+
+= 1
+
+|M k|
+
+∑
+
+> (x,y )∈M k
+
+Clip (∇L wt (x, y, wt), C ) ,
+
+(6) where Clip (z, C ) is a clipping function that clips the L2-norm of z to C, i.e. , Clip (z, C ) =
+
+z/ max {1, ∥z∥2/C }. 
+
+> •
+
+Noise Addition: Adds Gaussian noise to the clipped gradient to ensure DP: 
+
+gk,t =gclip  
+
+> k,t
+
++ N (0 , σ 2
+
+> k
+
+C2I), (7) According to Lemma 1, the noise variance for client 
+
+k is given by: 
+
+σ2 
+
+> k
+
+= c22Tk
+
+log(1 /δ )
+
+ϵ2
+
+> k
+
+, (8) where Tk denotes the total number of times client k
+
+has been selected during FL, and ϵk represents the privacy budget of client k.3) Model aggregation and update: The server aggregates the noisy gradients received from the selected clients using a learning rate α:
+
+wt+1 = wt − α 1
+
+|S t|
+
+∑
+
+> k∈S t
+
+gk,t , (9) The updated global model wt+1 is then disseminated to clients in the subsequent iteration. 4) Termination: After T iterations, the server finalizes the trained model as wT .Pre-determined client selection is a fundamental requirement in DP-FL due to the privacy composition theorem. Under dif-ferential privacy, each access to a client’s data consumes part of the privacy budget, and the total privacy cost accumulates across all training rounds. Consequently, the noise variance re-quired to achieve a target privacy level (ϵ, δ ) must be calibrated based on the total number of times each client participates 5
+
+throughout the entire training process. This necessitates fixing all client selection probabilities {pi}Ni=1 before training begins, as any adaptive selection based on intermediate results would violate the privacy composition bounds. III. S YSTEM MODEL 
+
+In this section, we model the payoff functions for the clients and the server taking into account privacy sensitivities, payments, and model accuracy. 
+
+A. Client Payoff 
+
+For any client k ∈ N , their privacy cost is directly proportional to their allocated privacy budget [41], following the established privacy-cost model: cost p 
+
+> k
+
+= ckϵk, (10) where ck represents the privacy sensitivity type of client k (the per unit cost of privacy leakage) and ϵk denotes the privacy budget allocated to client k. To offset these privacy costs, the server implements a compensation mechanism through a payment vector π = [ πk]k∈N . This leads to a straightforward utility function for each client k:
+
+U c 
+
+> k
+
+= πk − ckϵk. (11) 
+
+B. Server Payoff 
+
+The server’s objective encompasses two primary goals: minimizing the model training loss and optimizing the total monetary compensation allocated to participating clients. The server’s objective can be formally expressed as: 
+
+min Cs = ηTraining loss + ∑
+
+> k∈N
+
+πk, (12) where η represents a weighting coefficient that balances the server’s priorities between training performance and cost effi-ciency. Given the inherent complexity of FL, precisely determining individual client contributions to the global model’s training loss a priori is computationally intractable. To address this challenge, we employ an upper bound approximation of the training loss, as proposed in [42]. 
+
+Theorem 1 (Convergence analysis [42]) . Suppose the objec-tive function is L-smooth and the gradient norm is bounded by R. When employing stepsize of α = RC 
+
+> 1√T
+
+, the expected average gradient norm satisfies 
+
+√√√√ 1
+
+T
+
+> T
+
+∑
+
+> t=1
+
+E
+
+[
+
+∥∇ F (wt)∥22
+
+]
+
+≤ R
+
+2
+
+(∥ps −pu∥1 + Gclip )︸ ︷︷ ︸
+
+> Non-vanishing training loss
+
++ R
+
+2
+
+√√√√(∥ps −pu∥1 +Gclip )2 +2 
+
+> N
+
+∑
+
+> k=1
+
+(ps
+
+> k
+
+)2D√T L σ2
+
+> k
+
+Tk
+
+︸ ︷︷ ︸
+
+> Non-vanishing training loss
+
++
+
+√
+
+F (w1) − F (w∗)
+
+√T + 121
+
+√T LR 2,
+
+(13) 
+
+where Gclip is a term related to the clipping error, term D is the gradient dimension, and T is the total number of training iterations. 
+
+Following [42], assuming the clipping threshold is appro-priately chosen and ignoring the clipping error Gclip , we can simplify the non-vanishing training loss in (13) as 
+
+∥ps − pu∥1 +
+
+√√√√∥ps − pu∥21 + Q ∑ 
+
+> k:ps
+> k̸=0
+
+(ps
+
+> k
+
+)2
+
+ϵ2
+
+> k
+
+, (14) where Q = 2 c22 log(1 /δ )D√T L .Combining both the training loss and the monetary costs, the server’s objective becomes: 
+
+min Cs = η
+
+∥ps −pu∥1 +
+
+√√√√∥ps −pu∥21 +Q ∑ 
+
+> k:ps
+> k̸=0
+
+(ps
+
+> k
+
+)2
+
+ϵ2
+
+> k
+
+
+
++ ∑
+
+> k∈N
+
+πk.
+
+(15) This formulation incorporates three key components:  
+
+> •
+
+The term ∥ps − pu∥1 quantifies the deviation error from an unbiased client selection strategy, which directly con-tributes to the training loss in the presence of non-IID data. Critically, existing DP-FL incentive mechanisms that rely on convergence analysis have been limited to unbiased selection, and thus have not characterized the error introduced by a more flexible client selection approach.  
+
+> •
+
+The term Q ∑ 
+
+> k:ps
+> k̸=0
+
+(ps
+
+> k
+
+)2/ϵ 2 
+
+> k
+
+captures the training loss introduced by DP.  
+
+> •
+
+The term ∑ 
+
+> k∈N
+
+πk represents the total monetary cost incurred by the server in compensating clients. In practical implementations, the server typically lacks prior knowledge of clients’ privacy sensitivities ( ck). To address this challenge, we introduce the Joint client Selection and privacy compensAtion Mechanism (JSAM), designed to ef-fectively elicit these unknown privacy sensitivity parameters from participating clients. IV. J OINT CLIENT SELECTION AND PRIVACY 
+
+COMPENSATION MECHANISM DESIGN 
+
+In this section, we begin by introducing the JSAM frame-work in Section IV-A. Next, we describe the JSAM problem formulation in Section IV-B, followed by its reformulation in Section IV-C. 
+
+A. JSAM 
+
+The proposed JSAM, illustrated in Fig. 3, establishes a two-stage process where the server optimizes the triple (ps, ϵ, π)
+
+based on clients’ reported privacy types c to maximize its payoff. The mechanism begins with an elicitation phase, where clients submit their privacy sensitivity reports c = [ ck]k∈N .Subsequently, the server utilizes these reports to determine the optimal configuration for the privacy budgets ϵ = [ ϵk]k∈N ,6
+
+Fig. 3: Workflow illustration of JSAM. selection probabilities ps = [ ps
+
+> k
+
+]k∈N , and compensation pay-ments π = [ πk]k∈N .Recalling from Section II-C that the client selection plan should be pre-determined, the compensation model is simpli-fied to a single payment. This payment is issued once to cover a client’s privacy costs for the entire duration of the training. The subsequent subsections provide a detailed analysis of the server-side optimization process for these parameters. 
+
+B. Problem Formulation 
+
+In our mechanism, the server initially lacks knowledge of clients’ privacy sensitivities c and must elicit this information directly from the clients. According to the revelation principle [43], we can focus on direct mechanisms where truthful report-ing of clients’ types constitutes a Bayesian Nash equilibrium. The mechanism must satisfy two fundamental constraints: incentive compatibility (IC) and individual rationality (IR). 
+
+Definition 2 (Incentive compatibility - IC) . A mechanism satisfies incentive compatibility when each client maximizes its payoff through truthful reporting of its privacy sensitivity. Formally, for all k ∈ N and for all ck, c ′ 
+
+> k
+
+∈ R+,
+
+Ec−k [U c
+
+> k
+
+(ck, c−k)] ≥ Ec−k [U c
+
+> k
+
+(c′
+
+> k
+
+, c−k)] .
+
+The IR constraint ensures that each participating client receives a non-negative payoff, i.e. ,
+
+Definition 3 (Individual rationality - IR) . A mechanism sat-isfies individual rationality when each participating client receives a non-negative expected payoff. Formally, for all 
+
+k ∈ N and for all ck ∈ R+,
+
+Ec−k [U c
+
+> k
+
+(ck, c−k)] ≥ 0.
+
+1) JSAM Design Problem: The server’s objective is to design optimal selection and payment rules (ps, ϵ, π) that maximize its payoff while satisfying both IC and IR con-straints. This can be formalized as: 
+
+Problem 1. JSAM design problem. 
+
+min  
+
+> ϵ(c),ps(c),π(c)
+
+Ec
+
+[
+
+η ∥ps(c) − pu∥1 + ∑
+
+> k∈N
+
+πk(c)
+
+]
+
++ Ec
+
+η
+
+√√√√∥ps(c) − pu∥21 + Q ∑ 
+
+> k:ps
+> k̸=0
+
+(ps
+
+> k
+
+(c)) 2
+
+ϵ2
+
+> k
+
+(c)
+
+
+
+s.t. 
+
+> N
+
+∑
+
+> k=1
+
+ps
+
+> k
+
+(c) = 1 , p s
+
+> k
+
+(c) ≥ 0, ∀k ∈ N ,
+
+Ec−k[πk(ck, c−k)−ckϵk(ck, c−k)] ≥ 0, ∀k,c k,c ′
+
+> k
+
+,
+
+Ec−k [πk(ck, c−k)−ckϵk(ck, c−k)] 
+
+≥ Ec−k [πk(c′
+
+> k
+
+, c−k) − ckϵk(c′
+
+> k
+
+, c−k)] , ∀k, c k.
+
+C. Reformulating the JSAM Design Problem 
+
+Directly solving Problem 1 is challenging due to the complexity introduced by the payment function π(c), which depends on the distribution of privacy sensitivities c. To make the problem tractable, we use a series of reformulations to it, shown is Fig. 4. We begin by characterizing the set of payments that satisfy both IC and IR constraints. 
+
+Lemma 2. For any client k ∈ N , a payment πk satisfies the IR and IC constraints if and only if there exists a function 
+
+ϵk(ck, c−k) that is weakly decreasing with ck and 
+
+πk(ck) = 
+
+∫ ∞
+
+> ck
+
+Ec−k ϵk(z, c−k)dz + ckϵk(ck, c−k) + dk,
+
+(16) 
+
+where dk is a non-negative constant. 
+
+We defer the proof of Lemma 2 in Appendix A. Based on Lemma 2, we substitute the payment function (16) to the objective function of Problem 1. This substitution introduces a dependence on the distribution of privacy sensitivities through the virtual cost, defined as follows: 
+
+Definition 4 (Virtual cost) . The virtual cost of client k ∈ N 
+
+is defined as 
+
+vk = ck + Fk(ck)
+
+fk(ck) , (17) 
+
+where Fk(·) and fk(·) are the cumulative density function and the probability density function of client k’s privacy sensitivity 
+
+ck, respectively. 
+
+This leads to our reformulated optimization problem: 7
+
+Fig. 4: Flow chart of problem reformulations. 
+
+Problem 2. Reformulated JSAM design problem. 
+
+min 
+
+> ϵ
+
+, ps η
+
+∥ps −pu∥1+
+
+√√√√∥ps −pu∥21 +Q ∑ 
+
+> k:ps
+> k̸=0
+
+(ps
+
+> k
+
+)2
+
+ϵ2
+
+> k
+
++∑
+
+> k∈N
+
+ϵkvk
+
+(18a) 
+
+s.t. ∑
+
+> k∈N
+
+ps 
+
+> k
+
+= 1 , p s
+
+> k
+
+, ϵ k ≥ 0, ∀k ∈ N , (18b) 
+
+ϵk weakly decreases with ck, ∀k ∈ N . (18c) 
+
+Theorem 2. Given privacy sensitivities c, Problems 1 and 2 are equivalent, sharing the same optimal solutions. 
+
+We show the proof of Theorem 2 in Appendix A. The additional term Fk(ck)/f k(ck) in the virtual cost arises from the IC constraint. This term reflects the information asymmetry between the server and clients. Since the server does not know the clients’ privacy sensitivities, it must incur additional costs to incentivize truthful reporting. The constraint (18c) ensures that the server adjusts the privacy budget ϵk to penalize any misreporting by clients. Problem 2 remains a challenging non-convex optimization problem due to the coupling between the selection proba-bilities ps and the privacy budgets ϵ. However, as we will demonstrate in Section V, it is possible to characterize the optimal client selection strategy and develop an efficient algorithm to solve the problem despite its non-convexity. V. S OLVING THE REFORMULATED JSAM D ESIGN 
+
+PROBLEM 
+
+This section analyzes Problem 2’s optimal solution by relaxing constraint (18c) while maintaining solution equiva-lence through specific assumptions about virtual costs. This approach yields a more tractable optimization problem while preserving key insights about privacy sensitivity and budget allocation relationships. 
+
+A. Problem Relaxation and Equivalence 
+
+We begin by relaxing constraint (18c) in Problem 2 while preserving essential solution properties through the following fundamental assumption: 
+
+Assumption 1. [Regularity condition] For any k ∈ N , the virtual cost vk increases with the privacy sensitivity ck.
+
+Assumption 1 is standard and widely adopted in the mecha-nism design literature [44], [45]. It encompasses distributions with log-concave functions, such as uniform and Gaussian distributions [44]. Under this assumption, we formulate the relaxed optimization problem: 
+
+Problem 3. 
+
+min  
+
+> ϵ,ps
+
+η
+
+∥ps − pu∥1 +
+
+√√√√∥ps − pu∥21 + Q ∑ 
+
+> k:ps
+> k̸=0
+
+(ps
+
+> k
+
+)2
+
+ϵ2
+
+> k
+
+
+
++ ∑
+
+> k∈N
+
+ϵkvk
+
+s.t. ∑
+
+> k∈N
+
+ps 
+
+> k
+
+= 1 , p s
+
+> k
+
+, ϵ k ≥ 0, ∀k ∈ N .
+
+Proposition 1. Under Assumption 1, the optimal solution to Problem 3 satisfies the condition that ϵ∗ 
+
+> k
+
+is weakly decreasing with ck.
+
+The significance of Proposition 1 lies in demonstrating that the relaxed Problem 3 inherently maintains the crucial mono-tonicity property of the privacy budget allocation, making it equivalent to the original Problem 2 for practical purposes. We defer its proof to Appendix C. 
+
+B. Characterization of the Optimal Solution 
+
+Due to the inequality constraints and non-continuity of the L1 norm term ∥ps − pu∥1 in Problem 3, we classify the clients into the four distinct categories: S+, Su, S−, S0. This classification facilitates a structured analysis of the optimal solution.  
+
+> •
+
+S+ denotes the set of clients with selection probabilities larger than 1/N , i.e. , S+ = {k | ps 
+
+> k
+
+> 1/N }. 
+
+> •
+
+Su denotes the set of clients with selection probabilities 
+
+1/N , i.e. , S+ = {k | ps 
+
+> k
+
+= 1 /N }. 
+
+> •
+
+S− denotes the set of clients with selection probabilities less than 1/N , i.e. , S− = {k | 0 < p s 
+
+> k
+
+< 1/N }. 
+
+> •
+
+S0 denotes the set of clients with selection probabilities 
+
+0, i.e. , S0 = {k | ps 
+
+> k
+
+= 0 }.8
+
+Fig. 5: An illustration of the structure of the optimal client selection probabilities with ten clients (v1 < · · · < v 10 ).We then characterize the optimal client selection ps∗ and the corresponding optimal client sets S+∗, Su∗, S−∗ , and S0∗ in Theorem 3. Fig. 5 illustrates the structure of the optimal solution. 
+
+Theorem 3. Suppose that we order the clients according to an increasing order of the virtual costs, i.e., v1 ≤ v2 ≤ · · · ≤ vN .There exists a threshold h ∈ N such that the optimal selection probability ps∗ = [ ps∗ 
+
+> k
+
+]k∈N of Problem 3 satisfies 1
+
+ps∗
+
+> k
+
+
+
+≥ 1/N, if k = 1 , (19a) 
+
+= 1 /N, if k ∈ [2 , h − 1] ∩ Z +, (19b) 
+
+≤ 1/N, if k = h, (19c) 
+
+= 0 , if k ∈ [h + 1 , N ] ∩ Z +. (19d) Here are the insights of the optimal client selection proba-bilities ps∗ (in Theorem 3).  
+
+> •
+
+The results (19a, 19b, 19c) imply that the server selects the client with the smallest virtual cost the most fre-quently (with a probability over 1/N ). In addition, the server selects the clients with moderate virtual costs ( i.e. ,smaller than vh and larger than v1) unbiasedly.  
+
+> •
+
+The result (19d) implies that the server excludes the clients with high virtual costs ( i.e. , larger than vh). This result indicates that the incentive mechanisms with unbi-ased selection are sub-optimal to decreasing the server’s cost when the clients have different privacy sensitivities.  
+
+> •
+
+Solving the client selection problem is equivalent to finding the threshold h and the threshold probability ps∗ 
+
+> h
+
+.This reduces the dimension of the optimal client selection problem from N to 2.Based on Theorem 3, we can reformulate Problem 3 by focusing on finding the optimal threshold h∗, threshold prob-ability ps∗ 
+
+> h
+
+, and total monetary cost B∗. This reformulation significantly reduces the problem’s dimensionality, making it more tractable.   
+
+> 1Here Z+refers to the set of non-negative integers.
+
+Problem 4. 
+
+min 
+
+> h,p s
+> h
+
+min  
+
+> ϵ
+
+η
+
+√√√√√4( ps 
+
+> 1
+
+−ps
+
+> h
+
+)2 +Q
+
+ (ps
+
+> 1
+
+)2
+
+ϵ21
+
++ ∑
+
+> k, 1<k<h
+
+1
+
+N 2ϵ2
+
+> k
+
++ (ps
+
+> h
+
+)2
+
+ϵ2
+
+> h
+
+
+
++ 2 η (ps 
+
+> 1
+
+− ps
+
+> h
+
+) + ∑
+
+> k∈N
+
+ϵkvk
+
+s.t. ps 
+
+> 1
+
+= 2+ N −hN − ps
+
+> h
+
+,ϵk ≥ 0, ∀k ∈ N , 0 ≤ ps 
+
+> h
+
+≤ 1
+
+N , h ∈ [0 , N ] ∩ Z +.
+
+(20) 
+
+The problem of finding the optimal threshold h∗ and thresh-old probability ps∗ 
+
+> h
+
+can be regarded as a search problem. Given 
+
+h, p s 
+
+> h
+
+obtained through this search, the next step is to solve the inner problem ( min ϵ) of Problem 4. This involves finding the minimum objective value with respect to ϵ while keeping h
+
+and ps 
+
+> h
+
+fixed. 
+
+C. Solving the Inner Problem of Problem 4 
+
+We address the inner optimization problem of Problem 4 by establishing the relationship between optimal privacy budgets and monetary costs. Given selection probability vector ps
+
+(determined by h and psh), we show that the optimal privacy budgets ϵ∗ are functions of the total monetary cost B.
+
+Theorem 4. Given ps, B , the optimal privacy budget of client 
+
+k ∈ N is 
+
+ϵ∗
+
+> k
+
+(ps, B ) = (ps
+
+> k
+
+)2/3B
+
+(∑Ni=1 v2/3 
+
+> i
+
+(ps
+
+> i
+
+)2/3
+
+)
+
+v1/3
+
+> k
+
+. (21) We provide the proof of Theorem 4 in Appendix D. The insights of Theorem 4 is  
+
+> •
+
+The optimal privacy budget of client k increases with the selection probability ps 
+
+> k
+
+and decreases with the virtual cost vk. 
+
+> •
+
+Counter-intuitively, clients with minimal privacy sensi-tivity may incur the highest monetary costs ( Bk = ϵkvk)due to larger privacy budget compensation. Using Theorem 4 and KKT conditions, we express the objective function as follows: 
+
+Proposition 2. With optimal privacy budgets, the objective function of Problem 4 becomes: 
+
+f (B, h, p s
+
+> h
+
+) = 
+
+η
+
+√√√√√4( ps 
+
+> 1
+
+−ps
+
+> h
+
+)2 +
+
+(
+
+(v1ps
+
+> 1
+
+) 23 +( vhps
+
+> h
+
+) 23 +∑
+
+> 1<i<h
+
+v 23
+
+> i
+
+N 23
+
+)3
+
+/B 2
+
+
+
++ 2 η (ps 
+
+> 1
+
+− ps
+
+> h
+
+) + B. 
+
+(22) This leads to the reformulated optimization problem: 9
+
+Problem 5. 
+
+min 
+
+> h,p s
+> h
+
+min  
+
+> B
+
+η
+
+√√√√√4( ps 
+
+> 1
+
+−ps
+
+> h
+
+)2+
+
+(
+
+(v1ps
+
+> 1
+
+)23 +( vhps
+
+> h
+
+)23 +∑
+
+> 1<i<h
+
+v 23
+
+> i
+
+N 23
+
+)3
+
+/B 2
+
+
+
++ 2 η (ps 
+
+> 1
+
+− ps
+
+> h
+
+) + B
+
+s.t. ps 
+
+> 1
+
+= 2 + N − hN − ps
+
+> h
+
+,B ≥ 0, 0 ≤ ps 
+
+> h
+
+≤ 1
+
+N , h ∈ [0 , N ] ∩ Z +.
+
+(23) 
+
+The optimization structure of Problem 5 reveals that its inner minimization over B exhibits convex properties, making it amenable to efficient solution through standard convex optimization techniques. This reformulation represents a significant simplification of our original problem: we have successfully transformed the non-convex JSAM design problem from its initial 2N -dimensional form into an equivalent, more tractable 3-dimensional optimization framework. To solve this reformulated problem, we propose Algorithm 1, which operates as follows: 1) Initialization (Line 1): Initialize the best objective value 
+
+f ∗ to a large number. 2) Threshold Search (Lines 2-9): Search through feasible combinations of threshold h and probability ps
+
+> h
+
+, com-puting optimal monetary cost B for each pair. 3) Selection Probability Assignment (Lines 10-20): Assign final selection probabilities and privacy budgets based on Theorems 3 and 4. The algorithm achieves computational efficiency with com-plexity O(1 /∆) , where ∆ denotes the search grid granularity. VI. N UMERICAL RESULTS 
+
+In this section, we perform numerical simulations to evalu-ate the performance of the JSAM. This section is organized as follows: Section VI-A presents the simulation setup, Section VI-B presents the baselines, followed by performance analysis and discussions for Section VI-C to Section VI-E. 
+
+A. Simulation Setup 
+
+We evaluate JSAM’s performance against baseline mecha-nisms using MNIST [46] and CIFAR-10 [47] datasets under realistic non-IID federated settings. Our experiments examine convergence behavior, privacy-utility trade-offs, and mecha-nism efficiency across varying privacy sensitivity distributions and system parameters. 
+
+1) Dataset selection and computational constraints: We use MNIST and CIFAR-10, which represent the current stan-dard for DP-FL evaluation due to fundamental computational constraints. Single-machine DP-FL simulations face two crit-ical bottlenecks: (i) memory limitations from serially loading data for numerous clients, causing cache thrashing that makes the process memory-bound, and (ii) computational overhead from per-example gradient clipping required for differential privacy. These constraints explain why DP-FL research con-sistently adopts these smaller datasets [31], [32], [35]. 
+
+Algorithm 1: JSAM Algorithm 
+
+Input: Virtual costs v1, . . . , v N (v1 < v 2 < · · · < v N ),grid ∆, weight η
+
+Output: p∗, ϵ∗ 
+
+> 1
+
+Initialize f ∗ ← 10 6 
+
+> 2
+
+for i = 1 , 2, . . . , N do  
+
+> 3
+
+h ← N + 1 − i 
+
+> 4
+
+for m = 0 , 1, . . . , ⌊1/(N ∆) ⌋ do  
+
+> 5
+
+ps 
+
+> 1
+
+← iN + m∆, ps 
+
+> h
+
+← 1
+
+N − m∆ 
+
+> 6
+
+c ←
+
+(
+
+v2/31 (ps
+
+> 1
+
+)2/3 + v2/3 
+
+> h
+
+(ps
+
+> h
+
+)2/3 +
+
+∑ 
+
+> 1<j<h
+
+v2/3
+
+> j
+
+N 2/3
+
+)3 
+
+> 7
+
+Bv ←
+
+min 
+
+> B
+
+[
+
+2η (ps 
+
+> 1
+
+− ps
+
+> h
+
+) + η
+
+√
+
+4 ( ps 
+
+> 1
+
+− ps
+
+> h
+
+)2 + c/B 2 + B
+
+] 
+
+> 8
+
+Compute objective f with B = Bv 
+
+> 9
+
+if f < f ∗ then  
+
+> 10
+
+f ∗ ← f, h∗ ← h, ps∗ 
+
+> h
+
+← ps
+
+> h
+
+, B∗ ←
+
+Bv 
+
+> 11
+
+for k = 1 , 2, . . . , N do  
+
+> 12
+
+if k = 1 then  
+
+> 13
+
+ps∗ 
+
+> k
+
+← 2 + N − h∗
+
+N − ps∗ 
+
+> h∗
+> 14
+
+else if 1 < k < h ∗ then  
+
+> 15
+
+ps∗ 
+
+> k
+
+← 1
+
+N 
+
+> 16
+
+else if k = h∗ then  
+
+> 17
+
+ps∗ 
+
+> k
+
+← ps∗ 
+
+> h∗
+> 18
+
+else  
+
+> 19
+
+ps∗ 
+
+> k
+
+← 0 
+
+> 20
+
+for k = 1 , 2, . . . , N do  
+
+> 21
+
+ϵ∗ 
+
+> k
+
+← (ps∗ 
+
+> k
+
+)2/3 B∗
+
+v1/3
+
+> k
+
+∑Ni=1 v2/3 
+
+> i
+
+(ps∗ 
+
+> i
+
+)2/3 
+
+> 22
+
+return p∗, ϵ∗
+
+2) Federated data distribution: We distribute datasets among N = 100 clients in a non-IID fashion, allocating 600 samples per client for MNIST and 500 for CIFAR-10. The non-IID distribution follows a two-stage process [48]: each client first receives s% of data uniformly sampled from the training set, then the remaining (100 − s)% is allocated based on sorted labels, with each client receiving data from at most two distinct classes. We set the data similarity parameter 
+
+s ∈ { 0, 30 , 70 , 100 } to simulate realistic heterogeneity. 
+
+3) Privacy and mechanism parameters: Client privacy sen-sitivities ck are sampled from a uniform distribution U(0 , 1) ,following standard mechanism design conventions [44]. We configure T = 1000 total iterations, select 10 clients per round, set clipping threshold C = 6 , and use differential privacy parameter δ = 10 −5.
+
+4) Model architectures and implementation: The model architecture for MNIST consists of a convolutional neural network (CNN) with two convolution layers, followed by 10 
+
+2 × 2 max pooling and two fully connected layers with ReLU activation. For CIFAR-10, we adopt the CNN architecture from [49]. All training uses differentially private SGD via the Opacus framework [50]. 
+
+B. Baselines 
+
+We consider the following widely studied mechanisms as baselines and compare JSAM with them.  
+
+> •
+
+Unbiased selection based mechanism (USBM): USBM sets the selection probability of each client proportional to their dataset size ( ps = pu) [8], [10]. It incorporates methods with importance compensation, using a com-pensation parameter to weight each client’s update for unbiased learning objectives [29]. The mechanism aims to maximize the server’s payoff while satisfying IC and IR conditions.  
+
+> •
+
+Fixed selection based mechanism (FSBM-M ): FSBM selects a fixed subset of M clients with lower privacy costs. The mechanism maximizes the server’s payoff while IC and IR conditions are satisfied for the selected clients.  
+
+> •
+
+JSAM with complete information (JSAM-CI): JSAM-CI operates in an ideal setting where the server has complete knowledge of all clients’ privacy costs. The server compensates each client k ∈ N based on their true costs ck rather than virtual costs vk. The mechanism maximizes the server’s payoff while satisfying the IR condition.  
+
+> •
+
+Biased selection based mechanism (BBM): BBM se-lects clients in a non-proportional manner relative to their dataset sizes. Given that most biased selection methods don’t consider privacy protection, we adopt a widely-studied approach that selects clients with the largest local training losses [51]. For compatibility, client selection frequency is predetermined before training begins. BBM maximizes the server’s payoff while satisfying IC and IR conditions for the selected clients. 
+
+C. Test Loss Performance 
+
+We evaluate the test accuracy performance of JSAM and the baseline mechanisms under varying monetary costs. The results are depicted in Figure 6, illustrating performance on both CIFAR-10 and MNIST datasets across four levels of data similarity ( s% = 100% , 70% , 30% , 0% ). We compare the test accuracy performance with small to moderate monetary costs (about 0-10) in Fig. 6 and list the test loss performance with large monetary costs (about 500) in Tables II and III. We have the following observations: 
+
+Observation 1 (JSAM Performance) . As demonstrated in Fig. 6(a-h), JSAM and JSAM-CI demonstrate superior test accuracies (by up to 8%) compared to other baselines under low to moderate monetary costs. As monetary costs increase, shown in Tables II and III, JSAM’s performance converges with USBM, confirming our theoretical analysis that unbiased selection becomes optimal at higher monetary costs. 
+
+Observation 2 (FSBM Characteristics) . As shown in Fig. 6(a, b, c, e, f, g, h), FSBM-50 and FSBM-75 show better test accuracy than USBM (by up to 12%) under low and moderate monetary costs by prioritizing clients with lower privacy costs. At higher monetary costs, shown in Tables II and III, FSBM’s performance improves with increased client participation, highlighting the balance between monetary investment and client participation. 
+
+Observation 3 (BBM Limitations) . As shown in Fig. 6(a, b, c, e, f, g, h), BBM generally underperforms compared to other mechanisms, primarily due to its failure to account for client privacy sensitivity heterogeneity. It only achieves optimal performance in cases where selected clients with high local losses happen to have low privacy sensitivities. 
+
+Observation 4 (DP Noise Impact) . Interestingly, as shown in Fig. 6(a-g), JSAM occasionally outperforms JSAM-CI despite the latter’s complete information advantage. This can be attributed to the randomness introduced by DP noise. Under conditions of high data heterogeneity and significant DP noise, performance shows increased variability, as evident in Figure 6(d). 
+
+TABLE II: Test accuracy performance with large monetary costs (CIFAR-10).                                                              
+
+> Mechanism Monetary Cost Non-iid Degree Test Accuracy
+> 590.5221
+> s= 100 77.37% JSAM s= 70 76.13% (Proposed) s= 30 68.20%
+> s= 0 50.06% USBM 590.5437
+> s= 100 77.45%
+> s= 70 75.93%
+> s= 30 68.06%
+> s= 0 48.60% JSAM-CI 417.5662
+> s= 100 77.66%
+> s= 70 74.96%
+> s= 30 68.75%
+> s= 0 44.27% FSBM-50 341.3135
+> s= 100 75.35%
+> s= 70 74.40%
+> s= 30 65.03%
+> s= 0 48.79% FSBM-75 471.2816
+> s= 100 76.82%
+> s= 70 75.50%
+> s= 30 65.61%
+> s= 0 43.37% BBM 477.8747 s= 100 64.51% 468.9910 s= 70 63.20% 521.8094 s= 30 55.22% 545.6140 s= 0 49.04%
+
+D. Impact of the Weighted Parameter η
+
+The weighted parameter η plays a crucial role in balancing the trade-off between the selection probability adjustment and the monetary compensation. Figure 7 illustrates how the total monetary cost varies with different values of η on the CIFAR-10 dataset. 
+
+Observation 5. As the weighted parameter η increases, the total monetary cost increases convexly. 
+
+Observation 5 highlights that the total monetary cost not only rises with η but does so at an accelerating rate. This 11        
+
+>    
+> 
+> 
+> 
+> 
+>   
+
+(a) CIFAR-10, Similarity: s = 100         
+
+>    
+> 
+> 
+> 
+> 
+>   
+
+(b) CIFAR-10, Similarity: s = 70         
+
+>    
+> 
+> 
+> 
+> 
+>   
+
+(c) CIFAR-10, Similarity: s = 30          
+
+>    
+> 
+> 
+> 
+> 
+>   
+
+(d) CIFAR-10, Similarity: s = 0              
+
+>   
+>  
+>  
+>  
+>  
+>  
+>  
+>   
+
+(e) MNIST, Similarity: s = 100           
+
+>    
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>   
+
+(f) MNIST, Similarity: s = 70          
+
+>    
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>   
+
+(g) MNIST, Similarity: s = 30            
+
+>    
+> 
+> 
+>  
+>  
+>   
+
+(h) MNIST, Similarity: s = 0 
+
+Fig. 6: Test accuracy versus monetary cost.           
+
+>      η
+> 
+> 
+> 
+> 
+> 
+> 
+>       
+
+Fig. 7: Monetary cost versus weighted parameter η.convex behavior suggests that higher η values disproportion-ately favor monetary compensation over selection probability adjustments, potentially amplifying costs due to compounding effects in the compensation mechanism. 
+
+E. Comparing the Number of Participating Clients 
+
+Figure 8 illustrates the relationship between total monetary cost and the number of participating clients across different mechanisms on the CIFAR-10 dataset. 
+
+Observation 6. JSAM and JSAM-CI exhibit a concave in-crease in the number of selected clients as the monetary cost rises (e.g., from 27 at cost 1.32 to 41 at cost 3.45), whereas other non-adaptive baseline mechanisms maintain a constant number of participating clients regardless of the monetary budget. 
+
+Observation 6 reveals that JSAM adapts client participation to the budget in a concave manner, with the number of clients growing rapidly at first but at a diminishing rate as costs increase. At low costs, it minimizes monetary cost by excluding high-cost clients, while at high costs, it maximizes data contributions by including more clients. This flattening trend suggests a saturation effect: while JSAM leverages 12 
+
+TABLE III: Test accuracy performance with large monetary costs (MNIST). 
+
+Mechanism Monetary Cost Non-iid Degree Test Accuracy 
+
+590.5221 
+
+s = 100 99.05% JSAM s = 70 98.93% (proposed) s = 30 98.88% 
+
+s = 0 98.13% USBM 590.5437 
+
+s = 100 98.99% 
+
+s = 70 98.94% 
+
+s = 30 98.88% 
+
+s = 0 98.44% JSAM-CI 417.5662 
+
+s = 100 99.04% 
+
+s = 70 98.95% 
+
+s = 30 98.92% 
+
+s = 0 97.78% FSBM-50 341.3135 
+
+s = 100 98.91% 
+
+s = 70 98.85% 
+
+s = 30 98.75% 
+
+s = 0 97.96% FSBM-75 471.2816 
+
+s = 100 98.97% 
+
+s = 70 98.96% 
+
+s = 30 98.76% 
+
+s = 0 97.91 % BBM 478.2449 s = 100 99.06% 485.7700 s = 70 98.89% 511.2514 s = 30 97.27% 512.2826 s = 0 98.22%             
+
+> !#  !
+> 
+> 
+> 
+> 
+> 
+> 
+> "    ! !
+>  
+>  
+>   
+> 
+> 
+
+Fig. 8: Number of selected clients versus monetary cost on CIFAR-10. initial monetary budgets to expand participation, further budget increases yield smaller gains, possibly due to a limited pool of cost-effective clients or escalating per-client costs. VII. C ONCLUSION 
+
+This paper addresses a fundamental challenge in privacy-preserving federated learning: the intricate balance between model performance, privacy protection, and monetary costs. We begin by formulating the joint client selection and pri-vacy compensation mechanism (JSAM) as a Bayesian-optimal mechanism design problem, capturing the inherent uncertain-ties and incentives in client participation. Our most significant finding reveals that the seemingly complex 2N-dimensional non-convex optimization problem can be reduced to just three parameters, leading to an elegant yet practical solution. Leveraging these structural insights, we developed an effi-cient algorithm capable of solving the JSAM design problem effectively. This algorithm systematically searches for the optimal threshold and corresponding selection probabilities, ensuring that the mechanism operates optimally under varying monetary constraints. Our numerical simulations demonstrated the superior performance of JSAM compared to existing baseline mechanisms For example, our method increases the test accuracy by up to 15% when the server only wants to spend small monetary costs. Future research will focus on relaxing JSAM’s core assump-tions and expanding its practical applications. Specifically, we plan to address scenarios with correlated client data distri-butions, moving beyond the current independent distribution assumption. We will also incorporate fairness constraints to ensure equitable treatment of participants in terms of both selection frequency and compensation rates. These extensions will help bridge the gap between theoretical mechanism design and the practical challenges faced in real-world federated learning deployments. REFERENCES [1] R. Xu, Y.-J. A. Zhang, and J. Huang, “Joint client selection and privacy compensation for differentially private federated learning,” in IEEE Conference on Computer Communications Workshops , 2024. [2] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Arcas, “Communication-efficient learning of deep networks from decentralized data,” in Artificial intelligence and statistics , 2017. [3] L. Melis, C. Song, E. De Cristofaro, and V. Shmatikov, “Exploiting un-intended feature leakage in collaborative learning,” in IEEE symposium on security and privacy , 2019. [4] R. Shokri, M. Stronati, C. Song, and V. Shmatikov, “Membership inference attacks against machine learning models,” in IEEE symposium on security and privacy , 2017. [5] L. Zhu, Z. Liu, and S. Han, “Deep leakage from gradients,” in Advances in neural information processing systems , 2019. [6] H. B. McMahan, D. Ramage, K. Talwar, and L. Zhang, “Learn-ing differentially private recurrent language models,” arXiv preprint arXiv:1710.06963 , 2017. [7] P. Sun, X. Chen, G. Liao, and J. Huang, “A profit-maximizing model marketplace with differentially private federated learning,” in IEEE IN-FOCOM 2022-IEEE Conference on Computer Communications , 2022. [8] P. Sun, H. Che, Z. Wang, Y. Wang, T. Wang, L. Wu, and H. Shao, “Pain-fl: Personalized privacy-preserving incentive for federated learning,” 
+
+IEEE Journal on Selected Areas in Communications , vol. 39, no. 12, pp. 3805–3820, 2021. [9] Z. Yi, Y. Jiao, W. Dai, G. Li, H. Wang, and Y. Xu, “A stackelberg incentive mechanism for wireless federated learning with differential privacy,” IEEE Wireless Communications Letters , vol. 11, no. 9, pp. 1805–1809, 2022. [10] X. Lin, J. Wu, J. Li, C. Sang, S. Hu, and M. J. Deen, “Heterogeneous differential-private federated learning: Trading privacy for utility truth-fully,” IEEE Transactions on Dependable and Secure Computing , 2023. [11] Y. Xu, M. Xiao, J. Wu, H. Tan, and G. Gao, “A personalized pri-vacy preserving mechanism for crowdsourced federated learning,” IEEE Transactions on Mobile Computing , 2023. [12] R. Hu and Y. Gong, “Trading data for learning: Incentive mechanism for on-device federated learning,” in IEEE Global Communications Conference , 2020. [13] W. Mao, Q. Ma, G. Liao, and X. Chen, “Game analysis and incentive mechanism design for differentially private cross-silo federated learn-ing,” IEEE Transactions on Mobile Computing , vol. 23, no. 10, pp. 9337–9351, 2024. [14] J. Lu, T. Huang, S. Cao, S. Yu, R. Jia, and M. Li, “Piece: Incentivizing personalized privacy-preserving for multi-version model marketplace in federated learning,” IEEE Transactions on Information Forensics and Security , vol. 20, pp. 9387–9398, 2025. [15] P. Sun, G. Liao, X. Chen, and J. Huang, “A socially optimal data marketplace with differentially private federated learning,” IEEE/ACM Transactions on Networking , vol. 32, no. 3, pp. 2221–2236, 2024. [16] M. Wu, D. Ye, J. Ding, Y. Guo, R. Yu, and M. Pan, “Incentivizing differentially private federated learning: A multidimensional contract approach,” IEEE Internet of Things Journal , vol. 8, no. 13, pp. 10 639– 10 651, 2021. 13 
+
+[17] Y. Qin, X. Zheng, Q. Ma, G. Liao, and X. Chen, “Participation-dependent privacy preservation in cross-silo federated learning,” IEEE Transactions on Services Computing , vol. 18, no. 1, pp. 342–356, 2024. [18] Y. Xu, M. Xiao, H. Tan, A. Liu, G. Gao, and Z. Yan, “Incentive mechanism for differentially private federated learning in industrial internet of things,” IEEE Transactions on Industrial Informatics , vol. 18, no. 10, pp. 6927–6939, 2021. [19] C. Ying, H. Jin, X. Wang, and Y. Luo, “Double insurance: Incentivized federated learning with differential privacy in mobile crowdsensing,” in 
+
+International Symposium on Reliable Distributed Systems , 2020. [20] J. Pang, J. Yu, R. Zhou, and J. C. Lui, “An incentive auction for heterogeneous client selection in federated learning,” IEEE Transactions on Mobile Computing , vol. 22, no. 10, pp. 5733–5750, 2022. [21] Y. Yuan, L. Jiao, K. Zhu, and L. Zhang, “Incentivizing federated learning under long-term energy constraint via online randomized auctions,” 
+
+IEEE Transactions on Wireless Communications , vol. 21, no. 7, pp. 5129–5144, 2021. [22] D. Wang, J. Ren, Z. Wang, Y. Wang, and Y. Zhang, “Privaim: A dual-privacy preserving and quality-aware incentive mechanism for federated learning,” IEEE Transactions on Computers , vol. 72, no. 7, pp. 1913– 1927, 2022. [23] J. V. L, “An incentive-aware federated bargaining approach for client selection in decentralized federated learning for iot smart homes,” 
+
+Scientific Reports , vol. 15, p. 34412, 2025. [24] N. Ding, Z. Fang, and J. Huang, “Optimal contract design for efficient federated learning with multi-dimensional private information,” IEEE Journal on Selected Areas in Communications , vol. 39, no. 1, pp. 186– 200, 2020. [25] T. Liu, B. Di, P. An, and L. Song, “Privacy-preserving incentive mech-anism design for federated cloud-edge learning,” IEEE Transactions on Network Science and Engineering , vol. 8, no. 3, pp. 2588–2600, 2021. [26] S. Javaherian, B. Turney, L. Chen, and N.-F. Tzeng, “Incentive-compatible federated learning with stackelberg game modeling,” arXiv preprint arXiv:2501.02662 , 2025. [27] W. Yuan and X. Wang, “Qi-dpfl: Quality-aware and incentive-boosted federated learning with differential privacy,” in 2024 International Joint Conference on Neural Networks (IJCNN) . IEEE, 2024, pp. 1–8. [28] P. Pene, W. Liao, and W. Yu, “Incentive design for heterogeneous client selection: A robust federated learning approach,” IEEE Internet of Things Journal , vol. 11, no. 4, pp. 5939–5950, 2023. [29] G. Liao, B. Luo, Y. Feng, M. Zhang, and X. Chen, “Optimal mechanism design for heterogeneous client sampling in federated learning,” IEEE Transactions on Mobile Computing , vol. 23, no. 11, pp. 10 598–10 609, 2024. [30] A. F. Khan, X. Wang, Q. Le, A. A. Khan, H. Ali, M. Jin, J. Ding, A. R. Butt, A. Anwar et al. , “Ip-fl: Incentivized and personalized federated learning,” in Advances in Neural Information Processing Systems , 2024. [31] J. Zhang, L. Zhu, D. Fay, and M. Johansson, “Locally differentially pri-vate online federated learning with correlated noise,” IEEE Transactions on Signal Processing , vol. 73, pp. 1518–1531, 2025. [32] R. Wang, Y. Zhou, J. Liu, X. Liu, M. Hu, D. Wu, Q. Z. Sheng, and S. Guo, “Codp: Improving differentially private federated learning by cascading and offsetting noises between iterations,” IEEE Transactions on Dependable and Secure Computing , pp. 1–13, 2025. [33] M. Talaei and I. Izadi, “Adaptive differential privacy in federated learning: A priority-based approach,” arXiv preprint arXiv:2401.02453 ,2024. [34] L. Cui and X. Wu, “Aldp-fl for adaptive local differential privacy in federated learning,” Scientific Reports , vol. 15, no. 1, p. 26679, 2025. [35] W. Zhu, L. Shi, K. Wei, Y. Zhou, Z. Wang, Z. Xiong, and J. Li, “Randomized dp-dfl: towards differentially private decentralized feder-ated learning via randomized model interaction,” IEEE Transactions on Mobile Computing , pp. 1–16, 2025. [36] X. Tang, L. Peng, Y. Weng, M. Shen, L. Zhu, and R. H. Deng, “Enforc-ing differential privacy in federated learning via long-term contribution incentives,” IEEE Transactions on Information Forensics and Security ,vol. 20, pp. 3102–3115, 2025. [37] T. Li, A. K. Sahu, A. Talwalkar, and V. Smith, “Federated learning: Challenges, methods, and future directions,” IEEE signal processing magazine , vol. 37, no. 3, pp. 50–60, 2020. [38] C. Dwork, “Differential privacy,” in International colloquium on au-tomata, languages, and programming , 2006. [39] C. Dwork, A. Roth et al. , “The algorithmic foundations of differential privacy,” Foundations and Trends® in Theoretical Computer Science ,vol. 9, no. 3-4, pp. 211–407, 2014. [40] M. Abadi, A. Chu, I. Goodfellow, H. B. McMahan, I. Mironov, K. Talwar, and L. Zhang, “Deep learning with differential privacy,” in 
+
+Proceedings of the 2016 ACM SIGSAC conference on computer and communications security , 2016. [41] A. Ghosh and A. Roth, “Selling privacy at auction,” in ACM conference on Electronic commerce , 2011. [42] R. Xu, Y.-J. A. Zhang, and J. Huang, “Tackling privacy heterogeneity in federated learning,” in International Symposium on Modeling and Optimization in Mobile, Ad hoc, and Wireless Networks , 2023. [43] R. B. Myerson, “Optimal auction design,” Mathematics of operations research , vol. 6, no. 1, pp. 58–73, 1981. [44] A. Fallah, A. Makhdoumi, A. Malekian, and A. Ozdaglar, “Optimal and differentially private data acquisition: Central and local mechanisms,” 
+
+arXiv preprint arXiv:2201.03968 , 2022. [45] V. Krishna, Auction theory . Academic press, 2009. [46] Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner, “Gradient-based learning applied to document recognition,” Proceedings of the IEEE , vol. 86, no. 11, pp. 2278–2324, 1998. [47] A. Krizhevsky, G. Hinton et al. , “Learning multiple layers of features from tiny images,” 2009. [48] S. P. Karimireddy, S. Kale, M. Mohri, S. Reddi, S. Stich, and A. T. Suresh, “Scaffold: Stochastic controlled averaging for federated learn-ing,” in International conference on machine learning , 2020. [49] F. Tramer and D. Boneh, “Differentially private learning needs better features (or much more data),” arXiv preprint arXiv:2011.11660 , 2020. [50] A. Yousefpour, I. Shilov, A. Sablayrolles, D. Testuggine, K. Prasad, M. Malek, J. Nguyen, S. Ghosh, A. Bharadwaj, J. Zhao et al. , “Opacus: User-friendly differential privacy library in pytorch,” arXiv preprint arXiv:2109.12298 , 2021. [51] Y. J. Cho, J. Wang, and G. Joshi, “Towards understanding biased client selection in federated learning,” in International Conference on Artificial Intelligence and Statistics , 2022. 14 
+
+APPENDIX 
+
+A. Mechanism design problem reformulation proof 1) Reformulating IC and IR constraints: For simplicity in notation, let us first define the expected payment and expected allocation for a client k with cost ck as: 
+
+πk(ck) = Ec−k [πk(ck, c−k)] , (24) 
+
+ϵk(ck) = Ec−k [ϵk(ck, c−k)] . (25) First, we prove the following lemma that provides a sufficient and necessary condition for the IC constraint. 
+
+Lemma 3. For any client k ∈ N , the payment function πk
+
+satisfies the IC constraint if and only if: 
+
+1) The expected privacy budget ϵk(ck) is non-increasing in 
+
+ck.
+
+2) The payment function is of the form: 
+
+πk(ck) = πk(0) + ckϵk(ck) −
+
+∫ ck
+
+> 0
+
+ϵk(z)dz. (26) 
+
+Proof. Let Uk(ˆ ck; ck) = πk(ˆ ck)−ckϵk(ˆ ck) be the utility of an agent with true cost ck who reports a cost of ˆck. The IC con-straint requires that for all ck and ˆck, Uk(ck; ck) ≥ Uk(ˆ ck; ck).Let Uk(ck) ≡ Uk(ck; ck) be the equilibrium utility. 
+
+a) Necessity (IC =⇒ Conditions 1 and 2): Assuming the mechanism is IC, the agent’s utility Uk(ˆ ck; ck) is maxi-mized at ˆck = ck. By the envelope theorem, we have: 
+
+dU k(ck)
+
+dc k
+
+= ∂U k(ˆ ck; ck)
+
+∂c k
+
+∣∣∣∣ˆck =ck
+
+= ∂∂c k
+
+(πk(ˆ ck) − ckϵk(ˆ ck)) 
+
+∣∣∣∣ˆck =ck
+
+= − ϵk(ck).
+
+(27) Integrating both sides from 0 to ck yields: 
+
+Uk(ck) − Uk(0) = −
+
+∫ ck
+
+> 0
+
+ϵk(z)dz 
+
+=⇒ Uk(ck) = Uk(0) −
+
+∫ ck
+
+> 0
+
+ϵk(z)dz. 
+
+(28) By substituting the definitions Uk(ck) = πk(ck) − ckϵk(ck)
+
+and Uk(0) = πk(0) , we obtain the payment rule in (26). To prove that ϵk(ck) is non-increasing, consider two costs 
+
+ck and c′
+
+> k
+
+. The IC constraint implies: 
+
+πk(ck) − ckϵk(ck) ≥ πk(c′
+
+> k
+
+) − ckϵk(c′
+
+> k
+
+), (29) 
+
+πk(c′
+
+> k
+
+) − c′
+
+> k
+
+ϵk(c′
+
+> k
+
+) ≥ πk(ck) − c′
+
+> k
+
+ϵk(ck). (30) Adding (29) and (30) and rearranging gives: 
+
+ckϵk(ck) − ckϵk(c′
+
+> k
+
+) ≤ c′
+
+> k
+
+ϵk(ck) − c′
+
+> k
+
+ϵk(c′
+
+> k
+
+) (31) 
+
+(ck − c′
+
+> k
+
+) [ ϵk(ck) − ϵk(c′
+
+> k
+
+)] ≤ 0. (32) This inequality implies that if ck > c ′
+
+> k
+
+, we must have ϵk(ck) ≤
+
+ϵk(c′
+
+> k
+
+). Thus, ϵk(ck) is non-increasing in ck.
+
+b) Sufficiency (Conditions 1 and 2 =⇒ IC): By the form of the payment, we have 
+
+[πk(x) − ckϵk(x)] − [πk(ck) − ckϵk(ck)] = xϵ k(x) −
+
+∫ x
+
+> 0
+
+ϵk(z)dz − ckϵk(x) + 
+
+∫ ck
+
+> 0
+
+ϵk(z)dz 
+
+= ( x − ck)ϵk(x) −
+
+∫ xck
+
+ϵk(z)dz. 
+
+(33) Combining the condition that ϵk(ck) is weakly decreasing with 
+
+ck with (33), we have 
+
+(x − ck) · ϵk(x) −
+
+∫ xck
+
+ϵk(z)dz ≤ 0. (34) Thus, the IC constraint holds. This completes the proof. Next, we incorporate the IR constraint to derive the final payment structure in Lemma 2. 
+
+Proof. Following the payment function in Lemma 3, the IR condition implies 
+
+πk(ck) − ckϵk(ck) = πk(0) −
+
+∫ ck
+
+> 0
+
+ϵk(z)dz ≥ 0, (35) for all k ∈ N .This means the IR constraint is most difficult to satisfy for the agent with the highest possible cost. To ensure the constraint holds for all ck ∈ R+, we only need to verify it for the worst case, as ck → ∞ : Thus, we focus on the case that 
+
+ck = ∞,
+
+πk(0) −
+
+∫ ∞
+
+> 0
+
+ϵk(z)dz ≥ 0, ∀k ∈ N . (36) Substituting it back to (26) yields that the payment structure for any k ∈ N ,
+
+πk(ck) = 
+
+∫ ∞
+
+> 0
+
+ϵk(z)dz + ckϵk(ck) −
+
+∫ ck
+
+> 0
+
+ϵk(z)dz + dk
+
+=
+
+∫ ∞
+
+> ck
+
+ϵk(z)dz + ckϵk(ck) + dk,
+
+(37) where dk is non-negative. 
+
+2) Proof of Theorem 2: Proof. Let fk(·) and Fk(·) be the probability density and cumulative distribution functions of client k’s cost ck, respec-tively. 15 
+
+From Lemma 2, the expected payment for agent k that satisfies IC and IR is given by: 
+
+Eck [πk(ck)] = Eck
+
+[(∫ ∞
+
+> ck
+
+ϵk(z)dz + ckϵk(ck)
+
+)] 
+
++ dk
+
+=
+
+∫
+
+> x−k
+
+∫ ∞
+
+> 0
+
+∫ z
+
+> 0
+
+ϵk(z, x−k)f−k(x−k)fk(xk)dx kdzd x−k
+
++
+
+∫
+
+> x−k
+
+∫ ∞
+
+> 0
+
+xkϵk(xk, x−k)f−k(x−k)fk(xk)dx kdx−k +dk
+
+=
+
+∫
+
+> x−k
+
+∫ ∞
+
+> 0
+
+ϵk(z, x−k)( Fk(z) − Fk(0)) f−k(x−k)dzd x−k
+
++
+
+∫
+
+> x−k
+
+∫ ∞
+
+> 0
+
+xkϵk(xk, x−k)f−k(x−k)fk(xk)dx kdx−k +dk
+
+=
+
+∫
+
+> x
+
+ϵk(xk, x−k)
+
+[
+
+xk + Fk(xk) − Fk(0) 
+
+fk(xk)
+
+]
+
+fk(xk)f−k(x−k)dx
+
++ dk.
+
+For any distribution of the costs c, we have 
+
+Ec[πk(ck)] = dk
+
++Ec
+
+[
+
+ϵk(ck, c−k)
+
+[
+
+ck + Fk(ck)−Fk(0) 
+
+fk(ck)
+
+]
+
+fk(ck)f−k(c−k)dx
+
+]
+
+.
+
+(38) Substituting (38) into Problem 1, we have 
+
+min 
+
+> ϵ(c),
+> ps(c)
+
+Ec
+
+η
+
+∥ps(c)−pu∥1+
+
+√√√√∥ps(c)−pu∥21 +Q
+
+> N
+
+∑
+
+> k=1
+
+(ps
+
+> k
+
+(c)) 2
+
+ϵ2
+
+> k
+
+(c)
+
+
+
++ Ec
+
+[ N∑
+
+> k=1
+
+(
+
+ϵk(c)
+
+(
+
+ck + Fk(ck)
+
+fk(ck)
+
+)
+
++ dk
+
+)]
+
+s.t. 
+
+> N
+
+∑
+
+> k=1
+
+ps
+
+> k
+
+(c) = 1 , p s
+
+> k
+
+, ϵ k, d k ≥ 0, ∀k ∈ N ,ϵk is weakly decreasing with ck, ∀k ∈ N .
+
+Obviously, at the optimal solution, we always have dk = 0 ,for all k ∈ N . Setting dk = 0 for all k ∈ N and consider-ing the point-wise optimization form yields the reformulated optimization problem, i.e. ,
+
+min 
+
+> ϵ,ps
+
+η
+
+∥ps − pu∥1 +
+
+√√√√∥ps − pu∥21 + Q
+
+> N
+
+∑
+
+> k=1
+
+(ps
+
+> k
+
+)2
+
+ϵ2
+
+> k
+
+
+
++
+
+> N
+
+∑
+
+> k=1
+
+ϵk
+
+(
+
+ck + Fk(ck)
+
+fk(ck)
+
+)
+
+s.t. 
+
+> N
+
+∑
+
+> k=1
+
+ps 
+
+> k
+
+= 1 , p s 
+
+> k
+
+≥ 0, ∀k ∈ N ,ϵk is weakly decreasing with ck, ∀k ∈ N .
+
+(39) This completes the proof. 
+
+B. Proof of Theorem 3 
+
+We prove Theorem 3 by establishing three lemmas: Lemma 4, Lemma 5, and Lemma 6. We prove them respectively. 
+
+Lemma 4. At the optimal solution of Problem 3, there is at most one client in the set S+∗.Proof. We prove Lemma 4 by contradiction. Suppose for the sake of contradiction that the optimal set S+∗ contains more than one client. Let clients 1 and 2 be two distinct clients in this set, with their allocations in the optimal solution being 
+
+(p∗
+
+> 1
+
+, ϵ ∗
+
+> 1
+
+) and (p∗
+
+> 2
+
+, ϵ ∗
+
+> 2
+
+), respectively. Without loss of generality, assume their virtual costs satisfy v1 < v 2.Now, consider reallocating the total probability P = p∗ 
+
+> 1
+
++p∗
+
+> 2
+
+between only these two clients, while keeping all other al-locations fixed. For any new probabilities p1, p 2 such that 
+
+p1 + p2 = P and p1, p 2 ≥ 1/N , the L1-norm term ∥ps − pu∥1
+
+of the objective function remains constant. Therefore, for the original allocation to be optimal, it must also be an optimal solution to the subproblem of minimizing the remaining objec-tive terms by allocating the fixed resources between just clients 1 and 2. This subproblem is formulated in (40) as follows: 
+
+min p21
+
+ϵ21
+
++ p22
+
+ϵ22
+
+,
+
+Var. ϵ1, p 1, ϵ 2, p 2,
+
+s.t. p1 + p2 = p∗ 
+
+> 1
+
++ p∗ 
+
+> 2
+
+= ˜P , v1ϵ1 + v2ϵ2 = B∗ 
+
+> 1
+
++ B∗ 
+
+> 2
+
+= ˜B, p1, p 2 ≥ 1/N, ϵ1, ϵ 2 > 0.
+
+(40) We characterize the optimal solution of (40) using the KKT conditions. The Lagrangian is given by: 
+
+Lℓ =
+
+> 2
+
+∑
+
+> k=1
+
+p2
+
+> k
+
+ϵ2
+
+> k
+
++ λ1(p1 + p2 − ˜P ) + λ2(v1ϵ1 + v2ϵ2 − ˜B)+ μp
+
+> 1
+
+(1 /N − p1) + μp
+
+> 2
+
+(1 /N − p2) − μe
+
+> 1
+
+ϵ1 − μe
+
+> 2
+
+ϵ2.
+
+(41) The KKT conditions of Problem (40) are 
+
+∂L ℓ
+
+∂p k
+
+= 2pk
+
+ϵ2
+
+> k
+
++ λ1 − μpk = 0 , ∀k ∈ { 1, 2}, (42) 
+
+∂L ℓ
+
+∂ϵ k
+
+= −2p2
+
+> k
+
+ϵ3
+
+> k
+
++ λ2vk = 0 , ∀k ∈ { 1, 2}, (43) 
+
+μp
+
+> 1
+
+(1 /N − p1) = 0 , (44) 
+
+μp
+
+> 2
+
+(1 /N − p2) = 0 , (45) 
+
+p1 + p2 = ˜P , (46) 
+
+v1ϵ1 + v2ϵ2 = ˜B, (47) 
+
+μp
+
+> 1
+
+, μ p 
+
+> 2
+
+≥ 0. (48) We derive a contradiction by analyzing the following two cases. 
+
+a) Case 1: p1, p 2 > 1/N : In this scenario, the inequality constraints on the probability allocations are inactive. The KKT conditions therefore imply that their corresponding dual variables are zero, i.e., μp 
+
+> 1
+
+= μp 
+
+> 2
+
+= 0 . Substituting this result 16 
+
+into the first-order optimality conditions from (42) and (43) yields the following relations for k ∈ { 1, 2}:
+
+pk
+
+ϵ2
+
+> k
+
+= −λ1/2 = c3, (49) 
+
+p2
+
+> k
+
+ϵ3
+
+> k
+
+= λ2
+
+2 vk = c4vk, (50) for some constants c3, c 4. Substituting (49) to (50), we obtain 
+
+p2
+
+> k
+
+ϵ3
+
+> k
+
+= c3
+
+pk
+
+ϵk
+
+= c4vk, (51) 
+
+pk = c4
+
+c3
+
+vkϵk, (52) for both k ∈ { 1, 2}. Using the constraints p1 + p2 = ˜P and 
+
+v1ϵ1 + v2ϵ2 = ˜B, we have 
+
+c4
+
+c3
+
+= ˜P
+
+˜B . (53) Substituting (52) and (53) into (49) and (50), and solving the equations (49) and (50) yields 
+
+c3 = ∑
+
+> k
+
+v2 
+
+> k
+
+˜P
+
+˜B2 , c 4 = ∑
+
+> k
+
+v2 
+
+> k
+
+˜P 2
+
+˜B3 . (54) Thus, the optimal solution of Problem (40) in case 1 is 
+
+pk = v2
+
+> k
+
+∑ 
+
+> k
+
+v2
+
+> k
+
+˜P , ∀k ∈ { 1, 2}, (55) 
+
+ϵk = vk
+
+∑ 
+
+> k
+
+v2
+
+> k
+
+˜B, ∀k ∈ { 1, 2}. (56) The corresponding objective of Problem (40) in case 1 is 
+
+f case1 = c4 ˜B = ∑
+
+> k
+
+v2 
+
+> k
+
+˜P 2
+
+˜B3 . (57) 
+
+b) Case 2: p1 = p1,r > 1/N and p2 = p2,r = 1 /N : By the KKT conditions (43) and (46), We have 
+
+p2
+
+> k
+
+ϵ3
+
+> k
+
+= λ2
+
+2 vk = c′
+
+> 4
+
+vk, (58) 
+
+p1 = pr, 1 = ˜P − 1/N, (59) 
+
+p2 = pr, 2 = 1 /N, (60) for a constant c′
+
+> 4
+
+. Solving the above equations yields 
+
+c′ 
+
+> 4
+
+=
+
+( ∑ 
+
+> k
+
+(p2
+
+> r,k
+
+v2
+
+> k
+
+)1/3
+
+˜B
+
+)3
+
+. (61) Thus, the corresponding objective of Problem (40) in case 2 is 
+
+f case2 = c′ 
+
+> 4
+
+˜B = (∑
+
+> k
+
+(p2
+
+> r,k
+
+v2
+
+> k
+
+)1/3)3
+
+˜B2 . (62) We then the compare the objectives f case1 and f case2 to show that reallocation (case 2) can achieve better results than case 1. The objectives of Problem (40) in cases 1 and 2 are 
+
+f case1 ˜B2 = ( p1 + p2)2(v21 + v22 )= ( pr, 1 + pr, 2)2(v21 + v22 )= ( p2 
+
+> r, 1
+
++ 2 pr, 1pr, 2 + p2
+
+> r, 2
+
+)( v21 + v22 )= p2
+
+> r, 1
+
+v21 + p2
+
+> r, 2
+
+v22
+
++ pr, 1pr, 2v1v2
+
+( pr, 1v2
+
+pr, 2v1
+
++ 2 v1
+
+v2
+
++ 2 v2
+
+v1
+
++ pr, 2v1
+
+pr, 1v2
+
+)︸ ︷︷ ︸
+
+> ∆1
+
+,
+
+(63) and 
+
+f case2 ˜B2
+
+= p2
+
+> r, 2
+
+v22 + p2
+
+> r, 1
+
+v21 + 3 p4/3 
+
+> r, 2
+
+v4/32 p2/3 
+
+> r, 1
+
+v2/31 + 3 p2/3 
+
+> r, 2
+
+v2/32 p1/3 
+
+> r, 1
+
+v1/31
+
+= p2
+
+> r, 1
+
+v21 + p2
+
+> r, 2
+
+v22 + pr, 1pr, 2v1v2
+
+(
+
+3 p1/3 
+
+> r, 2
+
+v1/32
+
+p1/3 
+
+> r, 1
+
+v1/31
+
++ 3 p1/3 
+
+> r, 1
+
+v1/31
+
+p1/3 
+
+> r, 2
+
+v1/32
+
+)︸ ︷︷ ︸
+
+> ∆2
+
+.
+
+(64) Because the terms except ∆1 and ∆2 are the same in f case1 ˜B2
+
+and f case2 ˜B2, the key is to compare ∆1 and ∆2.For ∆2, by the fact that f (x) = x + 1 /x increases with 
+
+x(x ≥ 1) , we have 
+
+∆2 = 3 
+
+( p1/3 
+
+> r, 2
+
+v1/32
+
+p1/3 
+
+> r, 1
+
+v1/31
+
++ p1/3 
+
+> r, 1
+
+v1/31
+
+p1/3 
+
+> r, 2
+
+v1/32
+
+)
+
+= 3 f
+
+(
+
+max { pr, 2v2
+
+pr, 1v1
+
+}1/3
+
+)
+
+≤ 2√2f (max { pr, 2v2
+
+pr, 1v1
+
+}1/2) + max(3 f (x1/3) − 2√2f (x1/2)) = 2 √2
+
+( p1/2 
+
+> r, 2
+
+v1/22
+
+p1/2 
+
+> r, 1
+
+v1/21
+
++ p1/2 
+
+> r, 1
+
+v1/21
+
+p1/2 
+
+> r, 2
+
+v1/22
+
+)
+
++ 6 − 4√2.
+
+(65) For ∆1, note that pr, 1/p r, 2, v 2/v 1 > 1. Then by the fact that f (x) = x + 1 /x is increasing with x(x ≥ 1) , we have 
+
+∆1 =
+
+( pr, 1v2
+
+pr, 2v1
+
++ 2 v1
+
+v2
+
++ 2 v2
+
+v1
+
++ pr, 2v1
+
+pr, 1v2
+
+)
+
+>
+
+( pr, 1
+
+pr, 2
+
++ 2 v1
+
+v2
+
++ 2 v2
+
+v1
+
++ pr, 2
+
+pr, 1
+
+)
+
+.
+
+(66) Therefore, the difference between ∆1 and ∆2 is given by 
+
+∆1 − ∆2
+
+≥
+
+( pr, 1v2
+
+pr, 2v1
+
++ 2 v1
+
+v2
+
++ 2 v2
+
+v1
+
++ pr, 2v1
+
+pr, 1v2
+
+)
+
+− 2√2
+
+( p1/2 
+
+> r, 2
+
+v1/22
+
+p1/2 
+
+> r, 1
+
+v1/21
+
++ p1/2 
+
+> r, 1
+
+v1/21
+
+p1/2 
+
+> r, 2
+
+v1/22
+
+)
+
+− (6 − 4√2) 
+
+>
+
+( pr, 1
+
+pr, 2
+
++ 2 v1
+
+v2
+
++ 2 v2
+
+v1
+
++ pr, 2
+
+pr, 1
+
+)
+
+− 2√2
+
+( p1/2 
+
+> r, 2
+
+v1/22
+
+p1/2 
+
+> r, 1
+
+v1/21
+
++ p1/2 
+
+> r, 1
+
+v1/21
+
+p1/2 
+
+> r, 2
+
+v1/22
+
+)
+
+− (6 − 4√2) =
+
+(√ pr, 1
+
+pr, 2
+
+− √2
+
+√ v1
+
+v2
+
+)2
+
++
+
+(√ pr, 2
+
+pr, 1
+
+−√2
+
+√ v2
+
+v1
+
+)2
+
+︸ ︷︷ ︸
+
+> A
+
+−(6 −4√2) .
+
+(67) 17 
+
+Then, we bound the term A. For simplicity, consider a general form of A as 
+
+f (x, y ) = ( x − √2y)2 +
+
+(
+
+1
+
+x −√2
+
+y
+
+)2
+
+, (68) and the following optimization problem, 
+
+min  
+
+> x,y
+
+f (x, y ), s.t. x > 0, y > 0. (69) By the first-order condition, we have 
+
+∂f (x, y )
+
+∂x = 2( x − √2y) + 2 
+
+(
+
+1
+
+x −√2
+
+y
+
+)
+
+·
+
+(
+
+− 1
+
+x2
+
+)
+
+= 0 .∂f (x, y )
+
+∂y = −2√2( x − √2y)−2√2
+
+(
+
+1
+
+x −√2
+
+y
+
+)
+
+·
+
+(
+
+− 1
+
+y2
+
+)
+
+= 0 .
+
+The solution is x = y = 1 . Then, we verify the second order condition. 
+
+∂2f (x, y )
+
+∂x 2 = 2 + 12 
+
+x4 , (70) 
+
+∂2f (x, y )
+
+∂x∂y = −2√2 − 2√2
+
+x2y2 , (71) 
+
+∂2f (x, y )
+
+∂y 2 = 4 + 2 · 12 
+
+y4 , (72) 
+
+∂2f (x, y )
+
+∂y∂x = −2√2 − 2√2
+
+x2y2 . (73) Because the Hessian of f (x, y ) at (1 , 1) is positive definite, 
+
+(1 , 1) is the solution and f (1 , 1) = 2 · (1 − √2) 2 = 6 − 4√2.So, we have 
+
+A ≥ 6 − 4√2. (74) Substituting (74) back to (67), we have 
+
+∆1 − ∆2 > 0. (75) Thus, we have f case1 > f case2 , which contradicts with the assumption that |S +∗| > 1. This completes the proof. 
+
+Lemma 5. At the optimal solution of Problem 3, there is at most one clients in the set S−∗ .
+
+The proof of Lemma 5 follows a similar structure to that of Lemma 4. By assuming multiple clients in S−∗ and deriving a contradiction through optimization sub-problems and KKT conditions, we can establish Lemma 5. 
+
+Lemma 6. At the optimal solution of Problem 3, there exists thresholds h1 < h 2 < h 3 such that 
+
+k ∈
+
+
+
+S+∗, if vk ≤ h1,
+
+Su∗, if h1 < v k ≤ h2,
+
+S−∗ , if h2 < v k ≤ h3,
+
+S0∗, if h3 < v k.
+
+(76) 
+
+Proof. We prove this lemma by establishing the ordering of the virtual costs across the optimal sets. Specifically, we show that the following three inequalities hold:  
+
+> •
+
+For any client i ∈ S +∗ and j ∈ S u∗, their virtual costs satisfy vi ≤ vj . 
+
+> •
+
+For any client j ∈ S u∗ and k ∈ S −∗ , their virtual costs satisfy vj ≤ vk. 
+
+> •
+
+For any client k ∈ S −∗ and l ∈ S 0∗, their virtual costs satisfy vk ≤ vl.Each of these statements will be proven individually by contradiction. Throughout the proof, recall that the sets S+∗
+
+and S−∗ contain at most one client. 
+
+1) Proof of vi ≤ vj for all i ∈ S +∗ and j ∈ S u∗: We proceed by contradiction. Assume there exists a client i ∈ S +∗
+
+and a client j ∈ S u∗ who violate the condition, such that their virtual costs satisfy vi > v j .To show this leads to a contradiction, we analyze a real-location of resources between only these two clients, holding the allocations for all other clients fixed. By definition of the sets S+∗ and Su∗, we have pi > 1/N 
+
+and pj = 1 /N . Now, consider any reallocation of their com-bined probability, P = pi +pj , that keeps the new probabilities above the 1/N threshold. For any such reallocation, the L1-norm term of the objective function, ∥ps − pu∥1, remains constant. This allows us to find a contradiction by analyzing the subproblem concerned only with the remaining objective terms. Without the L1-norm term, we only to consider the follow-ing minimization problem, 
+
+min  
+
+> pi,p j,ϵ i,ϵ j
+
+p2
+
+> i
+
+ϵ2
+
+> i
+
++ p2
+
+> j
+
+ϵ2
+
+> j
+
+,
+
+s.t. pi + pj = ˜P , viϵi + vj ϵj = ˜B. 
+
+(77) As proved in Lemma 4, we only need to consider the cases that one client has probability 1/N . 
+
+> •
+
+Case 1 (assumption): pi = 1 /N . In Case 1, the objective value is 
+
+f case1 =
+
+(( 1  
+
+> N2
+
+v21
+
+)1/3 +
+
+(
+
+( ˜P − 1 
+
+> N
+
+)2v22
+
+)1/3)3
+
+˜B2 . (78)  
+
+> •
+
+Case 2: pj = 1 /N . In Case 2, objective value is 
+
+f case2 =
+
+(( 1  
+
+> N2
+
+v22
+
+)1/3 +
+
+(
+
+( ˜P − 1 
+
+> N
+
+)2v21
+
+)1/3)3
+
+˜B2 . (79) Because ˜P − 1 
+
+> N
+
+≥ 1 
+
+> N
+
+, v 1 < v 2, we have 
+
+f case2 < f case1 . (80) This contradicts with the assumption. 
+
+2) Proof of vj ≤ vk for all j ∈ S u∗ and k ∈ S −∗ : We again use a proof by contradiction. Assume there exists a client 
+
+j ∈ S u∗ and a client k ∈ S −∗ whose virtual costs violate the stated condition, such that vj > v k.To derive a contradiction, we consider a reallocation of the combined resources between clients j and k, holding all other client allocations fixed. By definition of the sets Su∗ and S−∗ , we have pj = 1 /N 
+
+and pk < 1/N , respectively. Consequently, both allocations satisfy the condition p ≤ 1/N . Under any reallocation of their total probability, P = pj + pk, that preserves this 18 
+
+condition for the new allocations, the L1-norm term ∥ps −pu∥1
+
+remains constant. This allows us to find a contradiction by analyzing the optimality of the subproblem that involves only the remaining objective terms. Without the L1 norm term, we only to consider the follow-ing minimization problem, 
+
+min    
+
+> pj,p k,ϵ j,ϵ k
+
+p2
+
+> j
+
+ϵ2
+
+> j
+
++ p2
+
+> k
+
+ϵ2
+
+> k
+
+,
+
+s.t. pj + pk = ˜P , vj ϵj + vkϵk = ˜B. 
+
+(81) As proved in Lemma 5, we only need to consider the cases that one client has probability 1/N . 
+
+> •
+
+Case 1: p1 = 1 /N : In this case, the objective value is 
+
+f case1 =
+
+(( 1  
+
+> N2
+
+v21
+
+)1/3 +
+
+(
+
+( ˜P − 1 
+
+> N
+
+)2v22
+
+)1/3)3
+
+˜B2 . (82)  
+
+> •
+
+Case 2: p2 = 1/N (assumption). In this case, the objective value is 
+
+f case2 =
+
+(( 1  
+
+> N2
+
+v22
+
+)1/3 +
+
+(
+
+( ˜P − 1 
+
+> N
+
+)2v21
+
+)1/3)3
+
+˜B2 . (83) Because ˜P − 1 
+
+> N
+
+< 1 
+
+> N
+
+, v 1 < v 2, we have 
+
+f case2 > f case1 . (84) This contradicts with the assumption. 
+
+3) Proof of vk ≤ vl for all k ∈ S −∗ and l ∈ S 0∗: Finally, we prove the third inequality, again by contradiction. Assume there exists a client k ∈ S −∗ and a client l ∈ S 0∗ for whom the condition is violated, such that their virtual costs are ordered 
+
+vk > v l.We will show that this assumption allows for an exchange of the allocations between clients k and l that decreases the value of the objective function. Such a decrease would contradict the presumed optimality of the original solution. Let the original allocations be (pk, ϵ k) and (pl, ϵ l). Consider a new allocation where we simply swap their roles. We will now analyze the resulting change in the objective function.  
+
+> •
+
+Case 1: p1 = pk, p 2 = 0 . In this case, the DP error term is 
+
+f case1 = p2
+
+> k
+
+B2
+
+> k
+
+v21 . (85)  
+
+> •
+
+Case 2 (assumption): p2 = pk, p 1 = 0 . In case 2, 
+
+f case2 = p2
+
+> k
+
+B2
+
+> k
+
+v22 . (86) Because v1 < v 2, we have 
+
+f case2 > f case1 . (87) This contradicts with the assumption. This completes the proof. Combining Lemmas 4, 5, and 6 together, we arrive at the Theorem 3. 
+
+C. Proof of Proposition 1 Proof. We denote the virtual cost of clients as v =[v1, · · · , v i, · · · , v N ], v′ = [ v1, · · · , v ′
+
+> i
+
+, · · · , v N ] (v and v′ dif-fers only in the ith entry). We represent the optimal solutions under v and v′ as (p∗, ϵ∗) and (p′∗ , ϵ′∗ ), respectively. Then, by the optimality of (p∗, ϵ∗) and (p′∗ , ϵ′∗ ), we have 
+
+ηL (p∗, ϵ∗) + 
+
+> N
+
+∑
+
+> k=1
+
+vkϵ∗ 
+
+> k
+
+≤ ηL (p′∗ , ϵ′∗ ) + 
+
+> N
+
+∑
+
+> k=1
+
+vkϵ′∗  
+
+> k
+
+, (88) 
+
+ηL (p′∗ , ϵ′∗ )+ ∑ 
+
+> k̸=i
+
+vkϵ′∗  
+
+> k
+
++v′
+
+> i
+
+ϵ′∗  
+
+> i
+
+≤ ηL (p∗, ϵ∗)+ ∑ 
+
+> k̸=i
+
+vkϵ∗ 
+
+> k
+
++v′
+
+> i
+
+ϵ∗ 
+
+> i
+
+.
+
+(89) Combining (88) and (89) yields 
+
+v′
+
+> i
+
+ϵ′∗  
+
+> i
+
+− v′
+
+> i
+
+ϵ∗ 
+
+> i
+
+≤ ηL (p∗, ϵ∗)−ηL (p′∗ , ϵ′∗ )+ ∑ 
+
+> k̸=i
+
+vkϵ∗ 
+
+> k
+
+−∑ 
+
+> k̸=i
+
+vkϵ′∗ 
+
+> k
+
+≤ viϵ′∗  
+
+> i
+
+− viϵ∗ 
+
+> i
+
+.
+
+(90) Thus, we have 
+
+(v′ 
+
+> i
+
+− vi)( ϵ′∗  
+
+> i
+
+− ϵ∗ 
+
+> i
+
+) ≤ 0. (91) By the inequality (91) and Assumption 1, we can conclude that 
+
+ϵk is weakly decreasing with ck. This completes the proof. 
+
+D. Proof of Theorem 4 Proof. When the client sets S+, Su, S−, S0 are fixed, by KKT conditions, for any client k ∈ N , we have 
+
+(ps
+
+> k
+
+)2
+
+ϵ3
+
+> k
+
+= c3vk, (92) where c3 is a constant. Additionally, given budget B, we have 
+
+c3 = (∑Ni=1 v2/3 
+
+> i
+
+(ps
+
+> i
+
+)2/3)3
+
+B3 . (93) Substituting (93) into (92) yields Theorem 4. This completes the proof.

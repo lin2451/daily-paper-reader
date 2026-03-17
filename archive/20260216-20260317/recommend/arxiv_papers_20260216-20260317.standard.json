@@ -1,0 +1,666 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-17T13:59:23.741076+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 15,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 27,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2602.15337v2",
+      "title": "FedPSA: Modeling Behavioral Staleness in Asynchronous Federated Learning",
+      "abstract": "Asynchronous Federated Learning (AFL) has emerged as a significant research area in recent years. By not waiting for slower clients and executing the training process concurrently, it achieves faster training speed compared to traditional federated learning. However, due to the staleness introduced by the asynchronous process, its performance may degrade in some scenarios. Existing methods often use the round difference between the current model and the global model as the sole measure of staleness, which is coarse-grained and lacks observation of the model itself, thereby limiting the performance ceiling of asynchronous methods. In this paper, we propose FedPSA (Parameter Sensitivity-based Asynchronous Federated Learning), a more fine-grained AFL framework that leverages parameter sensitivity to measure model obsolescence and establishes a dynamic momentum queue to assess the current training phase in real time, thereby adjusting the tolerance for outdated information dynamically. Extensive experiments on multiple datasets and comparisons with various methods demonstrate the superior performance of FedPSA, achieving up to 6.37\\% improvement over baseline methods and 1.93\\% over the current state-of-the-art method.",
+      "authors": [
+        "Chaoyi Lu",
+        "Yiding Sun",
+        "Zhichuan Yang",
+        "Jinqian Chen",
+        "Dongfu Yin",
+        "Jihua Zhu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-02-17T03:57:07+00:00",
+      "link": "https://arxiv.org/pdf/2602.15337v2",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "modeling behavioral staleness in asynchronous federated learning",
+      "llm_evidence_cn": "异步联邦学习中的行为陈旧性建模",
+      "llm_evidence": "异步联邦学习中的行为陈旧性建模",
+      "canonical_evidence": "异步联邦学习中的行为陈旧性建模",
+      "llm_tldr_en": "Introduces FedPSA to handle staleness and stragglers in asynchronous FL using parameter sensitivity.",
+      "llm_tldr_cn": "提出FedPSA框架，利用参数敏感度解决异步联邦学习中的模型陈旧与掉队者问题。",
+      "llm_tldr": "提出FedPSA框架，利用参数敏感度解决异步联邦学习中的模型陈旧与掉队者问题。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "handling stragglers in semi-asynchronous federated learning",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.16174v1",
+      "title": "Edge Learning via Federated Split Decision Transformers for Metaverse Resource Allocation",
+      "abstract": "Mobile edge computing (MEC) based wireless metaverse services offer an untethered, immersive experience to users, where the superior quality of experience (QoE) needs to be achieved under stringent latency constraints and visual quality demands. To achieve this, MEC-based intelligent resource allocation for virtual reality users needs to be supported by coordination across MEC servers to harness distributed data. Federated learning (FL) is a promising solution, and can be combined with reinforcement learning (RL) to develop generalized policies across MEC-servers. However, conventional FL incurs transmitting the full model parameters across the MEC-servers and the cloud, and suffer performance degradation due to naive global aggregation, especially in heterogeneous multi-radio access technology environments. To address these challenges, this paper proposes Federated Split Decision Transformer (FSDT), an offline RL framework where the transformer model is partitioned between MEC servers and the cloud. Agent-specific components (e.g., MEC-based embedding and prediction layers) enable local adaptability, while shared global layers in the cloud facilitate cooperative training across MEC servers. Experimental results demonstrate that FSDT enhances QoE for up to 10% in heterogeneous environments compared to baselines, while offloadingnearly 98% of the transformer model parameters to the cloud, thereby reducing the computational burden on MEC servers.",
+      "authors": [
+        "Fatih Temiz",
+        "Shavbo Salehi",
+        "Melike Erol-Kantarci"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.AI",
+        "cs.MM"
+      ],
+      "published": "2026-02-18T04:19:57+00:00",
+      "link": "https://arxiv.org/pdf/2602.16174v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "intelligent resource allocation for virtual reality users via FL",
+      "llm_evidence_cn": "通过联邦学习为虚拟现实用户进行智能资源分配",
+      "llm_evidence": "通过联邦学习为虚拟现实用户进行智能资源分配",
+      "canonical_evidence": "通过联邦学习为虚拟现实用户进行智能资源分配",
+      "llm_tldr_en": "Uses federated split decision transformers to optimize resource allocation in MEC-based metaverses.",
+      "llm_tldr_cn": "利用联邦拆分决策Transformer优化边缘计算元宇宙中的资源分配。",
+      "llm_tldr": "利用联邦拆分决策Transformer优化边缘计算元宇宙中的资源分配。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation strategies for federated learning systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.21844v1",
+      "title": "JSAM: Privacy Straggler-Resilient Joint Client Selection and Incentive Mechanism Design in Differentially Private Federated Learning",
+      "abstract": "Differentially private federated learning faces a fundamental tension: privacy protection mechanisms that safeguard client data simultaneously create quantifiable privacy costs that discourage participation, undermining the collaborative training process. Existing incentive mechanisms rely on unbiased client selection, forcing servers to compensate even the most privacy-sensitive clients (\"privacy stragglers\"), leading to systemic inefficiency and suboptimal resource allocation. We introduce JSAM (Joint client Selection and privacy compensAtion Mechanism), a Bayesian-optimal framework that simultaneously optimizes client selection probabilities and privacy compensation to maximize training effectiveness under budget constraints. Our approach transforms a complex 2N-dimensional optimization problem into an efficient three-dimensional formulation through novel theoretical characterization of optimal selection strategies. We prove that servers should preferentially select privacy-tolerant clients while excluding high-sensitivity participants, and uncover the counter-intuitive insight that clients with minimal privacy sensitivity may incur the highest cumulative costs due to frequent participation. Extensive evaluations on MNIST and CIFAR-10 demonstrate that JSAM achieves up to 15% improvement in test accuracy compared to existing unbiased selection mechanisms while maintaining cost efficiency across varying data heterogeneity levels.",
+      "authors": [
+        "Ruichen Xu",
+        "Ying-Jun Angela Zhang",
+        "Jianwei Huang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.DC",
+        "cs.GT"
+      ],
+      "published": "2026-02-25T12:22:48+00:00",
+      "link": "https://arxiv.org/pdf/2602.21844v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "joint client selection and incentive mechanism for privacy stragglers",
+      "llm_evidence_cn": "针对隐私掉队者的联合客户端选择与激励机制",
+      "llm_evidence": "针对隐私掉队者的联合客户端选择与激励机制",
+      "canonical_evidence": "针对隐私掉队者的联合客户端选择与激励机制",
+      "llm_tldr_en": "JSAM optimizes client selection and compensation to handle privacy-sensitive stragglers in DP-FL.",
+      "llm_tldr_cn": "JSAM通过优化客户端选择和补偿来处理差分隐私联邦学习中的隐私掉队者。",
+      "llm_tldr": "JSAM通过优化客户端选择和补偿来处理差分隐私联邦学习中的隐私掉队者。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "client selection mechanisms for semi-asynchronous FL",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.21949v1",
+      "title": "Energy Efficient Federated Learning with Hyperdimensional Computing over Wireless Communication Networks",
+      "abstract": "In this paper, we investigate a problem of minimizing total energy consumption for secure federated learning (FL) over wireless edge networks. To address the high computational cost and privacy challenges in conventional FL with neural networks (NN) for resource-constrained users, we propose a novel FL with hyperdimensional computing and differential privacy (FL-HDC-DP) framework. In the considered model, each edge user employs hyperdimensional computing (HDC) for local training, which replaces complex neural updates with simple hypervector operations, and applies differential privacy (DP) noise to protect transmitted model information. We optimize the total energy of computation and communication under both latency and privacy constraints. We formulate the problem as an optimization that minimizes the total energy of all users by jointly allocating HDC dimension, transmission time, system bandwidth, transmit power, and CPU frequency. To solve this problem, a sigmoid-variant function is proposed to characterize the relationship between the HDC dimension and the convergence rounds required to reach a target accuracy. Based on this model, we develop two alternating optimization algorithms, where closed-form expressions for time, frequency, bandwidth, and power allocations are derived at each iteration. Since the iterative algorithm requires a feasible initialization, we construct a feasibility problem and obtain feasible initial resource parameters by solving a per round transmission time minimization problem. Simulation results demonstrate that the proposed FL-HDC-DP framework achieves up to 83.3% total energy reduction compared with the baseline, while attaining about 90% accuracy in approximately 3.5X fewer communication rounds than the NN baseline.",
+      "authors": [
+        "Yahao Ding",
+        "Yinchao Yang",
+        "Jiaxiang Wang",
+        "Zhaohui Yang",
+        "Dusit Niyato",
+        "Zhu Han",
+        "Mohammad Shikh-Bahaei"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-02-25T14:33:17+00:00",
+      "link": "https://arxiv.org/pdf/2602.21949v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "optimizing total energy of computation and communication",
+      "llm_evidence_cn": "优化计算与通信的总能量消耗",
+      "llm_evidence": "优化计算与通信的总能量消耗",
+      "canonical_evidence": "优化计算与通信的总能量消耗",
+      "llm_tldr_en": "Optimizes energy consumption by combining hyperdimensional computing with FL over wireless networks.",
+      "llm_tldr_cn": "通过将超维计算与联邦学习结合，优化无线网络中的计算与通信能耗。",
+      "llm_tldr": "通过将超维计算与联邦学习结合，优化无线网络中的计算与通信能耗。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2602.22290v1",
+      "title": "Energy Efficient Federated Learning with Hyperdimensional Computing (HDC)",
+      "abstract": "This paper investigates the problem of minimizing total energy consumption for secure federated learning (FL) in wireless edge networks, a key paradigm for decentralized big data analytics. To tackle the high computational cost and privacy challenges of processing large-scale distributed data with conventional neural networks, we propose an FL with hyperdimensional computing and differential privacy (FL-HDC-DP) framework. Each edge device employs hyperdimensional computing (HDC) for lightweight local training and applies differential privacy (DP) noise to protect transmitted model updates. The total energy consumption is minimized through a joint optimization of the HDC dimension, transmit power, and CPU frequency. An efficient hybrid algorithm is developed, combining an outer enumeration search for HDC dimensions with an inner one-dimensional search for resource allocation. Simulation results show that the proposed framework achieves up to 83.3% energy reduction compared with baseline schemes, while maintaining high accuracy and faster convergence.",
+      "authors": [
+        "Yahao Ding",
+        "Yinchao Yang",
+        "Jiaxiang Wang",
+        "Zhonghao Liu",
+        "Zhaohui Yang",
+        "Mingzhe Chen",
+        "Mohammad Shikh-Bahaei"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-02-25T14:55:10+00:00",
+      "link": "https://arxiv.org/pdf/2602.22290v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "joint optimization of transmit power and CPU frequency",
+      "llm_evidence_cn": "发射功率和CPU频率的联合优化",
+      "llm_evidence": "发射功率和CPU频率的联合优化",
+      "canonical_evidence": "发射功率和CPU频率的联合优化",
+      "llm_tldr_en": "Optimizes energy efficiency in FL through joint communication and computation resource allocation.",
+      "llm_tldr_cn": "通过通信与计算资源的联合分配优化联邦学习的能效。",
+      "llm_tldr": "通过通信与计算资源的联合分配优化联邦学习的能效。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.01222v1",
+      "title": "Communication-Efficient Quantum Federated Learning over Large-Scale Wireless Networks",
+      "abstract": "Quantum federated learning (QFL) combines the robust data processing of quantum computing with the privacy-preserving features of federated learning (FL). However, in large-scale wireless networks, optimizing sum-rate is crucial for unlocking the true potential of QFL, facilitating effective model sharing and aggregation as devices compete for limited bandwidth amid dynamic channel conditions and fluctuating power resources. This paper studies a novel sum-rate maximization problem within a muti-channel QFL framework, specifically designed for non-orthogonal multiple access (NOMA)-based large-scale wireless networks. We develop a sum-rate maximization problem by jointly considering quantum device's channel selection and transmit power. Our formulated problem is a non-convex, mixed-integer nonlinear programming (MINLP) challenge that remains non-deterministic polynomial time (NP)-hard even with specified channel selection parameters. The complexity of the problem motivates us to create an effective iterative optimization approach that utilizes the sophisticated quantum approximate optimization algorithm (QAOA) to derive high-quality approximate solutions. Additionally, our study presents the first theoretical exploration of QFL convergence properties under full device participation, rigorously analyzing real-world scenarios with nonconvex loss functions, diverse data distributions, and the effects of quantum shot noise. Extensive simulation results indicate that our multi-channel NOMA-based QFL framework enhances model training and convergence behavior, surpassing conventional algorithms in terms of accuracy and loss. Moreover, our quantum-centric joint optimization approach achieves more than a 100% increase in sum-rate while ensuring rapid convergence, significantly outperforming the state-of-the-arts.",
+      "authors": [
+        "Shaba Shaon",
+        "Christopher G. Brinton",
+        "Dinh C. Nguyen"
+      ],
+      "primary_category": "cs.IT",
+      "categories": [
+        "cs.IT",
+        "cs.AI"
+      ],
+      "published": "2026-03-01T18:41:15+00:00",
+      "link": "https://arxiv.org/pdf/2603.01222v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "joint channel selection and power allocation in wireless FL",
+      "llm_evidence_cn": "无线联邦学习中的联合信道选择与功率分配",
+      "llm_evidence": "无线联邦学习中的联合信道选择与功率分配",
+      "canonical_evidence": "无线联邦学习中的联合信道选择与功率分配",
+      "llm_tldr_en": "Optimizes sum-rate in quantum FL via joint channel and power allocation in NOMA networks.",
+      "llm_tldr_cn": "通过NOMA网络中的联合信道和功率分配优化量子联邦学习的总速率。",
+      "llm_tldr": "通过NOMA网络中的联合信道和功率分配优化量子联邦学习的总速率。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "dynamic bandwidth allocation for federated learning clients",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2602.14391v1",
+      "title": "ASA: Adaptive Smart Agent Federated Learning via Device-Aware Clustering for Heterogeneous IoT",
+      "abstract": "Federated learning (FL) has become a promising answer to facilitating privacy-preserving collaborative learning in distributed IoT devices. However, device heterogeneity is a key challenge because IoT networks include devices with very different computational powers, memory availability, and network environments. To this end, we introduce ASA (Adaptive Smart Agent). This new framework clusters devices adaptively based on real-time resource profiles and adapts customized models suited to every cluster's capability. ASA capitalizes on an intelligent agent layer that examines CPU power, available memory, and network environment to categorize devices into three levels: high-performance, mid-tier, and low-capability. Each level is provided with a model tuned to its computational power to ensure inclusive engagement across the network. Experimental evaluation on two benchmark datasets, MNIST and CIFAR-10, proves that ASA decreases communication burden by 43% to 50%, improves resource utilization by 43%, and achieves final model accuracies of 98.89% on MNIST and 85.30% on CIFAR-10. These results highlight ASA's efficacy in enhancing efficiency, scalability, and fairness in heterogeneous FL environments, rendering it a suitable answer for real-world IoT apps.",
+      "authors": [
+        "Ali Salimi",
+        "Saadat Izadi",
+        "Mahmood Ahmadi",
+        "Hadi Tabatabaee Malazi"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI"
+      ],
+      "published": "2026-02-16T01:42:25+00:00",
+      "link": "https://arxiv.org/pdf/2602.14391v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "clusters devices based on real-time resource profiles including CPU and memory",
+      "llm_evidence_cn": "根据CPU和内存等实时资源概况对设备进行聚类",
+      "llm_evidence": "根据CPU和内存等实时资源概况对设备进行聚类",
+      "canonical_evidence": "根据CPU和内存等实时资源概况对设备进行聚类",
+      "llm_tldr_en": "ASA clusters heterogeneous IoT devices by resource profiles to adapt customized models.",
+      "llm_tldr_cn": "ASA根据资源概况对异构IoT设备进行聚类，以适配定制化模型。",
+      "llm_tldr": "ASA根据资源概况对异构IoT设备进行聚类，以适配定制化模型。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "semi asynchronous federated learning protocols for heterogeneous devices",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.15996v1",
+      "title": "Exploring New Frontiers in Vertical Federated Learning: the Role of Saddle Point Reformulation",
+      "abstract": "The objective of Vertical Federated Learning (VFL) is to collectively train a model using features available on different devices while sharing the same users. This paper focuses on the saddle point reformulation of the VFL problem via the classical Lagrangian function. We first demonstrate how this formulation can be solved using deterministic methods. More importantly, we explore various stochastic modifications to adapt to practical scenarios, such as employing compression techniques for efficient information transmission, enabling partial participation for asynchronous communication, and utilizing coordinate selection for faster local computation. We show that the saddle point reformulation plays a key role and opens up possibilities to use mentioned extension that seem to be impossible in the standard minimization formulation. Convergence estimates are provided for each algorithm, demonstrating their effectiveness in addressing the VFL problem. Additionally, alternative reformulations are investigated, and numerical experiments are conducted to validate performance and effectiveness of the proposed approach.",
+      "authors": [
+        "Aleksandr Beznosikov",
+        "Georgiy Kormakov",
+        "Alexander Grigorievskiy",
+        "Mikhail Rudakov",
+        "Ruslan Nazykov",
+        "Alexander Rogozin",
+        "Anton Vakhrushev",
+        "Andrey Savchenko",
+        "Martin Takáč",
+        "Alexander Gasnikov"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.LG"
+      ],
+      "published": "2026-02-17T20:37:07+00:00",
+      "link": "https://arxiv.org/pdf/2602.15996v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "enabling partial participation for asynchronous communication in VFL",
+      "llm_evidence_cn": "在纵向联邦学习中实现异步通信的部分参与",
+      "llm_evidence": "在纵向联邦学习中实现异步通信的部分参与",
+      "canonical_evidence": "在纵向联邦学习中实现异步通信的部分参与",
+      "llm_tldr_en": "Explores saddle point methods for VFL including asynchronous communication and compression.",
+      "llm_tldr_cn": "探索纵向联邦学习的鞍点方法，包括异步通信和压缩技术。",
+      "llm_tldr": "探索纵向联邦学习的鞍点方法，包括异步通信和压缩技术。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "semi-asynchronous communication protocols in federated learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2602.15380v1",
+      "title": "Fractional-Order Federated Learning",
+      "abstract": "Federated learning (FL) allows remote clients to train a global model collaboratively while protecting client privacy. Despite its privacy-preserving benefits, FL has significant drawbacks, including slow convergence, high communication cost, and non-independent-and-identically-distributed (non-IID) data. In this work, we present a novel FedAvg variation called Fractional-Order Federated Averaging (FOFedAvg), which incorporates Fractional-Order Stochastic Gradient Descent (FOSGD) to capture long-range relationships and deeper historical information. By introducing memory-aware fractional-order updates, FOFedAvg improves communication efficiency and accelerates convergence while mitigating instability caused by heterogeneous, non-IID client data. We compare FOFedAvg against a broad set of established federated optimization algorithms on benchmark datasets including MNIST, FEMNIST, CIFAR-10, CIFAR-100, EMNIST, the Cleveland heart disease dataset, Sent140, PneumoniaMNIST, and Edge-IIoTset. Across a range of non-IID partitioning schemes, FOFedAvg is competitive with, and often outperforms, these baselines in terms of test performance and convergence speed. On the theoretical side, we prove that FOFedAvg converges to a stationary point under standard smoothness and bounded-variance assumptions for fractional order $0<α\\le 1$. Together, these results show that fractional-order, memory-aware updates can substantially improve the robustness and effectiveness of federated learning, offering a practical path toward distributed training on heterogeneous data.",
+      "authors": [
+        "Mohammad Partohaghighi",
+        "Roummel Marcia",
+        "YangQuan Chen"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-02-17T06:25:23+00:00",
+      "link": "https://arxiv.org/pdf/2602.15380v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "improving communication efficiency and accelerating convergence",
+      "llm_evidence_cn": "提高通信效率并加速收敛",
+      "llm_evidence": "提高通信效率并加速收敛",
+      "canonical_evidence": "提高通信效率并加速收敛",
+      "llm_tldr_en": "Uses fractional-order updates to improve communication efficiency and mitigate non-IID data instability.",
+      "llm_tldr_cn": "引入分数阶随机梯度下降，在处理异构数据时提升通信效率并加速模型收敛。",
+      "llm_tldr": "引入分数阶随机梯度下降，在处理异构数据时提升通信效率并加速模型收敛。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation strategies for federated learning systems",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2602.16936v1",
+      "title": "Heterogeneous Federated Fine-Tuning with Parallel One-Rank Adaptation",
+      "abstract": "Large Language Models (LLMs) have demonstrated remarkable effectiveness in adapting to downstream tasks through fine-tuning. Federated Learning (FL) extends this capability by enabling collaborative fine-tuning across distributed clients using Low-Rank Adaptation (LoRA), while preserving data privacy by avoiding raw data sharing. However, practical deployments face challenges when clients have heterogeneous resources and thus adopt different LoRA ranks, leading to substantial initialization and aggregation noise that undermines performance. To address these challenges, we propose Fed-PLoRA, a novel lightweight heterogeneous federated fine-tuning (FFT) framework. Fed-PLoRA introduces Parallel One-Rank Adaptation (PLoRA), a new LoRA variant that replaces the classic multi-rank LoRA module with multiple parallel one-rank modules, and a novel Select-N-Fold strategy that folds untrained PLoRA modules into the pre-trained weights before local training, thereby accommodating heterogeneous client resources. We provide a unified analysis of initialization and aggregation noise of Fed-PLoRA and demonstrate how it addresses the limitations of state-of-the-art methods. Extensive experiments on diverse LLM fine-tuning tasks demonstrate that Fed-PLoRA consistently outperforms existing methods in both accuracy and efficiency. The code is available at https://github.com/TNI-playground/Fed-PLoRA.",
+      "authors": [
+        "Zikai Zhang",
+        "Rui Hu",
+        "Jiahao Xu"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-02-18T22:57:59+00:00",
+      "link": "https://arxiv.org/pdf/2602.16936v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "heterogeneous federated fine-tuning for clients with different resources",
+      "llm_evidence_cn": "针对不同资源客户端的异构联邦微调",
+      "llm_evidence": "针对不同资源客户端的异构联邦微调",
+      "canonical_evidence": "针对不同资源客户端的异构联邦微调",
+      "llm_tldr_en": "Fed-PLoRA enables efficient LLM fine-tuning across clients with heterogeneous hardware resources.",
+      "llm_tldr_cn": "Fed-PLoRA支持在具有异构硬件资源的客户端上进行高效的大模型联邦微调。",
+      "llm_tldr": "Fed-PLoRA支持在具有异构硬件资源的客户端上进行高效的大模型联邦微调。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "semi asynchronous federated learning protocols for heterogeneous devices",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.20450v1",
+      "title": "Heterogeneity-Aware Client Selection Methodology For Efficient Federated Learning",
+      "abstract": "Federated Learning (FL) enables a distributed client-server architecture where multiple clients collaboratively train a global Machine Learning (ML) model without sharing sensitive local data. However, FL often results in lower accuracy than traditional ML algorithms due to statistical heterogeneity across clients. Prior works attempt to address this by using model updates, such as loss and bias, from client models to select participants that can improve the global model's accuracy. However, these updates neither accurately represent a client's heterogeneity nor are their selection methods deterministic. We mitigate these limitations by introducing Terraform, a novel client selection methodology that uses gradient updates and a deterministic selection algorithm to select heterogeneous clients for retraining. This bi-pronged approach allows Terraform to achieve up to 47 percent higher accuracy over prior works. We further demonstrate its efficiency through comprehensive ablation studies and training time analyses, providing strong justification for the robustness of Terraform.",
+      "authors": [
+        "Nihal Balivada",
+        "Shrey Gupta",
+        "Shashank Shreedhar Bhatt",
+        "Suyash Gupta"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.LG"
+      ],
+      "published": "2026-02-24T01:19:10+00:00",
+      "link": "https://arxiv.org/pdf/2602.20450v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "client selection methodology using gradient updates",
+      "llm_evidence_cn": "基于梯度更新的客户端选择方法",
+      "llm_evidence": "基于梯度更新的客户端选择方法",
+      "canonical_evidence": "基于梯度更新的客户端选择方法",
+      "llm_tldr_en": "Introduces Terraform, a deterministic client selection method to handle statistical heterogeneity in FL.",
+      "llm_tldr_cn": "引入Terraform，一种确定性客户端选择方法，以应对联邦学习中的统计异构性。",
+      "llm_tldr": "引入Terraform，一种确定性客户端选择方法，以应对联邦学习中的统计异构性。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "client selection mechanisms for semi-asynchronous FL",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2602.16148v1",
+      "title": "Local adapt-then-combine algorithms for distributed nonsmooth optimization: Achieving provable communication acceleration",
+      "abstract": "This paper is concerned with the distributed composite optimization problem over networks, where agents aim to minimize a sum of local smooth components and a common nonsmooth term. Leveraging the probabilistic local updates mechanism, we propose a communication-efficient Adapt-Then-Combine (ATC) framework, FlexATC, unifying numerous ATC-based distributed algorithms. Under stepsizes independent of the network topology and the number of local updates, we establish sublinear and linear convergence rates for FlexATC in convex and strongly convex settings, respectively. Remarkably, in the strong convex setting, the linear rate is decoupled from the objective functions and network topology, and FlexATC permits communication to be skipped in most iterations without any deterioration of the linear rate. In addition, the proposed unified theory demonstrates for the first time that local updates provably lead to communication acceleration for ATC-based distributed algorithms. Numerical experiments further validate the efficacy of the proposed framework and corroborate the theoretical results.",
+      "authors": [
+        "Luyao Guo",
+        "Xinli Shi",
+        "Wenying Xu",
+        "Jinde Cao"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC",
+        "cs.LG"
+      ],
+      "published": "2026-02-18T02:47:05+00:00",
+      "link": "https://arxiv.org/pdf/2602.16148v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "probabilistic local updates for communication acceleration",
+      "llm_evidence_cn": "用于通信加速的概率本地更新",
+      "llm_evidence": "用于通信加速的概率本地更新",
+      "canonical_evidence": "用于通信加速的概率本地更新",
+      "llm_tldr_en": "FlexATC provides a communication-efficient framework for distributed optimization with provable acceleration.",
+      "llm_tldr_cn": "FlexATC 为分布式优化提供了一个具有可证明加速效果的高效通信框架。",
+      "llm_tldr": "FlexATC 为分布式优化提供了一个具有可证明加速效果的高效通信框架。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "semi-asynchronous communication protocols in federated learning",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2602.18627v1",
+      "title": "Federated Learning-Assisted Optimization of Mobile Transmission with Digital Twins",
+      "abstract": "A Digital Twin (DT) may protect information that is considered private to its associated physical system. For a mobile device, this may include its mobility profile, recent location(s), and experienced channel conditions. Online schedulers, however, typically use this type of information to perform tasks such as shared bandwidth and channel time slot assignments. In this paper, we consider three transmission scheduling problems with energy constraints, where such information is needed, and yet must remain private: minimizing total transmission time when (i) fixed-power or (ii) fixed-rate time slotting with power control is used, and (iii) maximizing the amount of data uploaded in a fixed time period. Using a real-time federated optimization framework, we show how the scheduler can iteratively interact only with the DTs to produce global fractional solutions to these problems, without the latter revealing their private information. Then dependent rounding is used to round the fractional solution into a channel transmission schedule for the physical systems. Experiments show consistent makespan reductions with near-zero bandwidth/energy violations and millisecond-order end-to-end runtime for typical edge server hardware. To the best of our knowledge, this is the first framework that enables channel sharing across DTs using operations that do not expose private data.",
+      "authors": [
+        "Mohammad Heydari",
+        "Terence D. Todd",
+        "Dongmei Zhao",
+        "George Karakostas"
+      ],
+      "primary_category": "cs.NI",
+      "categories": [
+        "cs.NI",
+        "cs.LG"
+      ],
+      "published": "2026-02-20T21:33:04+00:00",
+      "link": "https://arxiv.org/pdf/2602.18627v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "shared bandwidth and channel time slot assignments in federated optimization",
+      "llm_evidence_cn": "联邦优化中的共享带宽和信道时隙分配",
+      "llm_evidence": "联邦优化中的共享带宽和信道时隙分配",
+      "canonical_evidence": "联邦优化中的共享带宽和信道时隙分配",
+      "llm_tldr_en": "Uses FL to optimize mobile transmission tasks including bandwidth and power allocation.",
+      "llm_tldr_cn": "利用联邦优化技术解决移动传输中的带宽分配、功率控制和调度问题。",
+      "llm_tldr": "利用联邦优化技术解决移动传输中的带宽分配、功率控制和调度问题。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "dynamic bandwidth allocation for federated learning clients",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.20492v1",
+      "title": "Wireless Federated Multi-Task LLM Fine-Tuning via Sparse-and-Orthogonal LoRA",
+      "abstract": "Decentralized federated learning (DFL) based on low-rank adaptation (LoRA) enables mobile devices with multi-task datasets to collaboratively fine-tune a large language model (LLM) by exchanging locally updated parameters with a subset of neighboring devices via wireless connections for knowledge integration.However, directly aggregating parameters fine-tuned on heterogeneous datasets induces three primary issues across the DFL life-cycle: (i) \\textit{catastrophic knowledge forgetting during fine-tuning process}, arising from conflicting update directions caused by data heterogeneity; (ii) \\textit{inefficient communication and convergence during model aggregation process}, due to bandwidth-intensive redundant model transmissions; and (iii) \\textit{multi-task knowledge interference during inference process}, resulting from incompatible knowledge representations coexistence during inference. To address these issues in a fully decentralized scenario, we first propose a sparse-and-orthogonal LoRA that ensures orthogonality between model updates to eliminate direction conflicts during fine-tuning.Then, we analyze how device connection topology affects multi-task performance, prompting a cluster-based topology design during aggregation.Finally, we propose an implicit mixture of experts (MoE) mechanism to avoid the coexistence of incompatible knowledge during inference. Simulation results demonstrate that the proposed approach effectively reduces communication resource consumption by up to $73\\%$ and enhances average performance by $5\\%$ compared with the traditional LoRA method.",
+      "authors": [
+        "Nuocheng Yang",
+        "Sihua Wang",
+        "Ouwen Huan",
+        "Mingzhe Chen",
+        "Tony Q. S. Quek",
+        "Changchuan Yin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-02-24T02:45:32+00:00",
+      "link": "https://arxiv.org/pdf/2602.20492v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "inefficient communication and model aggregation in wireless DFL",
+      "llm_evidence_cn": "无线去中心化联邦学习中低效的通信与模型聚合",
+      "llm_evidence": "无线去中心化联邦学习中低效的通信与模型聚合",
+      "canonical_evidence": "无线去中心化联邦学习中低效的通信与模型聚合",
+      "llm_tldr_en": "Addresses communication efficiency and data heterogeneity in wireless decentralized FL using LoRA.",
+      "llm_tldr_cn": "利用LoRA技术解决无线去中心化联邦学习中的通信效率和数据异构问题。",
+      "llm_tldr": "利用LoRA技术解决无线去中心化联邦学习中的通信效率和数据异构问题。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2602.18384v1",
+      "title": "FedZMG: Efficient Client-Side Optimization in Federated Learning",
+      "abstract": "Federated Learning (FL) enables distributed model training on edge devices while preserving data privacy. However, clients tend to have non-Independent and Identically Distributed (non-IID) data, which often leads to client-drift, and therefore diminishing convergence speed and model performance. While adaptive optimizers have been proposed to mitigate these effects, they frequently introduce computational complexity or communication overhead unsuitable for resource-constrained IoT environments. This paper introduces Federated Zero Mean Gradients (FedZMG), a novel, parameter-free, client-side optimization algorithm designed to tackle client-drift by structurally regularizing the optimization space. Advancing the idea of Gradient Centralization, FedZMG projects local gradients onto a zero-mean hyperplane, effectively neutralizing the \"intensity\" or \"bias\" shifts inherent in heterogeneous data distributions without requiring additional communication or hyperparameter tuning. A theoretical analysis is provided, proving that FedZMG reduces the effective gradient variance and guarantees tighter convergence bounds compared to standard FedAvg. Extensive empirical evaluations on EMNIST, CIFAR100, and Shakespeare datasets demonstrate that FedZMG achieves better convergence speed and final validation accuracy compared to the baseline FedAvg and the adaptive optimizer FedAdam, particularly in highly non-IID settings.",
+      "authors": [
+        "Fotios Zantalis",
+        "Evangelos Zervas",
+        "Grigorios Koulouras"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-02-20T17:45:28+00:00",
+      "link": "https://arxiv.org/pdf/2602.18384v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "client-side optimization for resource-constrained IoT environments",
+      "llm_evidence_cn": "针对资源受限物联网环境的客户端优化",
+      "llm_evidence": "针对资源受限物联网环境的客户端优化",
+      "canonical_evidence": "针对资源受限物联网环境的客户端优化",
+      "llm_tldr_en": "FedZMG reduces client-drift in FL using parameter-free optimization suitable for resource-constrained IoT.",
+      "llm_tldr_cn": "FedZMG通过无参数优化解决客户端漂移，适用于资源受限的物联网环境。",
+      "llm_tldr": "FedZMG通过无参数优化解决客户端漂移，适用于资源受限的物联网环境。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.01739v1",
+      "title": "CA-AFP: Cluster-Aware Adaptive Federated Pruning",
+      "abstract": "Federated Learning (FL) faces major challenges in real-world deployments due to statistical heterogeneity across clients and system heterogeneity arising from resource-constrained devices. While clustering-based approaches mitigate statistical heterogeneity and pruning techniques improve memory and communication efficiency, these strategies are typically studied in isolation.   We propose CA-AFP, a unified framework that jointly addresses both challenges by performing cluster-specific model pruning. In CA-AFP, clients are first grouped into clusters, and a separate model for each cluster is adaptively pruned during training. The framework introduces two key innovations: (1) a cluster-aware importance scoring mechanism that combines weight magnitude, intra-cluster coherence, and gradient consistency to identify parameters for pruning, and (2) an iterative pruning schedule that progressively removes parameters while enabling model self-healing through weight regrowth.   We evaluate CA-AFP on two widely used human activity recognition benchmarks, UCI HAR and WISDM, under natural user-based federated partitions. Experimental results demonstrate that CA-AFP achieves a favorable balance between predictive accuracy, inter-client fairness, and communication efficiency. Compared to pruning-based baselines, CA-AFP consistently improves accuracy and lower performance disparity across clients with limited fine-tuning, while requiring substantially less communication than dense clustering-based methods. It also shows robustness to different Non-IID levels of data. Finally, ablation studies analyze the impact of clustering, pruning schedules and scoring mechanism offering practical insights into the design of efficient and adaptive FL systems.",
+      "authors": [
+        "Om Govind Jha",
+        "Harsh Shukla",
+        "Haroon R. Lone"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.DC"
+      ],
+      "published": "2026-03-02T11:04:25+00:00",
+      "link": "https://arxiv.org/pdf/2603.01739v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "jointly addressing statistical and system heterogeneity via adaptive pruning",
+      "llm_evidence_cn": "通过自适应剪枝共同解决统计和系统异构性",
+      "llm_evidence": "通过自适应剪枝共同解决统计和系统异构性",
+      "canonical_evidence": "通过自适应剪枝共同解决统计和系统异构性",
+      "llm_tldr_en": "CA-AFP combines clustering and pruning to optimize communication and memory for heterogeneous FL.",
+      "llm_tldr_cn": "CA-AFP结合聚类和剪枝，优化异构联邦学习中的通信和内存效率。",
+      "llm_tldr": "CA-AFP结合聚类和剪枝，优化异构联邦学习中的通信和内存效率。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "resource allocation optimization for semi asynchronous federated learning",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2602.21873v1",
+      "title": "GFPL: Generative Federated Prototype Learning for Resource-Constrained and Data-Imbalanced Vision Task",
+      "abstract": "Federated learning (FL) facilitates the secure utilization of decentralized images, advancing applications in medical image recognition and autonomous driving. However, conventional FL faces two critical challenges in real-world deployment: ineffective knowledge fusion caused by model updates biased toward majority-class features, and prohibitive communication overhead due to frequent transmissions of high-dimensional model parameters. Inspired by the human brain's efficiency in knowledge integration, we propose a novel Generative Federated Prototype Learning (GFPL) framework to address these issues. Within this framework, a prototype generation method based on Gaussian Mixture Model (GMM) captures the statistical information of class-wise features, while a prototype aggregation strategy using Bhattacharyya distance effectively fuses semantically similar knowledge across clients. In addition, these fused prototypes are leveraged to generate pseudo-features, thereby mitigating feature distribution imbalance across clients. To further enhance feature alignment during local training, we devise a dual-classifier architecture, optimized via a hybrid loss combining Dot Regression and Cross-Entropy. Extensive experiments on benchmarks show that GFPL improves model accuracy by 3.6% under imbalanced data settings while maintaining low communication cost.",
+      "authors": [
+        "Shiwei Lu",
+        "Yuhang He",
+        "Jiashuo Li",
+        "Qiang Wang",
+        "Yihong Gong"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-02-25T12:57:45+00:00",
+      "link": "https://arxiv.org/pdf/2602.21873v1",
+      "tags": [
+        "keyword:FL RA",
+        "query:FL RA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "addressing communication overhead in resource-constrained vision tasks",
+      "llm_evidence_cn": "解决资源受限视觉任务中的通信开销",
+      "llm_evidence": "解决资源受限视觉任务中的通信开销",
+      "canonical_evidence": "解决资源受限视觉任务中的通信开销",
+      "llm_tldr_en": "GFPL uses prototype learning to reduce communication overhead and handle data imbalance in FL.",
+      "llm_tldr_cn": "GFPL利用原型学习减少联邦学习中的通信开销并处理数据不平衡。",
+      "llm_tldr": "GFPL利用原型学习减少联邦学习中的通信开销并处理数据不平衡。",
+      "llm_tags": [
+        "query:fl-ra"
+      ],
+      "matched_query_tag": "query:fl-ra",
+      "matched_query_text": "joint optimization of communication and computation in FL",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

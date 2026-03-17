@@ -1,0 +1,626 @@
+Title: Heterogeneity-Aware Client Selection Methodology For Efficient Federated Learning
+
+URL Source: https://arxiv.org/pdf/2602.20450v1
+
+Published Time: Wed, 25 Feb 2026 01:18:00 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Heterogeneity-Aware Client Selection Methodology For Efficient Federated Learning 
+
+## Nihal Balivada 1 , Shrey Gupta 2 , Shashank Shreedhar Bhatt 3 , Suyash Gupta 11 University of Oregon, US , 2 Boston College, US , 3 Microsoft Research, India 
+
+## Abstract 
+
+Federated Learning (FL) enables a distributed client-server architecture where multiple clients collaboratively train a global Machine Learning (ML) model without sharing sensitive local data. However, FL often results in lower accuracy than traditional ML algorithms due to statistical hetero-geneity across clients. Prior works attempt to ad-dress this by using model updates, such as loss and bias, from client models to select participants that can improve the global model’s accuracy. However, these updates neither accurately represent a client’s heterogeneity nor are their selection methods de-terministic. We mitigate these limitations by intro-ducing Terraform, a novel client selection method-ology that uses gradient updates and a deterministic selection algorithm to select heterogeneous clients for retraining. This bi-pronged approach allows Terraform to achieve up to 47% higher accuracy over prior works. We further demonstrate its effi-ciency through comprehensive ablation studies and training time analyses, providing strong justifica-tion for the robustness of Terraform. 
+
+## 1 Introduction 
+
+In this paper, we present Terraform , a novel client selection methodology for Federated Learning (FL) McMahan et al. 
+
+[2017] that addresses heterogeneity in client data distribution by iteratively partitioning clients into two clusters, easy and hard, based on a split index. An FL framework enables a dis-tributed client-server architecture Tanenbaum and van Steen [2007] where multiple clients collaboratively train a global 
+
+Machine Learning (ML) model without sharing sensitive (lo-cal) data. Each client receives the global model’s parameters from the server, uses them to train the model on its data, and shares the updated model parameters with the server. Con-sequently, the server aggregates the parameters from various clients. This process continues until the global model reaches convergence (highest accuracy). Despite significant seminal research in FL Yang et al. 
+
+[2019], its practical adoption remains limited due to its lower accuracy yields compared to traditional ML algorithms. This is because the local data of clients is often drawn from dif-ferent distributions, causing statistical heterogeneity Chen and Vikalo [2024]. In an FL environment, statistical hetero-geneity represents the variation in data distributions across clients, caused by the variations in feature or label distribu-tions of clients’ local data. It contributes to the non-iid (non-independent & identically distributed) nature of the data. Statistical heterogeneity is a double-edged sword; while it improves model generalization due to data diversity, it in-creases training complexity and reduces model accuracy. For example, modeling air quality requires training an ML model on environmental features, such as weather conditions and the topography of the location of interest Cheng et al. [2018]. Co-incidentally, several organizations perform such an air quality modeling on a global scale that spans multiple countries Gal-marini and Trivikrama Rao [2011]; Pan et al. [2017]. How-ever, globally scaling these models requires data sharing, which is challenging due to proprietary concerns or national security. FL is an ideal candidate for training such a model, as it enables localized data collection and training. Unfor-tunately, FL inadvertently induces statistical heterogeneity, as in this example – one training location may be an urban area with high pollutant emissions, while another is in a ru-ral setting. Although this heterogeneity generalizes the global model, it increases the probability of capturing unwanted pat-terns, reducing model performance. Prior works attempt to mitigate the negative impact of sta-tistical heterogeneity by designing client selection method-ologies that decide which clients should participate in FL training. Lai et al. [2021] estimate the statistical utility of each client based on multiple factors like model loss, device speed, and bandwidth, and then randomly select a subset of high utility clients for retraining. Jee Cho et al. [2022] se-lect “ m” clients with highest local training loss for retraining, where the value of m is determined by the system. In contrast, Chen and Vikalo [2024] cluster clients into groups using their final layer’s biases and retrain clients in those clusters that have more uniform data distributions. Although these prior works present valuable designs, they are unable to attain higher accuracy for the following two rea-sons: (i) they assume client updates are either losses or final-layer biases, which do not reveal all details about a client’s data distribution; and (ii) their algorithms for selecting clients to be retrained are not deterministic. In contrast, our method-
+
+> arXiv:2602.20450v1 [cs.DC] 24 Feb 2026
+
+ology, Terraform , aims to eliminate randomness by deter-ministically selecting which clients need retraining and uti-lizing updates that precisely account for statistical hetero-geneity . Additionally, Terraform ensures that it does not in-troduce any new computational or communication costs .So how does Terraform meet these goals? Terraform’s novel client selection methodology expects each client to send the final-layer gradient updates returned by its model after training and the dataset size , which capture statistical utility of a client’s data. Terraform uses gradient updates to 
+
+sort the clients and the dataset size to determine the Inter-Quartile Range , which enables us to find an optimal split index to partition clients into two clusters: easy and hard .Terraform selects and retrains clients in the hard cluster (it-erates over the above steps in the process) till only a threshold 
+
+number of clients remain. To ensure that Terraform does perform in practice, we fol-low prior works and implement it in two popular FL algo-rithms, FedAvg and FedProx, and extensively compare Ter-raform against five state-of-the-art client selection method-ologies. Our results illustrate that Terraform outperforms all the client sampling techniques on the five popular FL datasets (FEMNIST, CIFAR10, CIFAR100, FMNIST, and Tiny Ima-geNet) and increases accuracy of FedAvg and FedProx by up to 47% and 41% , respectively. Additionally, we validate ro-bustness of Terraform’s design through rigorous ablations and training time experiments. 
+
+## 2 The Case for Data Heterogeneity 
+
+We motivate the need to tackle client data heterogeneity through the following example. US communities regu-larly face disproportionate threats of disasters like wildfires and fire incidents Federal Emergency Management Agency [1997]; Rivers and University [2022]; National Interagency Coordination Center (NICC) [2024]. In response, US govern-ment has accelerated installation of IoT wildfire sensors like PTZ Camera University of Nevada et al. [2025], promoted use of smart home sensors like Google Nest LLC [2025], and funded setup of Hazard workflows like AlertWildfire Smith et al. [2016]. These hazard workflows collect observations with sensors, disseminate those observations to remote cloud for processing, infer the impacts of those hazards at cloud, and notify various stakeholders. However, these hazard work-flows face two major challenges: (i) they collect user data through sensors and upload them to the cloud, which vio-lates user privacy of Homeland Security [2013]; Raffeg and others [2025]; Wall and Space.com [2025]; U.S. Department of Homeland Security [2019], and (ii) they consume massive network bandwidth due to sensor-cloud communication. This presents an elegant opportunity to leverage FL for disaster re-sponse Jin and Du [2024]; the sensors can play the role of clients and participate in FL training. Notice that the two type of sensors we consider here, PTZ camera and Google Nest, have distinct deployment range and alert frequency. PTZ cameras are sparse, remote (often in forests), and generate few but highly reliable wildfire alerts. Nest sensors, on the other hand, are abundant in homes and produce frequent non-wildfire alerts with rare true positives due to smoke from wood stoves, prescribed burns, vehicles, etc. Since most training data comes from home sensors, any FL system that does not account for data heterogeneity will overlook the true positive alerts from the cameras, causing the global model to have low accuracy and missing early wildfire signals. Terraform aims to train on these heterogeneous data and ensure that it yields high accuracy for all the events. 
+
+## 3 Background 
+
+The seminal FedAvg algorithm McMahan et al. [2017] coined the term Federated Learning (FL), where in a dis-tributed client-server architecture, multiple clients collabora-tively train a global ML model without sharing local data with the server. We formalize its design as follows: Consider a standard FL system where a server coordinates 
+
+K participating clients, indexed by k = {1, 2, . . . , K }. Each 
+
+k-th client has a local classification dataset (used for train-ing), Dk 
+
+> train
+
+= {(x(k) 
+
+> j
+
+, y (k) 
+
+> j
+
+)}, where x(k) 
+
+> j
+
+∈ Rm is the fea-ture vector, and y(k) 
+
+> j
+
+∈ { 1, . . . , C } are the labels with C
+
+classes. Each client computes a model update by minimiz-ing loss function L(θ; x(k) 
+
+> j
+
+, y (k) 
+
+> j
+
+) where θ denotes the model parameters. These updates are sent to the server, which per-forms weighted averaging over the received updates, where weights are proportional to each client’s dataset size, |Dk
+
+> train
+
+|;this leads to updated global model parameters. The server then shares the updated model parameters with the clients, and this process continues for either a pre-defined number of rounds or until the model reaches an accuracy saturation. The accuracy of the global model is evaluated on each client’s test data, Dk
+
+> test
+
+.
+
+Techniques addressing statistical heterogeneity Prior works have explored a variety of approaches to han-dle statistical heterogeneity in federated learning (FL). 
+
+Regularization-based techniques discourage client model drift from the global solution by modifying the local objec-tive. For example, FedProx Li et al. [2020] adds a proxi-mal term for more stable convergence, while FedDyn Acar 
+
+et al. [2021] aligns the global and client optima via a dy-namic regularizer, and FedDC Gao et al. [2022] uses an auxil-iary variable to decouple and correct gradient and parameter drift by tracking local drift. Variance reduction and drift correction algorithms like SCAFFOLD Karimireddy et al. 
+
+[2020] remove client drift and achieve comparable conver-gence rates to centralized SGD using control variates, while FedNova Wang et al. [2020b] eliminates objective inconsis-tency due to heterogeneity in the number of local updates by normalizing the client updates. Other algorithms like VRL-SGD Liang et al. [2020], FedVRA Wang et al. [2023] and FedRed Jiang et al. [2024] reduce variance via gradient track-ing or dual variables. Adaptive optimization and dynamic aggregation methods improve performance under statistical heterogeneity by extending techniques from adaptive opti-mizers like Adagrad, Adam and Yogi to the federated set-ting Reddi et al. [2021]. For example, FedAW Tang [2024], FedAWA Shi et al. [2025] and FedADp Wu and Wang [2021] make use of client contributions to adaptively adjust aggrega-tion weights. Layer-wise and architecture-aware aggrega-tion methods such as FedMA Wang et al. [2020a] use neuron-matching and averaging to improve performance on deep CNN and LSTM architectures. Contrastive approaches like MOON Li et al. [2021a] align global and local representa-tions using contrastive losses. 
+
+Personalization / multi-mode techniques tackle statistical heterogeneity via knowledge preserving cross-client transfer and create models tailored for each client. These techniques include using locally regularized models personalization (Ditto Li et al. [2021b] with local copies and pFedMe T Dinh 
+
+et al. [2020] with Moreau envelopes), meta learning for fast adaptation (PeFLL Scott et al. [2024], Per-FedAvg / MOCHA Fallah et al. [2020] and federated MAML Jiang et al. [2019]), representation decoupling (LG-FedAvg Liang et al. [2019], FedPer Arivazhagan et al. [2019], FedRoD Chen and Chao [2022] and FedRep Collins et al. [2021]), pa-rameter/feature alignment (FedAS Yang et al. [2024] and FedPAC Xu et al. [2023]), bilevel optimization methods (pFedHN Shamsian et al. [2021] and FedBabu Oh et al. 
+
+[2022]), and partitioning the hypothesis space into compati-ble submodels (FLOCO Grinwald et al. [2024] with solution-simplex methods). Clustered and model-mixture methods cluster clients based on similarity (e.g., FedClust Islam et al. 
+
+[2024], CFL Sattler et al. [2020], and IFCA Ghosh et al. 
+
+[2020]) and train a model for each cluster. Data augmenta-tion and distillation techniques like FedDF Lin et al. [2020], FedMD Li and Wang [2019], FedMix Yoon et al. [2021], FedFed Yang et al. [2023], FedProto Tan et al. [2021] and FADA Peng et al. [2020] reduce data statistical heterogeneity by using proxy data or shared statistics. Finally, client selection and sampling techniques balance efficiency and representativeness by systematically picking the clients participating in each round of federated training. These techniques prioritize clients based on a quantification of their utility — statistical PoW-D Jee Cho et al. [2022], system-based (FedCS Nishio and Yonetani [2019]), or both (Oort Lai et al. [2021]) — towards the expected progress per round. They also consider the diversity or correlation be-tween client updates (DivFL Balakrishnan et al. [2022] and FedCor Tang et al. [2022]) and population structure captured by clustered sampling Fraboni et al. [2021], including ad-vanced hierarchical variants like HiCS-FL Chen and Vikalo [2024], which additionally uses output-layer bias update in-formation for heterogeneity-aware client selection. 
+
+## 4 Related Work 
+
+Client Selection Methodologies. The FedAvg algorithm selects participating clients randomly in each training round. However, this random selection can lead to client drift—a phenomenon in which the global model either converges slowly or becomes trapped in local optima, often due to the repeated selection of highly heterogeneous clients in each round Karimireddy et al. [2020]. FedProx Li et al. [2020] extends FedAvg and addresses client drift by adding a regu-larization term that penalizes large deviations from the global model. This keeps the local updates more aligned with the global optima as well as improves the stability in model train-ing. As a result, a broad body of federated learning research focuses on designing principled client selection methodolo-gies that can recognize client heterogeneity and concentrate retraining efforts on the most impactful clients. Lai et al. [2021] introduce Oort , which estimates the sta-tistical utility of each client in FL training based on how ef-fectively its updates improve the global model. This utility is measured as a combination of model loss, device speed, and bandwidth, and helps to assign each client a selection proba-bility. Oort sorts the clients based on these probabilities and randomly selects a subset of high-probability clients. Addi-tionally, it randomly selects a few low-probability clients to reduce training bias. Jee Cho et al. [2022] introduce power of choice (PoC) , which selects clients with high local training loss. The server first randomly samples a pool of candidate clients and queries their local training loss. Next, it selects 
+
+m clients with the highest losses, where the value of m is de-termined by the system. HiCS-FL Chen and Vikalo [2024] uses bias values from the final layer of client models to de-termine the complexity of its dataset. It uses these biases to cluster clients into groups, assigns them a sampling proba-bility, and trains clients in clusters with high sampling prob-ability. Specifically, HiCS-FL targets clients with less com-plexity, which is opposite to our goal. Note: while PoC and Oort use loss as client updates, HiCS-FL uses biases. Fur-ther, these protocols do not collect updates in each round, which makes them outdated and prevents them from giving a holistic representation of the client’s local model. In contrast, Terraform requires clients to send final-layer 
+
+gradient updates , which is the sum of both weights and bi-ases, to compute a client’s statistical heterogeneity. These gradient updates are a better indicator of the client’s distri-bution due to their proximity to the output layer, and they capture a more direct signal than loss of how well a client’s model has learned Zeiler and Fergus [2014]. 
+
+Hierarchical Splitting. The hierarchical selection ap-proach in Terraform is inspired by the CART (Classification and Regression Trees) model Breiman et al. [1984], which re-cursively partitions data at decision nodes into left and right 
+
+child nodes using a partitioning criterion. Hierarchical sam-pling has also been applied in the meta-learning setting for spatio-temporal domains Xie et al. [2021]; Liu et al. [2023], where prior works focus on applying hierarchical splitting in a centralized setup. In contrast, Terraform introduces hi-erarchical splitting in a federated (i.e., distributed) learning setting, where only gradients are exchanged between clients and the server–minimizing communication overhead and pre-serving privacy. Furthermore, Terraform explicitly accounts for local dataset heterogeneity during client-side training, im-proving model performance in non-iid scenarios. 
+
+## 5 Terraform Overview 
+
+Terraform is a novel client selection methodology, which when employed by an existing federated learning (FL) algo-rithm helps it to select statistically heterogeneous clients that negatively impact the accuracy of the FL algorithm. We use Figure 1 to illustrate the design of Terraform. Like any other methodology, Terraform requires rounds to Random      
+
+> Sample
+> Train & Split
+> Train On Clients & Compute
+> Layer Gradient Updates
+> Reinitialize Model For Next Round
+> Repeat For T
+> iterations or till
+> Compute Split Index
+> Compute IQR Indices Sort Clients By Gradient Updates
+> Compute next selection of hard clients
+> Client
+> Pool
+> 1
+> 2
+> 45
+> 67
+> 8
+> 9
+> 3Send to server
+> Hard Clients Easy Clients
+> Server
+
+Figure 1: Terraform Framework. 
+
+train the clients. However, each round of Terraform performs hierarchical client selection through a series of iterations. A single iteration of Terraform includes the following steps. The server starts with the global model 1 and sends its parame-ters to a subset of clients, selected uniformly at random (Step 1 in Figure 1 → ①). Next, each client locally trains this model on its dataset ②, after which it sends the final-layer gradients of the model to the server ③. Upon receiving these gradi-ents from all selected clients, the server aggregates them and begins the process of identifying statistically heterogeneous clients. To do so, the server first sorts the clients based on the values of their gradients ④. Next, it uses the dataset size of each client to determine the inter-quartile range (IQR), which is the difference between the third and first quartile, repre-senting 50% of the gradient magnitudes ⑤. Within this IQR, the server determines the split index that partitions the clients into easy and hard clusters ⑥. The server initiates retraining of the clients in the hard cluster (initiating the next iteration) by forwarding them aggregated gradients, and these clients again undergo the above steps ⑦. In essence, this process continues until the number of clients in the hard cluster falls below a predefined threshold ⑧.
+
+## 6 Methodology 
+
+We denote the FL algorithm employing Terraform as A, the initial global model at the server S as θ0,0, and the number of training rounds as R. In each round, r ∈ { 0, . . . , R − 1}, S
+
+randomly samples K clients, forming the client pool CKr .Within each round, Terraform performs at most T itera-tions, T ≥ 1. The updated global model parameters at the end of the t-th iteration are θr,t . Within each iteration, the clients are split into an easy cluster E and a hard cluster H
+
+based on a split index, τsplit , which is determined using the client’s gradient update, ∆wkr,t , and its dataset size, |Dk
+
+> train
+
+|;where k represents a client. The split index, τsplit , is selected from the client indices falling between the first ( Q1) and third ( Q3) quartiles of 
+
+> 1
+
+Like prior works, we generate the initial global model through random initialization Li et al. [2020]. 
+
+the distribution of dataset sizes, |Dktrain |. Hence, Terraform searches for an optimal split index to generate two groups – one on which the global model approximates easily (low 
+
+|∆wkr,t |, i.e., easy cluster, E) and the other on which the global model struggles to approximate (high ∆wkr,t , i.e., hard clus-ter, H). Terraform continues this round until the number of clients in the hard cluster falls below the predefined threshold, 
+
+η.Next, we explain in detail Terraform’s client selection methodology and use Algorithm 1 to illustrate its algorithm. 
+
+6.1 Client Model Updates 
+
+In contrast to prior work that relies on losses or final-layer bi-ases for client selection, Terraform leverages final-layer gra-dients, as these provide deeper insights into the underlying data distribution of each client (refer to Figure 2). As illus-trated in Figure 1, in an iteration t of a round r, the client 
+
+k performs training on its local data Dktrain using the global model parameters θr,t , which generates the local model pa-rameters, θkr,t such that: 
+
+θkr,t ← θr,t − ∆wkr,t (1) where ∆wkr,t is the gradient update between θr,t and θkr,t due to local training and includes both the weight and bias ma-trices obtained from the model’s final layer (also called the classification layer) Zeiler and Fergus [2014]. The magnitude of the gradient updates |∆wkr,t | and the dataset size, |Dktrain |,are returned to the server. The magnitude of a client’s to-tal gradient update, |∆wkr,t |, is obtained by taking the square root of the sum of the squared Frobenius norms Golub and Van Loan [1996] of its final layer’s individual parameters’ gradient update, ∆pki :
+
+|∆wk| =
+
+vuut LX
+
+> i=1
+
+∥∆pki ∥2 
+
+> F
+
+(2) where L is the number of trainable parameters in the final layer. The Frobenius norm of a matrix A ∈ Rm×n tells us the size of A, and is given by the square root of the summed absolute squares of its elements: 
+
+∥A∥F =
+
+vuut
+
+> m
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+|aij |2 (3) Intuitively, the gradient updates indicate how much new in-formation the client’s data is adding to the global model. A small gradient update suggests that the global model requires less fine-tuning on the client’s data, that is, the client’s data distribution aligns with the data distribution learned by the global model. 
+
+6.2 Hierarchical Selection 
+
+Terraform’s hierarchical selection takes inspiration from the Classification and Regression Trees (CART) algorithm, which constructs a binary decision tree by recursively par-titioning data at each node into left and right child nodes based on a partitioning criterion. For classification tasks, well-known partitioning criteria like Gini index and En-tropy Hastie et al. [2001] are employed, whereas for re-gression tasks, the Sum of Squared Errors (SSE) method is used. For example, assume a regression problem that needs to generate a CART decision tree. The partition at each node ni of the tree, where ni ∈ { 1, . . . , N } is deter-mined using the total SSE of the resulting child nodes de-fined as SSE (NL) and SSE (NR). It equates to, SSE (NL) = P 
+
+> ni∈NL
+
+(ni − ¯nL)2, where ¯nL represents the mean of the left partition; and similarly for the right partition. CART se-lects the partition that minimizes the total SSE for each node, SSE total = SSE (NL) + SSE (NR).Terraform’s hierarchical selection extends these rules to the FL environment such that a client’s gradient update magni-tude |∆wkr,t | represents a node. These gradients are used to calculate the split index that partitions them into two clusters: easy E and hard H. However, finding the optimal split index from this large set of gradient magnitudes is hard. Thus, Ter-raform introduces the notion of Inter-Quartile Range (IQR), explained next. 
+
+Inter-Quartile Range (IQR). 
+
+Prior to calculating the split index, Terraform sorts the clients based on the magnitude of their gradient updates |∆wkr,t |.Once the clients are sorted, their dataset sizes, |Dktrain |, are used to calculate the running sum, Sk = Pkj=1 |Dj
+
+> train
+
+|, where 
+
+Sk denotes the cumulative dataset size up to the k-th client in the list. This running sum is used to identify a subset of clients that can optimize the calculation of the split index, which we denote as the Inter-Quartile Range (IQR). The IQR is the difference between the third quartile (Q3) and the first quartile (Q1), representing the middle 50% of the data. It captures the central distribution of the gradient magnitudes, thereby excluding outliers. To locate the first quartile index kQ1 , we find the smallest k such that Sk ≥
+
+0.25 · SK , where SK is the total running sum. Similarly, the third quartile index kQ3 is the smallest k such that Sk ≥ 0.75 ·
+
+SK . In Figure 3, we empirically validate the calculation of the split index with and without IQR. 
+
+Split Index. 
+
+To calculate the optimal split index, we consider it as a prob-lem of splitting a list of scalar values U = {u1, ...u i, ..., u N },where ui corresponds to gradient magnitude, |∆wir,t |; these are sorted in ascending order, into two distinct subsets. Xie et al. [2021] shows that the optimal split index τsplit can be ob-tained by minimizing the variance within the two resulting clusters, which we define as intra-split variance , Var intra .Based on this, the optimal splitting index, τsplit can be de-fined as, 
+
+τsplit = argmin 
+
+> 1≤τ <N
+
+(Var intra (U1, U 2)) (4) where U1 = {u1, . . . , u τ }, U2 = {uτ +1 , . . . , u N } are the clusters of U after splitting at a given split index τ . Further-more, we can define Var intra as, 
+
+Var intra (U1, U 2) = |U1|
+
+N · Var (U1) + |U2|
+
+N · Var (U2) (5) where Var( U ) = 1
+
+> SN
+
+PNi=1 (|Ditrain | · (ui − ¯u)2) is the vari-ance of the cluster, ¯u = 1
+
+> SN
+
+PNi=1 |Ditrain | · ui is the mean of the cluster, SN is the total running sum and N is the total number of cluster elements. Hence, the problem is reduced to an iterative search through the possible split indices τ to minimize Var intra . This minimization, combined with IQR, generates τsplit .We can also frame this as a problem of maximizing the variance between the two clusters, defined as inter-split vari-ance , Var inter , due to an inverse relation between Var inter 
+
+and Var intra ; the Law of Total Variance Fisher [1958]. 
+
+Var( U ) = Var inter (U 1, U2) + Var intra (U 1, U2)
+
+Hence, determining the split index that minimizes Var intra 
+
+equates to determining the index that maximally separates clients into two distinct clusters. This splitting to determine hard clusters is hierarchically repeated until one of these termination conditions is met: (i) reaching the minimum client threshold, η, or (ii) maximum iteration depth, T . The model then begins the next round with a randomly sampled set of clients. In the following section, we present the complete procedure in Algorithm 1. 
+
+6.3 Terraform Algorithm 
+
+We discuss the pseudo-algorithmic logic for Terraform in Al-gorithm 1. It takes as input a base FL algorithm A, total rounds R, maximum splitting iterations T , the total client pool C, client dataset sizes |Dktrain |, number of clients per round K, and minimum client threshold η. The server initial-izes a global model θ0,0 (Steps 1-3). Each round r starts by selecting a pool of K clients, which represents the initial set of ’hard’ clients CH 
+
+> r, 0
+
+(Steps 5-6). For each iteration t, the algorithm A utilizes the current hard set 
+
+CH 
+
+> r,t
+
+and the global model θr,t . It returns the set of the clients’ gradient updates, ∆wH
+
+> r,t
+
+, and updated global model, θr,t +1 
+
+(Step 7). This set of clients CH 
+
+> r,t
+
+and ∆wH
+
+> r,t
+
+, are then sorted according to the gradient update magnitudes, |∆wH
+
+> r,t
+
+| (Step 8). To ensure a robust split, we find the first and third quartiles Algorithm 1 Terraform Algorithm  
+
+> 1:
+
+Input: FL algorithm A; Rounds R; Max. iterations T ;Client set C; Client dataset size |Dk
+
+> train
+
+|; No. of clients per round K; Min. clients required for splitting η 
+
+> 2:
+
+Output: Final global model θR, 0 
+
+> 3:
+
+Initialize: Global model θ0,0 
+
+> 4:
+
+for each round r = 0 , . . . , R − 1 do  
+
+> 5:
+
+Initialize: Randomly selected clients CKr ; initial global model θr, 0; 
+
+> 6:
+
+CH 
+
+> r, 0
+
+← C Kr , where H : hard clients  
+
+> 7:
+
+for each splitting iteration t = 0 , . . . , T − 1 do  
+
+> 8:
+
+θr,t +1 , ∆wH 
+
+> r,t
+
+← A (θr,t , CH
+
+> r,t
+
+) 
+
+> 9:
+
+CH(sorted ) 
+
+> r,t
+
+, ∆wH(sorted ) 
+
+> r,t
+
+← Sort (CH
+
+> r,t
+
+, ∆wH
+
+> r,t
+
+) ▷
+
+Sort clients  
+
+> 10:
+
+kQ1, k Q3 ← IQR (DH(sorted ) 
+
+> train
+
+) 
+
+> 11:
+
+τsplit = argmin 
+
+> kQ1≤τ <k Q3
+
+(Var intra (U1, U 2))  
+
+> 12:
+
+CH 
+
+> r,t +1
+
+← C H(sorted ) 
+
+> r,t
+
+[τsplit :]  
+
+> 13:
+
+if |C H
+
+> r,t +1
+
+| < η then  
+
+> 14:
+
+break  
+
+> 15:
+
+end if  
+
+> 16:
+
+end for  
+
+> 17:
+
+θr+1 ,0 ← θr,t +1  
+
+> 18:
+
+end for  
+
+> 19:
+
+return θR, 0
+
+(kQ1, k Q3) indices using the sorted set of client data sizes, 
+
+DH(sorted) train (Step 9). The IQR first calculates the running sum for DH(sorted) train and then calculates kQ1 and kQ3 as described in 6.2. The optimal split index τsplit is computed within the IQR indices (Step 10). The client set for the next iteration 
+
+CH 
+
+> r,t +1
+
+is then populated with clients ranging from the split index τsplit to the end of the set, CH(sorted ) 
+
+> r,t
+
+(Step 11). The iterations end when client set size < η (Steps 12-14). The final model after T iterations is used to initialize the following round’s model θr+1 ,0 (Step 16). The output at the end of R rounds is the resulting global model θR, 0.
+
+## 7 Evaluation 
+
+Baselines. 
+
+We evaluate Terraform against five state-of-the-art client selection methodologies: (i) Random Sampling i.e., Fe-dAvg, which was presented in FedAvg; (ii) PoC ; (iii) Oort ;(iv) HiCS-FL ; and (v) Baseline methodology in HiCS-FL (HBase ), i.e., which was presented in FedProx. 
+
+FL Algorithms. 
+
+We follow prior works on client selection methodologies and test all selection methodologies on two popular FL algorithms (A), FedAvg and FedProx. 
+
+Datasets. 
+
+We use the following four standard image classification datasets for benchmarking: (i) CIFAR-10 : colored image dataset of objects, 10 classes Krizhevsky and Hinton [2009]; (ii) CIFAR-100 : fine-grained version of CIFAR-10, 100 
+
+classes Krizhevsky and Hinton [2009]; (iii) Tiny ImageNet :colored image dataset of natural objects, 200 classes Le and Yang [2015]; and (iv) FEMNIST : grayscale image dataset of handwritten characters, 62 classes Caldas et al. [2018]. 
+
+Client Models. 
+
+For CIFAR-10, each client used a 5L CNN model with 3 con-volutional layers with 3 × 3 kernels ( 32 /64 /64 output chan-nels), followed by two 2 × 2-maxpooling layers (stride 2), a fully connected layer with 64 units, and 1D classification layer. For CIFAR-100, each client uses a 5L CNN architecture introduced by Liu et al. [2024] with 2 convolutional layers with 5 × 5 kernel ( 64 /128 channels), followed by 2 × 2-maxpooling (stride 2) layers, followed by 3 fully connected layers ( 3200 /256 /128 units with ReLU) and a softmax clas-sification layer. For Tiny ImageNet, we used the pre-trained ResNet18 model He et al. [2016]. For FEMNIST, we follow the architecture of FedAvg, i.e., the 4L CNN model with 2 convolutional layers with 5×5 ker-nel ( 32 /64 channels), each with a sequential block of 2 × 2-maxpooling (stride 2), followed by a 512 unit fully connected layer (ReLU), and a softmax classification layer. 
+
+Dataset Partitioning. 
+
+To simulate a realistic federated setting with statistical het-erogeneity, we follow the data partitioning schemes of HiCS-FL. These schemes generate each client’s local dataset using a Dirichlet distribution Yurochkin et al. [2019]. For exam-ple, consider 100 clients and a predefined set of five α values. Clients are divided into 20 subsets ( 100 /5 = 20 ), with each subset chronologically assigned one of the α values. Each client in a subset receives its local data allocation through the Dirichlet distribution parameterized by its assigned α.A smaller α produces a higher class imbalance, resulting in greater heterogeneity among clients’ data. Thus, given a to-tal dataset of 1000 samples, the Dirichlet distribution assigns samples to clients according to their designated α, simulating varying levels of data heterogeneity across the client set. We use HiCS-FL partitioning scenarios. FMNIST uses 50 -100 clients, and its following 8 scenarios are based on 5 α values and 3 sampling rates. Scenarios for sampling rate = 0.1, 50 clients, (1) : α = {0.001, 0.002, 0.005, 0.01, 0.5 }, (2) : α = {0.001 , 0.002 , 0.005 , 0.01 , 0.2}, and (3) :
+
+α = {0.001 }. Scenarios for sampling rate = 0.3, 50 clients, 
+
+(1 *): α = {0.001, 0.002, 0.005, 0.01, 0.5 }, (2 *): α = {0.001, 0.002, 0.005, 0.01, 0.2 }, and (3 *): α = {0.001 }, Scenarios for sampling rate = 0.15, 100 clients, (4) : α = {0.1, 0.1, 0.1, 0.3, 0.3 }, and (5) : α = {0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5 }.CIFAR-10 uses 50 clients, and its following 3 scenarios are based on sampling rate = 0.2 and 3 α values. (1) : α = {0.001, 0.01, 0.1, 0.5, 1 }, (2) : α = {0.001, 0.002, 0.005, 0.01, 0.5 },and (3) : α = {0.001, 0.002, 0.005, 0.01, 0.1 }.As HiCS-FL does not evaluate on datasets CIFAR-100, Tiny ImageNet, and FEMNIST, we use the following scenar-ios: CIFAR-100 uses 250 clients and sampling rate = 0.128, whereas Tiny ImageNet uses 500 clients and sampling rate = 0.058; α = 0.1 for both. FEMNIST has a total of 800 k+ sam-ples, and these samples were assigned among 3597 clients Table 1: Accuracy of client models with best and second-best methodologies highlighted.                                                                                
+
+> AMethodology CIFAR-10 CIFAR-100 Tiny ImageNet FEMNIST 123FedAvg Random 67.76% 58.21% 54.69% 15.26% 35.44% 81.28% HBase 54.76% 41.09% 41.69% 15.58% 35.99% 79.44% PoC 47.84% 27.37% 24.51% 13.73% 34.29% 80.31% HiCS-FL 65.57% 57.24% 57.00% 16.38% 36.09% 81.46% Oort 65.41% 60.20% 54.71% 16.43% 35.05% 80.38%
+> Terraform (Ours) 68.23% 63.23% 57.10% 24.22% 42.34% 83.37%
+> FedProx Random 66.17% 60.01% 52.47% 15.97% 35.46% 81.28% HBase 55.90% 41.21% 43.79% 16.71% 35.10% 81.49% PoC 47.33% 20.28% 28.00% 13.81% 34.99% 80.31% HiCS-FL 67.10% 58.59% 57.94% 17.54% 35.36% 81.08% Oort 65.83% 58.58% 54.58% 17.54% 35.31% 80.59%
+> Terraform (Ours) 68.52% 62.73% 59.13% 24.81% 42.44% 83.52%
+
+Table 2: Accuracy of client models for FMNIST scenarios with best and second-best methodologies highlighted.                                                                                                          
+
+> AMethodology 1231* 2* 3* 45FedAvg Random 85.62% 83.28% 70.19% 84.05% 83.84% 70.15% 85.18% 84.78% HBase 74.23% 71.20% 71.69% 80.74% 83.11% 73.15% 85.36% 85.70 % PoC 80.29% 79.36% 58.11% 81.93% 83.17% 53.40% 85.32% 84.93% HiCS-FL 87.14% 82.81% 68.14% 83.60% 84.32% 71.18% 85.39% 85.16% Oort 89.01% 85.42% 59.52% 83.21% 84.75% 57.39% 85.09% 85.79%
+> Terraform (Ours) 85.62% 83.28% 70.19% 85.49% 85.47% 71.21% 86.08% 86.51%
+> FedProx Random 85.78% 83.24% 70.97% 83.27% 83.99% 70.01% 85.22% 85.10% HBase 76.23% 72.39% 72.11% 81.35% 83.07% 71.37% 85.75% 85.70% PoC 84.50% 79.67% 59.42% 82.22% 83.08% 65.42% 85.44% 84.99% HiCS-FL 86.00% 80.61% 69.48% 83.41% 85.10% 69.71% 85.77% 84.84% Oort 87.11% 85.43% 59.42% 83.47% 84.69% 66.79% 85.47% 85.51%
+> Terraform (Ours) 85.78% 83.24% 70.97% 83.91% 85.75% 70.02% 87.24% 86.63%
+
+using the writer ID Li et al. [2020] partitioning. We used a sampling rate of 0.011 .
+
+Setup. 
+
+We use NVIDIA’s A100 Tensor Core GPUs to run our exper-iments. Each result is averaged over three runs to eliminate any noise. We follow HiCS-FL and FedProx and set the hyper-parameter μ of the regularization term of FedProx to 0.1. For FMNIST dataset, we use the stochastic gradient descent (SGD) optimizer. The learning rate is initially set to 0.001 
+
+and decreases every 10 iterations with a decay factor of 0.5.The global communication rounds is set to 200 . The number of local epochs is set to 2 and the size of a mini-batch is set to 
+
+64 . For datasets CIFAR-10, CIFAR-100, and Tiny ImageNet, we use the popular optimizer Adam Kingma and Ba [2015] with a learning rate of 0.001 (0.01 for Tiny ImageNet), a de-cay factor of 0.5, global communication rounds of 100 (500 
+
+for CIFAR-10), local epochs of 2, and a mini-batch size of 64 .For FEMNIST, we use SGD optimizer with a learning rate of 
+
+0.01 , local epochs of 5, and a mini-batch size of 32 .
+
+7.1 Results 
+
+We now illustrate the results of comparing Terraform against other client selection methodologies. We use Tables 1 and 2 to illustrate the average accuracy of the global model on the test data of the participating clients using FL algorithms. In Table 1, we observe that Terraform yields the highest accuracy among all the methodologies for all cases. For CIFAR-10, as expected, the accuracy for all methodologies decreases with increasing heterogeneity. Consequently, on FedAvg, we observe that Oort and HiCS-FL yield better ac-curacy than Random for scenarios 2 and 3, and HiCS-FL does better than Oort on scenario 3 due to its heterogeneity-focused client clustering. Note: for CIFAR-10 and FMNIST, we follow the three scenarios of HiCS-FL (1, 2, and 3), which restrict us to initially sample only 10 and 5 clients, respec-tively. If Terraform is allowed to sample more initial clients in each round, it can yield higher accuracy, which is evident in Table 2 (4 and 5). However, on FedProx, Random outper-forms others on scenario 2 because FedProx’s high regular-ization factor ( μ = 0 .1) leads to underfitting. On Tiny ImageNet and CIFAR-100, Terraform shines the most; it achieves up to 17 .31% and 47 .41% more accuracy than the second-best methodology as it allowed to sample a higher number of clients initially in each round. Although a similar trend for Terraform exists on FEMNIST, we attribute it to more classes in the dataset, which increases non-iid rela-tionships, and increase the data heterogeneity. In Table 2, we evaluate Terraform on 8 FMNIST scenar-ios. As scenarios 1, 2, and 3 are ported from HiCS-FL, we force Terraform to sample only 5 clients initially. Conse-quently, Terraform is able to run only one iteration per round, which is same as running Random; thus, similar accuracies. For rest of the scenarios, Terraform does not have this re-striction, and thus, it continues outperforming other method-ologies. One exception, however, is scenario 3*, where Ter-raform is the second-best because sampling even 15 clients initially, in each round, is not sufficient; we hypothesize that Terraform needs to sample a much higher number of clients. (a) CIFAR100 0 10 20 30 40 50 60 70 80 90 100  
+
+> Rounds
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> Accuracy of Global Model (%)
+> Loss
+> Bias (B)
+> Weights (W)
+> Gradients (W + B)
+
+(b) Tiny ImageNet 0 10 20 30 40 50 60 70 80 90 100 
+
+> Rounds
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> 40
+> 45
+> 50
+> Accuracy of Global Model (%)
+> Loss
+> Bias (B)
+> Weights (W)
+> Gradients (W + B)
+
+Figure 2: Accuracy of model on varying client updates. (a) CIFAR100 0 10 20 30 40 50 60 70 80 90 100  
+
+> Rounds
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> Accuracy of Global Model (%)
+> Total set (Index 0 to 1)
+> Index Q1 to 1
+> Index 0 to Q3
+> IQR
+
+(b) Tiny ImageNet 0 10 20 30 40 50 60 70 80 90 100 
+
+> Rounds
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 35
+> 40
+> 45
+> 50
+> Accuracy of Global Model (%)
+> Total set (Index 0 to 1)
+> Index Q1 to 1
+> Index 0 to Q3
+> IQR
+
+Figure 3: Accuracy of global model on varying quartiles. 
+
+7.2 Ablation Studies 
+
+We validate Terraform’s contribution through ablation stud-ies that assess the efficacy of client updates, IQR, and client threshold ( η) in client selection. 
+
+Varying Client Updates. 
+
+Terraform’s gradient updates are, in essence, a combination of the weights and biases from the clients’ models’ final lay-ers. In Figure 2, we illustrate the accuracy of Terraform when, instead of using gradient updates, it uses (i) loss, (ii) biases, and (iii) weights. We observe that using gradient updates (weights + bias) with Terraform yields the best performance at the end of 100 
+
+rounds of training for both CIFAR-100 and Tiny ImageNet. Moreover, using biases, which is a HiCS-FL approach, has the lowest performance for the CIFAR-100 dataset compared to the Tiny ImageNet due to the reduced number of classes in the former dataset. This, in turn, reduces the bias values per client, thereby affecting the representative values for the client’s distribution. 
+
+Varying Quartiles. 
+
+To determine the optimal split index τsplit , Terraform searches in its Inter-Quartile Range (IQR) for an index that minimizes the intra-split variance ( Var intra ). A brute-force approach to determine the split index τsplit is to iterate over each index in the set of client dataset sizes, DH(sorted) train , and calculate the intra-split variance. Such an approach would be computationally expensive, and IQR minimizes this cost by reducing the search space: from the total set (0,1) to the re-gion between the first and third quartiles of the set (Q1, Q3). In Figure 3, on the CIFAR100 and Tiny ImageNet datasets for 100 rounds, we compare IQR (Q1, Q3) against three other splitting ranges: (0, 1), (0, Q3), and (Q1, 1). Our results illus-trate that IQR is not only sufficient for determining split index 
+
+τsplit , but also helps to discard outliers that reduce the test ac-curacy. Additionally, (Q3, 1) have the poorest performance, which validates the theory that hyper-focusing on only highly IQR Total set Index Q1 to 1 Index 0 to Q3     
+
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> Training Time (minutes)
+> 7.45
+> 8.52 8.08 8.38
+> 19.05
+> 20.40 19.58 19.70
+> Solid bars: CIFAR-100
+> Striped bars: Tiny ImageNet
+
+Figure 4: Training time on varying quartiles. Table 3: Accuracy on varying thresholds, η.
+
+Dataset η = 2 η = 3 η = 4 
+
+FEMNIST 83.61% 83.15% 83.52% FMNIST(1*) 80.26% 82.58% 83.91% FMNIST(4) 86.07% 86.51% 87.24% 
+
+heterogeneous clients overfits the model and reduces general-ization. 
+
+Training time: In Figure 4, we measure the training time complexity for the 4 quartile ranges and observe that our claims that IQR and total set have the lowest and highest training time, respectively, hold. 
+
+Threshold for #Clients ( η). 
+
+Terraform’s hierarchical sampling approach iteratively splits the set of clients into easy E and hard H clusters. Specifically, we keep splitting the hard cluster until the following termina-tion condition is met: the size of the hard cluster falls below a predefined threshold ( η). Determining an optimal value of η
+
+saves compute as further splitting will yield minimal benefits. Thus, we set η to 4. In Table 3, we illustrate the accuracy on three different values for η = {2, 3, 4} on FEMNIST and FM-NIST (1 and 4*) scenarios. We observe that η = 4 performs well on both datasets. Although η = 2 yields a marginally better accuracy on the FEMNIST dataset, η = 4 reduces the computational cost for training and yields only 0.11% lower accuracy than η = 2 , which makes it an optimal choice. 
+
+## 8 Conclusions 
+
+In this paper, we presented Terraform, a novel client selec-tion methodology that mitigates the impact of heterogeneous clients on federated learning. Terraform achieves this goal by hierarchically selecting and retraining heterogeneous clients. Terraform performs this hierarchical selection on the basis of clients’ local model’s final-layer gradient updates, which it uses to determine the optimal inter-quartile range (IQR) to split clients into easy and hard clusters. Terraform retrains clients in hard clusters and our results illustrate that it outper-forms existing works by up to 47% .
+
+## References 
+
+Durmus Alp Emre Acar, Yue Zhao, Ramon Matas, Matthew Mattina, Paul Whatmough, and Venkatesh Saligrama. Fed-erated learning based on dynamic regularization. In Inter-national Conference on Learning Representations , 2021. Manoj Ghuhan Arivazhagan, Vinay Aggarwal, Aaditya Ku-mar Singh, and Sunav Choudhary. Federated learning with personalization layers. arXiv preprint arXiv:1912.00818 ,2019. Ravikumar Balakrishnan, Tian Li, Tianyi Zhou, Nageen Hi-mayat, Virginia Smith, and Jeff Bilmes. Diverse client se-lection for federated learning via submodular maximiza-tion. In International Conference on Learning Representa-tions , 2022. L. Breiman, J. Friedman, C.J. Stone, and R.A. Olshen. Clas-sification and Regression Trees . Taylor & Francis, 1984. Sebastian Caldas, Sai Meher Karthik Duddu, Peter Wu, Tian Li, Jakub Koneˇ cn` y, H Brendan McMahan, Virginia Smith, and Ameet Talwalkar. Leaf: A benchmark for federated settings. arXiv preprint arXiv:1812.01097 , 2018. Hong-You Chen and Wei-Lun Chao. On bridging generic and personalized federated learning for image classifica-tion. In International Conference on Learning Representa-tions , 2022. Huancheng Chen and Haris Vikalo. Heterogeneity-guided client sampling: Towards fast and efficient non-iid feder-ated learning. Advances in Neural Information Processing Systems , 37:65525–65561, 2024. Weiyu Cheng, Yanyan Shen, Yanmin Zhu, and Linpeng Huang. A neural attention model for urban air quality infer-ence: Learning the weights of monitoring stations. In Pro-ceedings of the AAAI conference on artificial intelligence ,volume 32, 2018. Liam Collins, Hamed Hassani, Aryan Mokhtari, and Sanjay Shakkottai. Exploiting shared representations for person-alized federated learning. In International conference on machine learning , pages 2089–2099. PMLR, 2021. Alireza Fallah, Aryan Mokhtari, and Asuman Ozdaglar. Per-sonalized federated learning with theoretical guarantees: A model-agnostic meta-learning approach. Advances in neu-ral information processing systems , 33:3557–3568, 2020. Federal Emergency Management Agency. The rural fire problem in the united states. https://www.usfa.fema.gov/ downloads/pdf/statistics/rural.pdf, 1997. United States Fire Administration report. Ronald Fisher. Statistical Methods for Research Workers .Oliver and Boyd, Edinburgh, thirteenth edition, 1958. Yann Fraboni, Richard Vidal, Laetitia Kameni, and Marco Lorenzi. Clustered sampling: Low-variance and improved representativity for clients selection in federated learning. In International Conference on Machine Learning , pages 3407–3416. PMLR, 2021. Stefano Galmarini and S Trivikrama Rao. The aqmeii two-continent regional air quality model evaluation study: Fu-eling ideas with unprecedented data. Atmospheric Environ-ment , 45(14):2464, 2011. Liang Gao, Huazhu Fu, Li Li, Yingwen Chen, Ming Xu, and Cheng-Zhong Xu. Feddc: Federated learning with non-iid data via local drift decoupling and correction. In Proceed-ings of the IEEE/CVF conference on computer vision and pattern recognition , pages 10112–10121, 2022. Avishek Ghosh, Jichan Chung, Dong Yin, and Kannan Ram-chandran. An efficient framework for clustered federated learning. Advances in neural information processing sys-tems , 33:19586–19597, 2020. G.H. Golub and C.F. Van Loan. Matrix Computations . Johns Hopkins Studies in the Mathematical Sciences. Johns Hop-kins University Press, 1996. Dennis Grinwald, Philipp Wiesner, and Shinichi Nakajima. Federated learning over connected modes. Advances in Neural Information Processing Systems , 37:85179–85202, 2024. T. Hastie, R. Tibshirani, and J.H. Friedman. The Elements of Statistical Learning: Data Mining, Inference, and Predic-tion . Springer series in statistics. Springer, 2001. Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In Proceed-ings of the IEEE conference on computer vision and pat-tern recognition , pages 770–778, 2016. Md Sirajul Islam, Simin Javaherian, Fei Xu, Xu Yuan, Li Chen, and Nian-Feng Tzeng. Fedclust: Tackling data heterogeneity in federated learning through weight-driven client clustering. In Proceedings of the 53rd International Conference on Parallel Processing , pages 474–483, 2024. Yae Jee Cho, Jianyu Wang, and Gauri Joshi. Towards un-derstanding biased client selection in federated learning. In Gustau Camps-Valls, Francisco J. R. Ruiz, and Is-abel Valera, editors, Proceedings of The 25th International Conference on Artificial Intelligence and Statistics , volume 151 of Proceedings of Machine Learning Research , pages 10351–10375. PMLR, 28–30 Mar 2022. Yihan Jiang, Jakub Konecn´ y, Keith Rush, and Sreeram Kan-nan. Improving federated learning personalization via model agnostic meta learning. ArXiv , abs/1909.12488, 2019. Xiaowen Jiang, Anton Rodomanov, and Sebastian U Stich. Federated optimization with doubly regularized drift cor-rection. In Forty-first International Conference on Machine Learning , 2024. Hu Jin and Jun Du. Federated learning based fire detection method using local mobilenet. Frontiers in Public Health ,12:1280250, 2024. Sai Praneeth Karimireddy, Satyen Kale, Mehryar Mohri, Sashank Reddi, Sebastian Stich, and Ananda Theertha Suresh. Scaffold: Stochastic controlled averaging for fed-erated learning. In International conference on machine learning , pages 5132–5143. PMLR, 2020. Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. International Conference on Learning Representations (ICLR) , 2015. Alex Krizhevsky and Geoffrey Hinton. Learning multiple layers of features from tiny images. Technical report, Uni-versity of Toronto, 2009. Fan Lai, Xiangfeng Zhu, Harsha V Madhyastha, and Mosharaf Chowdhury. Oort: Efficient federated learning via guided participant selection. In 15th {USENIX } Sym-posium on Operating Systems Design and Implementation ({OSDI } 21) , pages 19–35, 2021. Yann Le and Xuan Yang. Tiny imagenet visual recognition challenge. CS 231N , 7(7):3, 2015. Daliang Li and Junpu Wang. Fedmd: Heterogenous fed-erated learning via model distillation. arXiv preprint arXiv:1910.03581 , 2019. Tian Li, Anit Kumar Sahu, Manzil Zaheer, Maziar Sanjabi, Ameet Talwalkar, and Virginia Smith. Federated optimiza-tion in heterogeneous networks. Proceedings of Machine learning and systems , 2:429–450, 2020. Qinbin Li, Bingsheng He, and Dawn Song. Model-contrastive federated learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 10713–10722, 2021. Tian Li, Shengyuan Hu, Ahmad Beirami, and Virginia Smith. Ditto: Fair and robust federated learning through personal-ization. In International conference on machine learning ,pages 6357–6368. PMLR, 2021. Paul Pu Liang, Terrance Liu, Ziyin Liu, Ruslan Salakhutdi-nov, and Louis-Philippe Morency. Think locally, act glob-ally: Federated learning with local and global representa-tions. ArXiv , abs/2001.01523, 2019. Xianfeng Liang, Shuheng Shen, Jingchang Liu, Zhen Pan, Yifei Cheng, and Enhong Chen. Variance reduced local 
+
+{sgd } with lower communication complexity, 2020. Tao Lin, Lingjing Kong, Sebastian U Stich, and Martin Jaggi. Ensemble distillation for robust model fusion in federated learning. Advances in neural information processing sys-tems , 33:2351–2363, 2020. Zhexiong Liu, Licheng Liu, Yiqun Xie, Zhenong Jin, and Xiaowei Jia. Task-adaptive meta-learning framework for advancing spatial generalizability. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 37, pages 14365–14373, 2023. Renpu Liu, Cong Shen, and Jing Yang. Federated representa-tion learning in the under-parameterized regime. In Forty-first International Conference on Machine Learning , 2024. Google LLC. Google nest protect (2nd gen) smoke and co detector, 2025. Accessed August 21, 2025. Brendan McMahan, Eider Moore, Daniel Ramage, Seth Hampson, and Blaise Aguera y Arcas. Communication-efficient learning of deep networks from decentralized data. In Artificial intelligence and statistics , pages 1273– 1282. PMLR, 2017. National Interagency Fire Center (NIFC) National Intera-gency Coordination Center (NICC). Wildland fire sum-mary and statistics annual report 2024, 2024. Accessed August 21, 2025. Takayuki Nishio and Ryo Yonetani. Client selection for feder-ated learning with heterogeneous resources in mobile edge. In ICC 2019-2019 IEEE international conference on com-munications (ICC) , pages 1–7. IEEE, 2019. U.S. Department of Homeland Security. Fema smartphone application with disaster reporter feature - privacy impact assessment. Privacy impact assessment, Department of Homeland Security, 2013. Jaehoon Oh, SangMook Kim, and Se-Young Yun. FedBABU: Toward enhanced representation for federated image clas-sification. In International Conference on Learning Repre-sentations , 2022. Zhengxiang Pan, Han Yu, Chunyan Miao, and Cyril Leung. Crowdsensing air quality with camera-enabled mobile de-vices. In Proceedings of the AAAI conference on artificial intelligence , volume 31, pages 4728–4733, 2017. Xingchao Peng, Zijun Huang, Yizhe Zhu, and Kate Saenko. Federated adversarial domain adaptation. In International Conference on Learning Representations , 2020. O. Raffeg et al. Legal and ethical considerations for demand-driven data collection in disasters. International Journal of Disaster Risk Reduction , 2025. Available online. Sashank J. Reddi, Zachary Charles, Manzil Zaheer, Zachary Garrett, Keith Rush, Jakub Koneˇ cn´ y, Sanjiv Kumar, and Hugh Brendan McMahan. Adaptive federated optimiza-tion. In International Conference on Learning Representa-tions , 2021. Pacific Rivers and Portland State University. Impact of four oregon fires on drinking water systems, 2022. Accessed August 21, 2025. Felix Sattler, Klaus-Robert M¨ uller, and Wojciech Samek. Clustered federated learning: Model-agnostic distributed multitask optimization under privacy constraints. IEEE transactions on neural networks and learning systems ,32(8):3710–3722, 2020. Jonathan Scott, Hossein Zakerinia, and Christoph H Lam-pert. PeFLL: Personalized federated learning by learn-ing to learn. In The Twelfth International Conference on Learning Representations , 2024. Aviv Shamsian, Aviv Navon, Ethan Fetaya, and Gal Chechik. Personalized federated learning using hypernetworks. In 
+
+International Conference on Machine Learning , 2021. Changlong Shi, He Zhao, Bingjie Zhang, Mingyuan Zhou, Dandan Guo, and Yi Chang. Fedawa: Adaptive opti-mization of aggregation weights in federated learning us-ing client vectors. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 30651–30660, 2025. K. Smith, G. Kent, D. Slater, G. Plank, M. Williams, M. Mc-Carthy, F. Vernon, N. Driscoll, and H.-W. Braun. Inte-grated multi-hazard regional networks: Earthquake warn-ing/response, wildfire detection/response, and extreme weather tracking. In Robert Anderson and Horacio Fer-riz, editors, Special Volume: Association of Environmental and Engineering Geologists, Applied Geology in Califor-nia , pages 599–612. Association of Environmental and En-gineering Geologists, 2016. Canh T Dinh, Nguyen Tran, and Josh Nguyen. Personalized federated learning with moreau envelopes. Advances in neural information processing systems , 33:21394–21405, 2020. Yue Tan, Guodong Long, Lu Liu, Tianyi Zhou, Qinghua Lu, Jing Jiang, and Chengqi Zhang. Fedproto: Federated pro-totype learning across heterogeneous clients. In AAAI Con-ference on Artificial Intelligence , 2021. Andrew S. Tanenbaum and Maarten van Steen. Distributed Systems: Principles and Paradigms . Pearson Prentice Hall, Upper Saddle River, NJ, 2nd edition, 2007. Minxue Tang, Xuefei Ning, Yitu Wang, Jingwei Sun, Yu Wang, Hai Li, and Yiran Chen. Fedcor: Correlation-based active client selection strategy for heterogeneous federated learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 10102–10111, 2022. Yitong Tang. Adapted weighted aggregation in federated learning. In Proceedings of the AAAI Conference on Ar-tificial Intelligence , volume 38, pages 23763–23765, 2024. Reno University of Nevada, San Diego University of Califor-nia, and University of Oregon. Alertwildfire camera sys-tem, 2025. Accessed August 21, 2025. U.S. Department of Homeland Security. Privacy compliance review of the federal emergency management agency in-formation sharing, 2019. Mike Wall and Space.com. Here’s why nasa wants your pho-tos of hurricane damage, 2025. Yahoo News, August 21, 2025. Hongyi Wang, Mikhail Yurochkin, Yuekai Sun, Dimitris Pa-pailiopoulos, and Yasaman Khazaeni. Federated learning with matched averaging. In International Conference on Learning Representations , 2020. Jianyu Wang, Qinghua Liu, Hao Liang, Gauri Joshi, and H Vincent Poor. Tackling the objective inconsistency prob-lem in heterogeneous federated optimization. Advances in neural information processing systems , 33:7611–7623, 2020. Shuai Wang, Yanqing Xu, Zhiguo Wang, Tsung-Hui Chang, Tony QS Quek, and Defeng Sun. Beyond admm: A unified client-variance-reduced adaptive federated learning frame-work. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 37, pages 10175–10183, 2023. Hongda Wu and Ping Wang. Fast-convergent federated learn-ing with adaptive weighting. IEEE Transactions on Cog-nitive Communications and Networking , 7(4):1078–1088, 2021. Yiqun Xie, Erhu He, Xiaowei Jia, Han Bao, Xun Zhou, Rahul Ghosh, and Praveen Ravirathinam. A statistically-guided deep network transformation and moderation framework for data with spatial heterogeneity. In 2021 IEEE Inter-national Conference on Data Mining (ICDM) , pages 767– 776. IEEE, 2021. Jian Xu, Xinyi Tong, and Shao-Lun Huang. Personalized fed-erated learning with feature alignment and classifier col-laboration. In The Eleventh International Conference on Learning Representations , 2023. Qiang Yang, Yang Liu, Tianjian Chen, and Yongxin Tong. Federated machine learning: Concept and applications. 
+
+ACM Transactions on Intelligent Systems and Technology (TIST) , 10(2):12:1–12:19, 2019. Zhiqin Yang, Yonggang Zhang, Yu Zheng, Xinmei Tian, Hao Peng, Tongliang Liu, and Bo Han. Fedfed: Feature distil-lation against data heterogeneity in federated learning. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, Advances in Neural Information Processing Systems , volume 36, pages 60397–60428. Cur-ran Associates, Inc., 2023. Xiyuan Yang, Wenke Huang, and Mang Ye. Fedas: Bridging inconsistency in personalized federated learning. In Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 11986–11995, 2024. Tehrim Yoon, Sumin Shin, Sung Ju Hwang, and Eunho Yang. Fedmix: Approximation of mixup under mean augmented federated learning. In International Conference on Learn-ing Representations , 2021. Mikhail Yurochkin, Mayank Agarwal, Soumya Ghosh, Krist-jan Greenewald, Nghia Hoang, and Yasaman Khazaeni. Bayesian nonparametric federated learning of neural net-works. In International conference on machine learning ,pages 7252–7261. PMLR, 2019. Matthew D Zeiler and Rob Fergus. Visualizing and under-standing convolutional networks. In European conference on computer vision , pages 818–833. Springer, 2014.
