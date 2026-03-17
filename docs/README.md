@@ -6,73 +6,49 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-02-16 ~ 2026-03-17
-- 运行时间：2026-03-17 14:01:41 UTC
+- 最新运行日期：2026-03-17
+- 运行时间：2026-03-17 20:03:32 UTC
 - 运行状态：成功
-- 本次总论文数：17
-- 精读区：6
-- 速读区：11
+- 本次总论文数：9
+- 精读区：5
+- 速读区：4
 
 ### 今日简报（AI）
-今日精选 17 篇前沿论文，深度剖析异步联邦学习中的行为陈旧性建模与元宇宙资源分配优化。
-重点推荐 FedPSA 算法及联邦拆分决策 Transformer，两者在解决异步更新滞后与边缘资源调度上具有突破性意义。
-建议关注异构 IoT 环境下的自适应聚类与大模型高效微调技术，把握联邦学习与数字孪生融合的新趋势。
-- 详情：[/20260216-20260317/README](/20260216-20260317/README)
+今日精选 9 篇前沿论文，深度聚焦联邦学习优化与抗干扰边缘协作推理。
+重点推荐：通过模型分区与资源协同提升系统抗干扰能力，以及利用递减步长有效解决联邦学习中的过期梯度难题。
+建议关注分布式强化学习的通信感知框架，以及神经形态硬件在边缘侧的联邦少样本学习实践。
+- 详情：[/202603/17/README](/202603/17/README)
 
 ### 精读区论文标签
-1. [FedPSA: Modeling Behavioral Staleness in Asynchronous Federated Learning](/20260216-20260317/2602.15337v2-fedpsa-modeling-behavioral-staleness-in-asynchronous-federated-learning)  
-   标签：评分：9.0/10、query:fl-ra
-   evidence：异步联邦学习中的行为陈旧性建模
-2. [Edge Learning via Federated Split Decision Transformers for Metaverse Resource Allocation](/20260216-20260317/2602.16174v1-edge-learning-via-federated-split-decision-transformers-for-metaverse-resource-allocation)  
-   标签：评分：9.0/10、query:fl-ra
-   evidence：通过联邦学习为虚拟现实用户进行智能资源分配
-3. [JSAM: Privacy Straggler-Resilient Joint Client Selection and Incentive Mechanism Design in Differentially Private Federated Learning](/20260216-20260317/2602.21844v1-jsam-privacy-straggler-resilient-joint-client-selection-and-incentive-mechanism-design-in-differentially-private-federated-learning)  
-   标签：评分：9.0/10、query:fl-ra
-   evidence：针对隐私掉队者的联合客户端选择与激励机制
-4. [Energy Efficient Federated Learning with Hyperdimensional Computing over Wireless Communication Networks](/20260216-20260317/2602.21949v1-energy-efficient-federated-learning-with-hyperdimensional-computing-over-wireless-communication-networks)  
-   标签：评分：9.0/10、query:fl-ra
-   evidence：优化计算与通信的总能量消耗
-5. [Energy Efficient Federated Learning with Hyperdimensional Computing (HDC)](/20260216-20260317/2602.22290v1-energy-efficient-federated-learning-with-hyperdimensional-computing-hdc)  
-   标签：评分：9.0/10、query:fl-ra
-   evidence：发射功率和CPU频率的联合优化
-6. [Communication-Efficient Quantum Federated Learning over Large-Scale Wireless Networks](/20260216-20260317/2603.01222v1-communication-efficient-quantum-federated-learning-over-large-scale-wireless-networks)  
-   标签：评分：9.0/10、query:fl-ra
-   evidence：无线联邦学习中的联合信道选择与功率分配
+1. [Joint Optimization of Model Partitioning and Resource Allocation for Anti-Jamming Collaborative Inference Systems](/202603/17/2603.02579v1-joint-optimization-of-model-partitioning-and-resource-allocation-for-anti-jamming-collaborative-inference-systems)  
+   标签：评分：8.0/10、query:fl-ra
+   evidence：模型分区与资源分配的联合优化
+2. [Convex and Non-convex Federated Learning with Stale Stochastic Gradients: Diminishing Step Size is All You Need](/202603/17/2603.02639v1-convex-and-non-convex-federated-learning-with-stale-stochastic-gradients-diminishing-step-size-is-all-you-need)  
+   标签：评分：8.0/10、query:fl-ra
+   evidence：延迟梯度模型和过期随机梯度
+3. [Noise-aware Client Selection for carbon-efficient Federated Learning via Gradient Norm Thresholding](/202603/17/2603.04194v1-noise-aware-client-selection-for-carbon-efficient-federated-learning-via-gradient-norm-thresholding)  
+   标签：评分：8.0/10、query:fl-ra
+   evidence：碳效率联邦学习中的噪声感知客户端选择
+4. [Resource-Adaptive Federated Text Generation with Differential Privacy](/202603/17/2603.07027v1-resource-adaptive-federated-text-generation-with-differential-privacy)  
+   标签：评分：8.0/10、query:fl-ra
+   evidence：适应客户端能力的灵活参与框架
+5. [SFedHIFI: Fire Rate-Based Heterogeneous Information Fusion for Spiking Federated Learning](/202603/17/2603.14956v1-sfedhifi-fire-rate-based-heterogeneous-information-fusion-for-spiking-federated-learning)  
+   标签：评分：8.0/10、query:fl-ra
+   evidence：针对异构客户端根据本地资源进行自适应模型部署
 
 ### 速读区论文标签
-1. [ASA: Adaptive Smart Agent Federated Learning via Device-Aware Clustering for Heterogeneous IoT](/20260216-20260317/2602.14391v1-asa-adaptive-smart-agent-federated-learning-via-device-aware-clustering-for-heterogeneous-iot)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：根据CPU和内存等实时资源概况对设备进行聚类
-2. [Heterogeneous Federated Fine-Tuning with Parallel One-Rank Adaptation](/20260216-20260317/2602.16936v1-heterogeneous-federated-fine-tuning-with-parallel-one-rank-adaptation)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：针对不同资源客户端的异构联邦微调
-3. [Federated Learning-Assisted Optimization of Mobile Transmission with Digital Twins](/20260216-20260317/2602.18627v1-federated-learning-assisted-optimization-of-mobile-transmission-with-digital-twins)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：联邦优化中的共享带宽和信道时隙分配
-4. [CA-AFP: Cluster-Aware Adaptive Federated Pruning](/20260216-20260317/2603.01739v1-ca-afp-cluster-aware-adaptive-federated-pruning)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：通过自适应剪枝共同解决统计和系统异构性
-5. [Exploring New Frontiers in Vertical Federated Learning: the Role of Saddle Point Reformulation](/20260216-20260317/2602.15996v1-exploring-new-frontiers-in-vertical-federated-learning-the-role-of-saddle-point-reformulation)  
+1. [CALF: Communication-Aware Learning Framework for Distributed Reinforcement Learning](/202603/17/2603.12543v1-calf-communication-aware-learning-framework-for-distributed-reinforcement-learning)  
    标签：评分：7.0/10、query:fl-ra
-   evidence：在纵向联邦学习中实现异步通信的部分参与
-6. [Heterogeneity-Aware Client Selection Methodology For Efficient Federated Learning](/20260216-20260317/2602.20450v1-heterogeneity-aware-client-selection-methodology-for-efficient-federated-learning)  
-   标签：评分：7.0/10、query:fl-ra
-   evidence：基于梯度更新的客户端选择方法
-7. [Wireless Federated Multi-Task LLM Fine-Tuning via Sparse-and-Orthogonal LoRA](/20260216-20260317/2602.20492v1-wireless-federated-multi-task-llm-fine-tuning-via-sparse-and-orthogonal-lora)  
-   标签：评分：7.0/10、query:fl-ra
-   evidence：无线去中心化联邦学习中低效的通信与模型聚合
-8. [GFPL: Generative Federated Prototype Learning for Resource-Constrained and Data-Imbalanced Vision Task](/20260216-20260317/2602.21873v1-gfpl-generative-federated-prototype-learning-for-resource-constrained-and-data-imbalanced-vision-task)  
-   标签：评分：7.0/10、query:fl-ra
-   evidence：解决资源受限视觉任务中的通信开销
-9. [Fractional-Order Federated Learning](/20260216-20260317/2602.15380v1-fractional-order-federated-learning)  
+   evidence：为分布式学习建模通信约束和网络延迟
+2. [Federated Active Learning Under Extreme Non-IID and Global Class Imbalance](/202603/17/2603.10341v1-federated-active-learning-under-extreme-non-iid-and-global-class-imbalance)  
    标签：评分：6.0/10、query:fl-ra
-   evidence：提高通信效率并加速收敛
-10. [Local adapt-then-combine algorithms for distributed nonsmooth optimization: Achieving provable communication acceleration](/20260216-20260317/2602.16148v1-local-adapt-then-combine-algorithms-for-distributed-nonsmooth-optimization-achieving-provable-communication-acceleration)  
+   evidence：联邦主动学习中的自适应查询模型选择
+3. [Federated Few-Shot Learning on Neuromorphic Hardware: An Empirical Study Across Physical Edge Nodes](/202603/17/2603.13037v1-federated-few-shot-learning-on-neuromorphic-hardware-an-empirical-study-across-physical-edge-nodes)  
    标签：评分：6.0/10、query:fl-ra
-   evidence：用于通信加速的概率本地更新
-11. [FedZMG: Efficient Client-Side Optimization in Federated Learning](/20260216-20260317/2602.18384v1-fedzmg-efficient-client-side-optimization-in-federated-learning)  
+   evidence：跨物理边缘节点的类脑硬件联邦学习
+4. [Federated Learning of Binary Neural Networks: Enabling Low-Cost Inference](/202603/17/2603.15507v1-federated-learning-of-binary-neural-networks-enabling-low-cost-inference)  
    标签：评分：6.0/10、query:fl-ra
-   evidence：针对资源受限物联网环境的客户端优化
+   evidence：优化联邦学习中低功耗边缘设备的内存和计算效率。
 
 
 <div class="dpr-home-promo-card">
