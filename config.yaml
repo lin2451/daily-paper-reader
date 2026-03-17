@@ -25,3 +25,38 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: FL RA
+      description: 联邦学习中半异步和资源分配相关的论文
+      enabled: true
+      keywords:
+        - keyword: semi-asynchronous federated learning
+          keyword_cn: 半异步联邦学习
+          query: semi-asynchronous communication protocols in federated learning
+        - keyword: resource allocation
+          keyword_cn: 资源分配
+          query: resource allocation strategies for federated learning systems
+        - keyword: joint optimization
+          keyword_cn: 联合优化
+          query: joint optimization of communication and computation in FL
+        - keyword: straggler mitigation
+          keyword_cn: 掉队者缓解
+          query: handling stragglers in semi-asynchronous federated learning
+        - keyword: bandwidth allocation
+          keyword_cn: 带宽分配
+          query: dynamic bandwidth allocation for federated learning clients
+        - keyword: client selection
+          keyword_cn: 客户端选择
+          query: client selection mechanisms for semi-asynchronous FL
+      intent_queries:
+        - query: resource allocation optimization for semi asynchronous federated learning
+          query_cn: 半异步联邦学习中的资源分配优化
+          enabled: true
+          source: manual
+          note: ''
+        - query: semi asynchronous federated learning protocols for heterogeneous devices
+          query_cn: 面向异构设备的半异步联邦学习协议
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-17T13:44:02.376Z'
