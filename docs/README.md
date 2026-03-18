@@ -6,49 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-17
-- 运行时间：2026-03-17 20:03:32 UTC
+- 最新运行日期：2026-03-09 ~ 2026-03-18
+- 运行时间：2026-03-18 01:05:31 UTC
 - 运行状态：成功
-- 本次总论文数：9
-- 精读区：5
-- 速读区：4
+- 本次总论文数：1
+- 精读区：0
+- 速读区：1
 
 ### 今日简报（AI）
-今日精选 9 篇前沿论文，深度聚焦联邦学习优化与抗干扰边缘协作推理。
-重点推荐：通过模型分区与资源协同提升系统抗干扰能力，以及利用递减步长有效解决联邦学习中的过期梯度难题。
-建议关注分布式强化学习的通信感知框架，以及神经形态硬件在边缘侧的联邦少样本学习实践。
-- 详情：[/202603/17/README](/202603/17/README)
+本期聚焦联邦遗忘学习（Federated Unlearning）效率优化，探索如何在分布式场景下快速“抹除”特定数据。
+核心结论指出，通过在服务端缓解梯度冲突并进行表达优化，可显著降低联邦遗忘过程中的计算与通信开销。
+推荐关注隐私合规需求下的模型动态更新技术，了解如何在不重训全局模型的前提下实现高效数据撤回。
+- 详情：[/20260309-20260318/README](/20260309-20260318/README)
 
 ### 精读区论文标签
-1. [Joint Optimization of Model Partitioning and Resource Allocation for Anti-Jamming Collaborative Inference Systems](/202603/17/2603.02579v1-joint-optimization-of-model-partitioning-and-resource-allocation-for-anti-jamming-collaborative-inference-systems)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：模型分区与资源分配的联合优化
-2. [Convex and Non-convex Federated Learning with Stale Stochastic Gradients: Diminishing Step Size is All You Need](/202603/17/2603.02639v1-convex-and-non-convex-federated-learning-with-stale-stochastic-gradients-diminishing-step-size-is-all-you-need)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：延迟梯度模型和过期随机梯度
-3. [Noise-aware Client Selection for carbon-efficient Federated Learning via Gradient Norm Thresholding](/202603/17/2603.04194v1-noise-aware-client-selection-for-carbon-efficient-federated-learning-via-gradient-norm-thresholding)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：碳效率联邦学习中的噪声感知客户端选择
-4. [Resource-Adaptive Federated Text Generation with Differential Privacy](/202603/17/2603.07027v1-resource-adaptive-federated-text-generation-with-differential-privacy)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：适应客户端能力的灵活参与框架
-5. [SFedHIFI: Fire Rate-Based Heterogeneous Information Fusion for Spiking Federated Learning](/202603/17/2603.14956v1-sfedhifi-fire-rate-based-heterogeneous-information-fusion-for-spiking-federated-learning)  
-   标签：评分：8.0/10、query:fl-ra
-   evidence：针对异构客户端根据本地资源进行自适应模型部署
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [CALF: Communication-Aware Learning Framework for Distributed Reinforcement Learning](/202603/17/2603.12543v1-calf-communication-aware-learning-framework-for-distributed-reinforcement-learning)  
-   标签：评分：7.0/10、query:fl-ra
-   evidence：为分布式学习建模通信约束和网络延迟
-2. [Federated Active Learning Under Extreme Non-IID and Global Class Imbalance](/202603/17/2603.10341v1-federated-active-learning-under-extreme-non-iid-and-global-class-imbalance)  
+1. [Computation and Communication Efficient Federated Unlearning via On-server Gradient Conflict Mitigation and Expression](/20260309-20260318/2603.13795v1-computation-and-communication-efficient-federated-unlearning-via-on-server-gradient-conflict-mitigation-and-expression)  
    标签：评分：6.0/10、query:fl-ra
-   evidence：联邦主动学习中的自适应查询模型选择
-3. [Federated Few-Shot Learning on Neuromorphic Hardware: An Empirical Study Across Physical Edge Nodes](/202603/17/2603.13037v1-federated-few-shot-learning-on-neuromorphic-hardware-an-empirical-study-across-physical-edge-nodes)  
-   标签：评分：6.0/10、query:fl-ra
-   evidence：跨物理边缘节点的类脑硬件联邦学习
-4. [Federated Learning of Binary Neural Networks: Enabling Low-Cost Inference](/202603/17/2603.15507v1-federated-learning-of-binary-neural-networks-enabling-low-cost-inference)  
-   标签：评分：6.0/10、query:fl-ra
-   evidence：优化联邦学习中低功耗边缘设备的内存和计算效率。
+   evidence：解决联邦遗忘学习中高昂的计算和通信成本
 
 
 <div class="dpr-home-promo-card">
